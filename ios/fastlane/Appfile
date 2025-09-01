@@ -1,0 +1,12 @@
+# App Store Connect and Apple Developer Portal configuration
+app_identifier("com.blanxlait.octo-vocab")
+
+# Team configuration (will use environment variables)
+team_id(ENV["FASTLANE_TEAM_ID"]) if ENV["FASTLANE_TEAM_ID"]
+itc_team_id(ENV["FASTLANE_ITC_TEAM_ID"]) if ENV["FASTLANE_ITC_TEAM_ID"]
+
+# App Store Connect API configuration (preferred method)
+# Fastlane will automatically use these environment variables:
+# - APP_STORE_CONNECT_API_KEY_ID
+# - APP_STORE_CONNECT_ISSUER_ID  
+# - APP_STORE_CONNECT_API_KEY_PATH (file path)

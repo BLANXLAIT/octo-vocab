@@ -1,0 +1,248 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+# For a list of all available actions, check out https://docs.fastlane.tools/actions
+# For a list of all available plugins, check out https://docs.fastlane.tools/plugins/available-plugins
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+platform :ios do
+  before_all do
+    # Ensure we're using the latest version of fastlane
+    # update_fastlane
+  end
+
+  desc "Create bundle identifier on Apple Developer Portal"
+  lane :create_bundle_id do
+    UI.message "📱 Creating bundle identifier on Apple Developer Portal..."
+    
+    # Configure App Store Connect API key globally
+    app_store_connect_api_key(
+      key_id: "S9RAGF997L",
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_filepath: File.expand_path("~/.appstoreconnect/private_keys/AuthKey_S9RAGF997L.p8"),
+      duration: 1200,
+      in_house: false
+    )
+    
+    begin
+      # Try to create bundle identifier using spaceship
+      Spaceship::Portal.login
+      Spaceship::Portal.select_team
+      
+      bundle_id = Spaceship::Portal::BundleId.find("com.blanxlait.octo-vocab")
+      if bundle_id
+        UI.success "Bundle ID already exists!"
+      else
+        bundle_id = Spaceship::Portal::BundleId.create(
+          bundle_id: "com.blanxlait.octo-vocab",
+          name: "Octo Vocab"
+        )
+        UI.success "✅ Bundle ID created successfully!"
+      end
+    rescue => e
+      UI.error "Failed to create bundle ID: #{e.message}"
+      # Fall back to produce
+      UI.message "Trying alternative approach..."
+      
+      # Create using environment variables instead
+      produce(
+        app_identifier: "com.blanxlait.octo-vocab",
+        app_name: "Octo Vocab",
+        team_id: ENV["FASTLANE_TEAM_ID"],
+        skip_itc: true,
+        skip_devcenter: false
+      )
+    end
+    
+    UI.success "✅ Bundle ID setup completed!"
+  end
+
+  desc "Create app on App Store Connect and Developer Portal"
+  lane :create_app do
+    UI.message "🚀 Creating app on App Store Connect..."
+    
+    # Configure App Store Connect API key globally
+    app_store_connect_api_key(
+      key_id: "S9RAGF997L",
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_filepath: File.expand_path("~/.appstoreconnect/private_keys/AuthKey_S9RAGF997L.p8"),
+      duration: 1200,
+      in_house: false
+    )
+    
+    produce(
+      app_identifier: "com.blanxlait.octo-vocab",
+      app_name: "Octo Vocab",
+      language: "English",
+      app_version: "1.0",
+      sku: "OCTOVOCAB2024",
+      team_id: ENV["FASTLANE_TEAM_ID"],
+      itc_team_id: ENV["FASTLANE_ITC_TEAM_ID"],
+      platforms: ["ios"],
+      skip_devcenter: false,
+      skip_itc: false
+    )
+    
+    UI.success "✅ App created successfully!"
+  end
+
+  desc "Sync certificates and provisioning profiles using Match"
+  lane :sync_certificates do
+    UI.message "📱 Syncing certificates and provisioning profiles..."
+    
+    match(
+      type: "appstore",
+      app_identifier: ["com.blanxlait.octo-vocab"],
+      readonly: false,
+      force_for_new_devices: true
+    )
+    
+    UI.success "✅ Certificates synced successfully!"
+  end
+
+  desc "Build the iOS app"
+  lane :build do |options|
+    UI.message "🏗️ Building iOS app..."
+    
+    # Increment build number
+    increment_build_number(
+      xcodeproj: "Runner.xcodeproj"
+    )
+    
+    # Configure App Store Connect API key globally
+    app_store_connect_api_key(
+      key_id: "S9RAGF997L",
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_filepath: File.expand_path("~/.appstoreconnect/private_keys/AuthKey_S9RAGF997L.p8"),
+      duration: 1200,
+      in_house: false
+    )
+    
+    # Get and update certificates
+    match(
+      type: "appstore",
+      app_identifier: ["com.blanxlait.octo-vocab"],
+      readonly: true
+    )
+    
+    # Build the app
+    build_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: {
+          "com.blanxlait.octo-vocab" => "match AppStore com.blanxlait.octo-vocab"
+        }
+      },
+      # Clean build
+      clean: true,
+      # Flutter specific
+      archive_path: "./build/Runner.xcarchive",
+      output_directory: "./build"
+    )
+    
+    UI.success "✅ App built successfully!"
+  end
+
+  desc "Deploy to TestFlight for beta testing"
+  lane :beta do
+    UI.message "🧪 Deploying to TestFlight..."
+    
+    # Configure App Store Connect API key globally
+    app_store_connect_api_key(
+      key_id: "S9RAGF997L",
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_filepath: File.expand_path("~/.appstoreconnect/private_keys/AuthKey_S9RAGF997L.p8"),
+      duration: 1200,
+      in_house: false
+    )
+    
+    # Build the app
+    build
+    
+    # Upload to TestFlight
+    upload_to_testflight(
+      app_identifier: "com.blanxlait.octo-vocab",
+      skip_waiting_for_build_processing: true,
+      skip_submission: true,
+      # Beta app information
+      changelog: "Privacy-first vocabulary learning app for students.\n\nFeatures:\n• ACTFL-aligned leveling system\n• Offline-first architecture\n• No data collection\n• Latin and Spanish vocabulary\n• Adaptive mobile/tablet UI",
+      # Beta testing
+      distribute_external: false,
+      notify_external_testers: false
+    )
+    
+    UI.success "🎉 App uploaded to TestFlight! Check App Store Connect for processing status."
+  end
+
+  desc "Deploy to App Store for production release"
+  lane :release do
+    UI.message "🚀 Deploying to App Store..."
+    
+    # Configure App Store Connect API key globally
+    app_store_connect_api_key(
+      key_id: "S9RAGF997L",
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_filepath: File.expand_path("~/.appstoreconnect/private_keys/AuthKey_S9RAGF997L.p8"),
+      duration: 1200,
+      in_house: false
+    )
+    
+    # Build the app
+    build
+    
+    # Upload to App Store
+    upload_to_app_store(
+      app_identifier: "com.blanxlait.octo-vocab",
+      force: true,
+      reject_if_possible: true,
+      skip_metadata: false,
+      skip_screenshots: true,
+      skip_binary_upload: false,
+      # App Store submission
+      submit_for_review: false, # Manual review submission for safety
+      automatic_release: false,
+      # Privacy and compliance
+      submission_information: {
+        add_id_info_uses_idfa: false,
+        add_id_info_serves_ads: false,
+        add_id_info_tracks_action: false,
+        add_id_info_tracks_install: false,
+        content_rights_has_rights: true,
+        content_rights_contains_third_party_content: false,
+        export_compliance_platform: 'ios',
+        export_compliance_compliance_required: false,
+        export_compliance_encryption_updated: false,
+        export_compliance_app_type: nil,
+        export_compliance_uses_encryption: false
+      }
+    )
+    
+    UI.success "🎉 App uploaded to App Store! Go to App Store Connect to submit for review."
+  end
+
+  desc "Setup: Create app and sync certificates (run once)"
+  lane :setup do
+    UI.message "⚙️ Setting up Octo Vocab for deployment..."
+    
+    create_app
+    sync_certificates
+    
+    UI.success "🎉 Setup complete! You can now run 'fastlane beta' or 'fastlane release'"
+  end
+
+  after_all do |lane|
+    # This block is called, only if the executed lane was successful
+    UI.success "✅ Lane #{lane} completed successfully!"
+  end
+
+  error do |lane, exception|
+    UI.error "❌ Lane #{lane} failed with error: #{exception.message}"
+    # Add error handling/notifications here if needed
+  end
+end
