@@ -1,0 +1,52 @@
+# Test configuration for the Flutter SaaS template
+# This file configures how tests are run and reported
+
+# Test runner configuration
+test_on: "vm"
+
+# Timeout settings
+timeout: 30s
+
+# Test file patterns
+file_sets:
+  all:
+    - test/**_test.dart
+  unit:
+    - test/unit/**_test.dart
+  widget:
+    - test/widget/**_test.dart
+  integration:
+    - test/integration/**_test.dart
+
+# Platform-specific settings
+platforms:
+  - chrome
+  - vm
+
+# Coverage configuration
+coverage:
+  # Exclude generated files from coverage
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "lib/main.dart"
+    - "lib/firebase_options.dart"
+
+# Test tags for organizing test runs
+tags:
+  unit: "Unit tests that don't require Flutter widgets"
+  widget: "Widget tests for UI components"
+  integration: "Integration tests requiring full app context"
+  slow: "Tests that take longer to run"
+  firebase: "Tests that require Firebase emulators"
+
+# Retry configuration
+retry: 3
+
+# Verbose output for debugging
+verbose_trace: false
+
+# Enable strict mode
+strict_casts: true
+strict_inference: true
+strict_raw_types: true
