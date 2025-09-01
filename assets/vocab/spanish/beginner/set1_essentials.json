@@ -1,0 +1,182 @@
+[
+  {
+    "id": "ser",
+    "latin": "soy",
+    "english": "I am",
+    "pos": "verb",
+    "exampleLatin": "Soy estudiante.",
+    "exampleEnglish": "I am a student.",
+    "tags": ["beginner", "essentials", "verb", "high-frequency"]
+  },
+  {
+    "id": "estar",
+    "latin": "estoy",
+    "english": "I am (location/condition)",
+    "pos": "verb",
+    "exampleLatin": "Estoy en casa.",
+    "exampleEnglish": "I am at home.",
+    "tags": ["beginner", "essentials", "verb", "high-frequency"]
+  },
+  {
+    "id": "y",
+    "latin": "y",
+    "english": "and",
+    "pos": "conjunction",
+    "exampleLatin": "María y José",
+    "exampleEnglish": "María and José",
+    "tags": ["beginner", "essentials", "conjunction", "high-frequency"]
+  },
+  {
+    "id": "en",
+    "latin": "en",
+    "english": "in, on",
+    "pos": "preposition",
+    "exampleLatin": "en la casa",
+    "exampleEnglish": "in the house",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "a",
+    "latin": "a",
+    "english": "to, at",
+    "pos": "preposition",
+    "exampleLatin": "Voy a la escuela.",
+    "exampleEnglish": "I go to school.",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "con",
+    "latin": "con",
+    "english": "with",
+    "pos": "preposition",
+    "exampleLatin": "con mis amigos",
+    "exampleEnglish": "with my friends",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "no",
+    "latin": "no",
+    "english": "no, not",
+    "pos": "adverb",
+    "exampleLatin": "No estoy cansado.",
+    "exampleEnglish": "I am not tired.",
+    "tags": ["beginner", "essentials", "adverb", "high-frequency"]
+  },
+  {
+    "id": "pero",
+    "latin": "pero",
+    "english": "but",
+    "pos": "conjunction",
+    "exampleLatin": "Pequeño pero fuerte",
+    "exampleEnglish": "Small but strong",
+    "tags": ["beginner", "essentials", "conjunction", "high-frequency"]
+  },
+  {
+    "id": "que",
+    "latin": "que",
+    "english": "that, which",
+    "pos": "pronoun",
+    "exampleLatin": "El libro que leo",
+    "exampleEnglish": "The book that I read",
+    "tags": ["beginner", "essentials", "pronoun", "high-frequency"]
+  },
+  {
+    "id": "de",
+    "latin": "de",
+    "english": "of, from",
+    "pos": "preposition",
+    "exampleLatin": "el libro de María",
+    "exampleEnglish": "María's book",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "por",
+    "latin": "por",
+    "english": "for, by, through",
+    "pos": "preposition",
+    "exampleLatin": "por la mañana",
+    "exampleEnglish": "in the morning",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "para",
+    "latin": "para",
+    "english": "for, in order to",
+    "pos": "preposition",
+    "exampleLatin": "para estudiar",
+    "exampleEnglish": "in order to study",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "sin",
+    "latin": "sin",
+    "english": "without",
+    "pos": "preposition",
+    "exampleLatin": "sin agua",
+    "exampleEnglish": "without water",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "sobre",
+    "latin": "sobre",
+    "english": "on, about",
+    "pos": "preposition",
+    "exampleLatin": "sobre la mesa",
+    "exampleEnglish": "on the table",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "entre",
+    "latin": "entre",
+    "english": "between, among",
+    "pos": "preposition",
+    "exampleLatin": "entre amigos",
+    "exampleEnglish": "among friends",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "después",
+    "latin": "después",
+    "english": "after, later",
+    "pos": "adverb",
+    "exampleLatin": "después de clase",
+    "exampleEnglish": "after class",
+    "tags": ["beginner", "essentials", "adverb", "high-frequency"]
+  },
+  {
+    "id": "antes",
+    "latin": "antes",
+    "english": "before",
+    "pos": "adverb",
+    "exampleLatin": "antes de comer",
+    "exampleEnglish": "before eating",
+    "tags": ["beginner", "essentials", "adverb", "high-frequency"]
+  },
+  {
+    "id": "durante",
+    "latin": "durante",
+    "english": "during",
+    "pos": "preposition",
+    "exampleLatin": "durante la clase",
+    "exampleEnglish": "during class",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "contra",
+    "latin": "contra",
+    "english": "against",
+    "pos": "preposition",
+    "exampleLatin": "contra la pared",
+    "exampleEnglish": "against the wall",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "hasta",
+    "latin": "hasta",
+    "english": "until, up to",
+    "pos": "preposition",
+    "exampleLatin": "hasta mañana",
+    "exampleEnglish": "until tomorrow",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  }
+]

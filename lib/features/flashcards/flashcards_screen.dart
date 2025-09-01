@@ -4,12 +4,27 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flutter_saas_template/core/language/language.dart';
+import 'package:flutter_saas_template/core/language/vocabulary_selector.dart';
+import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
 import 'package:flutter_saas_template/core/models/word.dart';
 
-/// Loads the seed Grade 8 Latin vocab set from assets.
+/// Loads vocabulary based on current language and level selection
 final vocabSetProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
   final lang = ref.watch(appLanguageProvider);
-  final path = vocabAssetPath(lang, 'grade8_set1.json');
+  final level = ref.watch(vocabularyLevelProvider);
+  
+  // For now, use the first available set for the selected level
+  final sets = VocabularySets.getSetsForLevel(level);
+  if (sets.isEmpty) {
+    // Fallback to legacy format if no leveled sets available
+    final path = vocabAssetPath(lang, 'grade8_set1.json');
+    final jsonStr = await rootBundle.loadString(path);
+    return Word.listFromJsonString(jsonStr);
+  }
+  
+  // Load the first set for the level
+  final set = sets.first;
+  final path = vocabularySetAssetPath(lang, set);
   final jsonStr = await rootBundle.loadString(path);
   return Word.listFromJsonString(jsonStr);
 });
@@ -31,17 +46,29 @@ class FlashcardsScreen extends ConsumerWidget {
 
     return cardsAsync.when(
       loading: () => Scaffold(
-        appBar: AppBar(title: const Text('Flashcards')),
+        appBar: AppBar(
+          title: const Text('Learn'),
+          automaticallyImplyLeading: false,
+          actions: const [VocabularySelector(), SizedBox(width: 8)],
+        ),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (e, st) => Scaffold(
-        appBar: AppBar(title: const Text('Flashcards')),
+        appBar: AppBar(
+          title: const Text('Learn'),
+          automaticallyImplyLeading: false,
+          actions: const [VocabularySelector(), SizedBox(width: 8)],
+        ),
         body: Center(child: Text('Failed to load vocab: $e')),
       ),
       data: (words) {
         if (words.isEmpty) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Flashcards')),
+            appBar: AppBar(
+              title: const Text('Learn'),
+              automaticallyImplyLeading: false,
+              actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
+            ),
             body: const Center(child: Text('No vocabulary found')),
           );
         }
@@ -50,9 +77,10 @@ class FlashcardsScreen extends ConsumerWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Flashcards'),
+            title: const Text('Learn'),
+            automaticallyImplyLeading: false,
             actions: [
-              const LanguageSwitcherAction(),
+              const VocabularySelector(),
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **template repository** for Flutter/Firebase SaaS applications featuring streaming authentication, real-time data patterns, and Riverpod state management with code generation. This is NOT a regular Flutter project - it's designed to be used as a GitHub template.
+**Octo Vocab** is a privacy-first offline vocabulary learning app for students in grades 7-12 learning foreign languages. The app emphasizes privacy by being completely offline with no user login or data collection. Currently supports Latin and Spanish with plans for future language expansion.
 
 ## Essential Commands
 
@@ -12,17 +12,6 @@ This is a **template repository** for Flutter/Firebase SaaS applications featuri
 ```bash
 # Install dependencies
 flutter pub get
-
-# Activate Firebase CLI
-dart pub global activate flutterfire_cli
-
-# Configure Firebase for new projects
-flutterfire configure
-
-# Initialize Firebase Functions (TypeScript)
-firebase init functions
-# Select TypeScript when prompted
-# Install dependencies: cd functions && npm install
 
 # Add Dart MCP server to Claude Code (for enhanced testing/code execution)
 claude mcp add dart -- dart mcp-server
@@ -72,34 +61,33 @@ flutter run
 flutter clean
 ```
 
-### Firebase Functions (TypeScript)
+### Vocabulary Asset Management
 ```bash
-# Deploy functions
-firebase deploy --only functions
-
-# Run functions locally
-cd functions && npm run serve
-
-# Build TypeScript functions
-cd functions && npm run build
-
-# Run functions shell for testing
-cd functions && npm run shell
+# Vocabulary data is stored in JSON files in assets/vocab/
+# Structure: assets/vocab/{language}/grade8_set1.json
+# Currently supported: latin, spanish
+# Future expansion will add more languages and grade levels
 ```
 
 ## Architecture & Key Patterns
 
 ### State Management with Riverpod
-Always use Riverpod with code generation (`@riverpod` annotation). Generated providers automatically get `.g.dart` suffix.
+Uses Riverpod for state management with providers for:
+- Language selection (`appLanguageProvider`)
+- Vocabulary data loading from assets (`vocabSetProvider`, `quizVocabProvider`)
+- Quiz/flashcard session state (index, selected answers, results)
 
-### Streaming Authentication Pattern
-Use Firebase auth streams for real-time authentication state. All Firebase operations should default to streams for real-time updates.
+### Privacy-First Offline Architecture
+- **No authentication** - No user accounts or login system
+- **No data collection** - No analytics or user tracking
+- **Offline-first** - All vocabulary data stored in app assets
+- **Local state only** - User progress and preferences stored locally
 
-### SaaS-Specific Patterns
-- Multi-tenant organization access with streaming permissions
-- Subscription & billing status streams
-- Real-time usage metrics
-- TypeScript Firebase Functions for backend logic (user provisioning, webhooks, notifications)
+### Language Support System
+- Enum-based language system (`AppLanguage.latin`, `AppLanguage.spanish`)
+- Asset path resolution: `assets/vocab/{language}/grade8_set1.json`
+- Language switching with persistent selection
+- Extensible for future languages
 
 ### Code Generation Files
 - `lib/**/*.g.dart` - Riverpod providers and JSON serialization
@@ -112,13 +100,31 @@ Use Firebase auth streams for real-time authentication state. All Firebase opera
 - `analysis_options.yaml` - Strict linting with `very_good_analysis`, excludes generated files
 - `build.yaml` - Code generation configuration for Riverpod and JSON
 - `dart_test.yaml` - Test runner with organized test sets (unit/widget/integration) and coverage exclusions
-- `.github/copilot-instructions.md` - Comprehensive development patterns and SaaS architecture guidance
+- `.github/copilot-instructions.md` - Comprehensive development patterns and architecture guidance
+
+## App Features & Structure
+
+### Learning Modes
+- **Flashcards** (`lib/features/flashcards/`) - Traditional flashcard study mode
+- **Quiz** (`lib/features/quiz/`) - Multiple-choice vocabulary quizzes  
+- **Review** (`lib/features/review/`) - Spaced repetition review system
+- **Progress** (`lib/features/progress/`) - Learning progress tracking
+
+### Core Models
+- **Word** (`lib/core/models/word.dart`) - Vocabulary word with foreign/English terms, parts of speech, examples, and tags
+- **Language** (`lib/core/language/language.dart`) - Language selection and asset path management
+
+### Target Audience Considerations
+- **Ages 12-18** - 7th grade through high school students
+- **Educational context** - Designed for classroom and homework use
+- **Privacy compliance** - COPPA/FERPA compliant by design (no data collection)
+- **Accessibility** - Screen reader support and high contrast for diverse learners
 
 ## Important Notes
 
-- This is a template repository - use "Use this template" on GitHub rather than cloning directly
+- Privacy-first design - no network requests, user accounts, or data collection
 - Always run code generation after modifying annotated classes
-- Follow streaming patterns for all Firebase operations
 - Use ConsumerWidget for all widgets that read providers
 - Implement accessibility-first design with proper semantic labels and contrast
 - Generated files are excluded from version control and static analysis
+- Vocabulary data stored as JSON assets for offline access

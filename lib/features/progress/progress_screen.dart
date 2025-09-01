@@ -25,11 +25,19 @@ class ProgressScreen extends ConsumerWidget {
 
     return wordsAsync.when(
       loading: () => Scaffold(
-        appBar: AppBar(title: const Text('Progress')),
+        appBar: AppBar(
+          title: const Text('Progress'),
+          automaticallyImplyLeading: false,
+          actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
+        ),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (e, st) => Scaffold(
-        appBar: AppBar(title: const Text('Progress')),
+        appBar: AppBar(
+          title: const Text('Progress'),
+          automaticallyImplyLeading: false,
+          actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
+        ),
         body: Center(child: Text('Failed to load vocab: $e')),
       ),
       data: (words) {
@@ -38,6 +46,7 @@ class ProgressScreen extends ConsumerWidget {
         return Scaffold(
           appBar: AppBar(
             title: const Text('Progress'),
+            automaticallyImplyLeading: false,
             actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
           ),
           body: Padding(

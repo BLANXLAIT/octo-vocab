@@ -32,17 +32,29 @@ class ReviewScreen extends ConsumerWidget {
 
     return wordsAsync.when(
       loading: () => Scaffold(
-        appBar: AppBar(title: const Text('Review')),
+        appBar: AppBar(
+          title: const Text('Review'),
+          automaticallyImplyLeading: false,
+          actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
+        ),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (e, st) => Scaffold(
-        appBar: AppBar(title: const Text('Review')),
+        appBar: AppBar(
+          title: const Text('Review'),
+          automaticallyImplyLeading: false,
+          actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
+        ),
         body: Center(child: Text('Failed to load vocab: $e')),
       ),
       data: (words) {
         if (words.isEmpty) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Review')),
+            appBar: AppBar(
+              title: const Text('Review'),
+              automaticallyImplyLeading: false,
+              actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
+            ),
             body: const Center(child: Text('No vocabulary found')),
           );
         }
@@ -52,6 +64,7 @@ class ReviewScreen extends ConsumerWidget {
         return Scaffold(
           appBar: AppBar(
             title: const Text('Review'),
+            automaticallyImplyLeading: false,
             actions: [
               const LanguageSwitcherAction(),
               const SizedBox(width: 8),

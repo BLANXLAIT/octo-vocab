@@ -33,17 +33,29 @@ class QuizScreen extends ConsumerWidget {
 
     return wordsAsync.when(
       loading: () => Scaffold(
-        appBar: AppBar(title: const Text('Quiz')),
+        appBar: AppBar(
+          title: const Text('Quiz'),
+          automaticallyImplyLeading: false,
+          actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
+        ),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (e, st) => Scaffold(
-        appBar: AppBar(title: const Text('Quiz')),
+        appBar: AppBar(
+          title: const Text('Quiz'),
+          automaticallyImplyLeading: false,
+          actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
+        ),
         body: Center(child: Text('Failed to load vocab: $e')),
       ),
       data: (words) {
         if (words.length < 4) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Quiz')),
+            appBar: AppBar(
+              title: const Text('Quiz'),
+              automaticallyImplyLeading: false,
+              actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
+            ),
             body: const Center(
               child: Text('Not enough words for a multiple-choice quiz.'),
             ),
@@ -66,6 +78,7 @@ class QuizScreen extends ConsumerWidget {
         return Scaffold(
           appBar: AppBar(
             title: const Text('Quiz'),
+            automaticallyImplyLeading: false,
             actions: [
               const LanguageSwitcherAction(),
               const SizedBox(width: 8),

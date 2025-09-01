@@ -1,0 +1,182 @@
+[
+  {
+    "id": "sum",
+    "latin": "sum",
+    "english": "I am",
+    "pos": "verb",
+    "exampleLatin": "Sum discipulus.",
+    "exampleEnglish": "I am a student.",
+    "tags": ["beginner", "essentials", "verb", "high-frequency"]
+  },
+  {
+    "id": "est",
+    "latin": "est",
+    "english": "is",
+    "pos": "verb",
+    "exampleLatin": "Marcus est bonus.",
+    "exampleEnglish": "Marcus is good.",
+    "tags": ["beginner", "essentials", "verb", "high-frequency"]
+  },
+  {
+    "id": "et",
+    "latin": "et",
+    "english": "and",
+    "pos": "conjunction",
+    "exampleLatin": "Marcus et Julia",
+    "exampleEnglish": "Marcus and Julia",
+    "tags": ["beginner", "essentials", "conjunction", "high-frequency"]
+  },
+  {
+    "id": "in",
+    "latin": "in",
+    "english": "in, into",
+    "pos": "preposition",
+    "exampleLatin": "in casa",
+    "exampleEnglish": "in the house",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "ad",
+    "latin": "ad",
+    "english": "to, toward",
+    "pos": "preposition",
+    "exampleLatin": "ad scholam",
+    "exampleEnglish": "to school",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "cum",
+    "latin": "cum",
+    "english": "with",
+    "pos": "preposition",
+    "exampleLatin": "cum amicis",
+    "exampleEnglish": "with friends",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "non",
+    "latin": "non",
+    "english": "not",
+    "pos": "adverb",
+    "exampleLatin": "Non sum laetus.",
+    "exampleEnglish": "I am not happy.",
+    "tags": ["beginner", "essentials", "adverb", "high-frequency"]
+  },
+  {
+    "id": "sed",
+    "latin": "sed",
+    "english": "but",
+    "pos": "conjunction",
+    "exampleLatin": "Parvus sed fortis",
+    "exampleEnglish": "Small but brave",
+    "tags": ["beginner", "essentials", "conjunction", "high-frequency"]
+  },
+  {
+    "id": "qui",
+    "latin": "qui",
+    "english": "who, which",
+    "pos": "pronoun",
+    "exampleLatin": "Vir qui legit",
+    "exampleEnglish": "The man who reads",
+    "tags": ["beginner", "essentials", "pronoun", "high-frequency"]
+  },
+  {
+    "id": "de",
+    "latin": "de",
+    "english": "about, concerning",
+    "pos": "preposition",
+    "exampleLatin": "de bello",
+    "exampleEnglish": "about war",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "ex",
+    "latin": "ex",
+    "english": "out of, from",
+    "pos": "preposition",
+    "exampleLatin": "ex urbe",
+    "exampleEnglish": "out of the city",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "pro",
+    "latin": "pro",
+    "english": "for, in favor of",
+    "pos": "preposition",
+    "exampleLatin": "pro patria",
+    "exampleEnglish": "for the country",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "sine",
+    "latin": "sine",
+    "english": "without",
+    "pos": "preposition",
+    "exampleLatin": "sine aqua",
+    "exampleEnglish": "without water",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "sub",
+    "latin": "sub",
+    "english": "under, beneath",
+    "pos": "preposition",
+    "exampleLatin": "sub terra",
+    "exampleEnglish": "under the earth",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "per",
+    "latin": "per",
+    "english": "through, by means of",
+    "pos": "preposition",
+    "exampleLatin": "per silvam",
+    "exampleEnglish": "through the forest",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "inter",
+    "latin": "inter",
+    "english": "between, among",
+    "pos": "preposition",
+    "exampleLatin": "inter amicos",
+    "exampleEnglish": "among friends",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "post",
+    "latin": "post",
+    "english": "after, behind",
+    "pos": "preposition",
+    "exampleLatin": "post bellum",
+    "exampleEnglish": "after the war",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "ante",
+    "latin": "ante",
+    "english": "before, in front of",
+    "pos": "preposition",
+    "exampleLatin": "ante domum",
+    "exampleEnglish": "in front of the house",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "super",
+    "latin": "super",
+    "english": "above, over",
+    "pos": "preposition",
+    "exampleLatin": "super montem",
+    "exampleEnglish": "over the mountain",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  },
+  {
+    "id": "contra",
+    "latin": "contra",
+    "english": "against",
+    "pos": "preposition",
+    "exampleLatin": "contra hostes",
+    "exampleEnglish": "against the enemies",
+    "tags": ["beginner", "essentials", "preposition", "high-frequency"]
+  }
+]

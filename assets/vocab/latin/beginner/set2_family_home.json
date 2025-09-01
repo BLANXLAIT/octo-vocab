@@ -1,0 +1,182 @@
+[
+  {
+    "id": "pater",
+    "latin": "pater",
+    "english": "father",
+    "pos": "noun",
+    "exampleLatin": "Pater meus bonus est.",
+    "exampleEnglish": "My father is good.",
+    "tags": ["beginner", "family", "noun", "masculine"]
+  },
+  {
+    "id": "mater",
+    "latin": "mater",
+    "english": "mother",
+    "pos": "noun",
+    "exampleLatin": "Mater in culina laborat.",
+    "exampleEnglish": "Mother works in the kitchen.",
+    "tags": ["beginner", "family", "noun", "feminine"]
+  },
+  {
+    "id": "filius",
+    "latin": "filius",
+    "english": "son",
+    "pos": "noun",
+    "exampleLatin": "Filius libros legit.",
+    "exampleEnglish": "The son reads books.",
+    "tags": ["beginner", "family", "noun", "masculine"]
+  },
+  {
+    "id": "filia",
+    "latin": "filia",
+    "english": "daughter",
+    "pos": "noun",
+    "exampleLatin": "Filia cantare amat.",
+    "exampleEnglish": "The daughter loves to sing.",
+    "tags": ["beginner", "family", "noun", "feminine"]
+  },
+  {
+    "id": "frater",
+    "latin": "frater",
+    "english": "brother",
+    "pos": "noun",
+    "exampleLatin": "Frater meus magnus est.",
+    "exampleEnglish": "My brother is big.",
+    "tags": ["beginner", "family", "noun", "masculine"]
+  },
+  {
+    "id": "soror",
+    "latin": "soror",
+    "english": "sister",
+    "pos": "noun",
+    "exampleLatin": "Soror parva dormit.",
+    "exampleEnglish": "The little sister sleeps.",
+    "tags": ["beginner", "family", "noun", "feminine"]
+  },
+  {
+    "id": "avus",
+    "latin": "avus",
+    "english": "grandfather",
+    "pos": "noun",
+    "exampleLatin": "Avus fabulas narrat.",
+    "exampleEnglish": "Grandfather tells stories.",
+    "tags": ["beginner", "family", "noun", "masculine"]
+  },
+  {
+    "id": "avia",
+    "latin": "avia",
+    "english": "grandmother",
+    "pos": "noun",
+    "exampleLatin": "Avia dulcia facit.",
+    "exampleEnglish": "Grandmother makes sweets.",
+    "tags": ["beginner", "family", "noun", "feminine"]
+  },
+  {
+    "id": "domus",
+    "latin": "domus",
+    "english": "house, home",
+    "pos": "noun",
+    "exampleLatin": "Domus nova pulchra est.",
+    "exampleEnglish": "The new house is beautiful.",
+    "tags": ["beginner", "home", "noun", "feminine"]
+  },
+  {
+    "id": "ianua",
+    "latin": "ianua",
+    "english": "door",
+    "pos": "noun",
+    "exampleLatin": "Ianua clausa est.",
+    "exampleEnglish": "The door is closed.",
+    "tags": ["beginner", "home", "noun", "feminine"]
+  },
+  {
+    "id": "fenestra",
+    "latin": "fenestra",
+    "english": "window",
+    "pos": "noun",
+    "exampleLatin": "Fenestra magna lux intrat.",
+    "exampleEnglish": "Light enters through the big window.",
+    "tags": ["beginner", "home", "noun", "feminine"]
+  },
+  {
+    "id": "culina",
+    "latin": "culina",
+    "english": "kitchen",
+    "pos": "noun",
+    "exampleLatin": "In culina coquimus.",
+    "exampleEnglish": "We cook in the kitchen.",
+    "tags": ["beginner", "home", "noun", "feminine"]
+  },
+  {
+    "id": "camera",
+    "latin": "camera",
+    "english": "room, chamber",
+    "pos": "noun",
+    "exampleLatin": "Camera mea parva est.",
+    "exampleEnglish": "My room is small.",
+    "tags": ["beginner", "home", "noun", "feminine"]
+  },
+  {
+    "id": "lectus",
+    "latin": "lectus",
+    "english": "bed",
+    "pos": "noun",
+    "exampleLatin": "Lectus mollis est.",
+    "exampleEnglish": "The bed is soft.",
+    "tags": ["beginner", "home", "noun", "masculine"]
+  },
+  {
+    "id": "mensa",
+    "latin": "mensa",
+    "english": "table",
+    "pos": "noun",
+    "exampleLatin": "Libri super mensam sunt.",
+    "exampleEnglish": "Books are on the table.",
+    "tags": ["beginner", "home", "noun", "feminine"]
+  },
+  {
+    "id": "sella",
+    "latin": "sella",
+    "english": "chair",
+    "pos": "noun",
+    "exampleLatin": "Sella confortabilis est.",
+    "exampleEnglish": "The chair is comfortable.",
+    "tags": ["beginner", "home", "noun", "feminine"]
+  },
+  {
+    "id": "hortus",
+    "latin": "hortus",
+    "english": "garden",
+    "pos": "noun",
+    "exampleLatin": "Flores in horto crescunt.",
+    "exampleEnglish": "Flowers grow in the garden.",
+    "tags": ["beginner", "home", "noun", "masculine"]
+  },
+  {
+    "id": "aqua",
+    "latin": "aqua",
+    "english": "water",
+    "pos": "noun",
+    "exampleLatin": "Aqua clara et frigida est.",
+    "exampleEnglish": "The water is clear and cold.",
+    "tags": ["beginner", "home", "noun", "feminine"]
+  },
+  {
+    "id": "ignis",
+    "latin": "ignis",
+    "english": "fire",
+    "pos": "noun",
+    "exampleLatin": "Ignis in foco ardet.",
+    "exampleEnglish": "Fire burns in the fireplace.",
+    "tags": ["beginner", "home", "noun", "masculine"]
+  },
+  {
+    "id": "cibus",
+    "latin": "cibus",
+    "english": "food",
+    "pos": "noun",
+    "exampleLatin": "Cibus bonus est.",
+    "exampleEnglish": "The food is good.",
+    "tags": ["beginner", "home", "noun", "masculine"]
+  }
+]

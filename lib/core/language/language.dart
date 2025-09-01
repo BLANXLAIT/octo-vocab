@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
 
 enum AppLanguage { latin, spanish }
 
@@ -37,9 +38,26 @@ final appLanguageProvider = StateProvider<AppLanguage>((ref) {
   return AppLanguage.latin; // default
 });
 
+final vocabularyLevelProvider = StateProvider<VocabularyLevel>((ref) {
+  return VocabularyLevel.beginner; // default
+});
+
 String vocabAssetPath(AppLanguage lang, String filename) {
-  // filename example: 'grade8_set1.json'
+  // Legacy support for old format: 'grade8_set1.json'
   return 'assets/vocab/${lang.code}/$filename';
+}
+
+String leveledVocabAssetPath(
+  AppLanguage lang,
+  VocabularyLevel level,
+  String filename,
+) {
+  // New leveled format: 'assets/vocab/latin/beginner/set1_essentials.json'
+  return 'assets/vocab/${lang.code}/${level.code}/$filename';
+}
+
+String vocabularySetAssetPath(AppLanguage lang, VocabularySet set) {
+  return leveledVocabAssetPath(lang, set.level, set.filename);
 }
 
 class LanguageSwitcherAction extends ConsumerWidget {

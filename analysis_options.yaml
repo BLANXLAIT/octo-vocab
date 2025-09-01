@@ -21,3 +21,4 @@ linter:
     prefer_const_literals_to_create_immutables: true
     prefer_final_locals: true
     sort_pub_dependencies: false
+    eol_at_end_of_file: false
