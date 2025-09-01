@@ -1,0 +1,92 @@
+[
+  {
+    "id": "puella",
+    "latin": "puella",
+    "english": "girl",
+    "pos": "noun",
+    "exampleLatin": "Puella in horto ambulat.",
+    "exampleEnglish": "The girl walks in the garden.",
+    "tags": ["grade8", "set1"]
+  },
+  {
+    "id": "agricola",
+    "latin": "agricola",
+    "english": "farmer",
+    "pos": "noun",
+    "exampleLatin": "Agricola agrum arat.",
+    "exampleEnglish": "The farmer plows the field.",
+    "tags": ["grade8", "set1"]
+  },
+  {
+    "id": "nauta",
+    "latin": "nauta",
+    "english": "sailor",
+    "pos": "noun",
+    "exampleLatin": "Nautae in nave sunt.",
+    "exampleEnglish": "The sailors are in the ship.",
+    "tags": ["grade8", "set1"]
+  },
+  {
+    "id": "aqua",
+    "latin": "aqua",
+    "english": "water",
+    "pos": "noun",
+    "exampleLatin": "Aquam portat.",
+    "exampleEnglish": "He carries water.",
+    "tags": ["grade8", "set1"]
+  },
+  {
+    "id": "terra",
+    "latin": "terra",
+    "english": "land, earth",
+    "pos": "noun",
+    "exampleLatin": "Terra est magna.",
+    "exampleEnglish": "The land is great.",
+    "tags": ["grade8", "set1"]
+  },
+  {
+    "id": "bonus",
+    "latin": "bonus, -a, -um",
+    "english": "good",
+    "pos": "adjective",
+    "exampleLatin": "Puella bona est.",
+    "exampleEnglish": "The girl is good.",
+    "tags": ["grade8", "set1"]
+  },
+  {
+    "id": "magnus",
+    "latin": "magnus, -a, -um",
+    "english": "great, large",
+    "pos": "adjective",
+    "exampleLatin": "Magnus equus currit.",
+    "exampleEnglish": "A great horse runs.",
+    "tags": ["grade8", "set1"]
+  },
+  {
+    "id": "amo",
+    "latin": "amo, amare",
+    "english": "to love",
+    "pos": "verb",
+    "exampleLatin": "Agricolam amo.",
+    "exampleEnglish": "I love the farmer.",
+    "tags": ["grade8", "set1"]
+  },
+  {
+    "id": "video",
+    "latin": "video, videre",
+    "english": "to see",
+    "pos": "verb",
+    "exampleLatin": "Puellam video.",
+    "exampleEnglish": "I see the girl.",
+    "tags": ["grade8", "set1"]
+  },
+  {
+    "id": "porto",
+    "latin": "porto, portare",
+    "english": "to carry",
+    "pos": "verb",
+    "exampleLatin": "Aquas portamus.",
+    "exampleEnglish": "We carry water.",
+    "tags": ["grade8", "set1"]
+  }
+]

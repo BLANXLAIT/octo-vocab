@@ -18,10 +18,6 @@ file_sets:
   integration:
     - test/integration/**_test.dart
 
-# Platform-specific settings
-platforms:
-  - chrome
-  - vm
 
 # Coverage configuration
 coverage:
@@ -34,11 +30,11 @@ coverage:
 
 # Test tags for organizing test runs
 tags:
-  unit: "Unit tests that don't require Flutter widgets"
-  widget: "Widget tests for UI components"
-  integration: "Integration tests requiring full app context"
-  slow: "Tests that take longer to run"
-  firebase: "Tests that require Firebase emulators"
+  unit: {}
+  widget: {}
+  integration: {}
+  slow: {}
+  firebase: {}
 
 # Retry configuration
 retry: 3

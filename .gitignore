@@ -84,3 +84,75 @@ coverage/
 # IDE
 .vscode/launch.json
 .vscode/tasks.json
+
+# =========================
+# Additional ignores
+# =========================
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Flutter metadata and tools
+.metadata
+.fvm/
+.melos_tool/
+
+# Android
+**/android/local.properties
+**/android/.gradle/
+**/android/captures/
+**/android/app/*.keystore
+**/android/app/*.jks
+
+# Desktop platforms (generated/ephemeral)
+**/windows/flutter/ephemeral
+**/windows/flutter/generated_plugin_registrant.*
+**/linux/flutter/ephemeral
+**/linux/flutter/generated_plugin_registrant.*
+**/macos/Flutter/ephemeral
+
+# IDEs and project files
+.idea/
+*.iml
+# Ignore most of .vscode but keep shareable settings
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# Firebase local state
+.firebase/
+
+# Logs and temporary
+*.log
+*.orig
+*.rej
+
+# =========================
+# Project-specific additions
+# =========================
+
+# Flutter overrides file
+pubspec_overrides.yaml
+
+# Android signing/config
+**/android/key.properties
+
+# CocoaPods (macOS)
+**/macos/**/Pods/
+
+# Xcode (macOS) generated artifacts
+**/macos/**/DerivedData/
+**/macos/**/xcuserdata
+**/macos/**/.symlinks/
+**/macos/**/profile
+**/macos/**/Icon?
+**/macos/Flutter/Generated.xcconfig
+**/macos/Flutter/flutter_export_environment.sh
+
+# Dart build_runner generated files
+**/*.g.dart
+**/*.freezed.dart
+**/*.gen.dart
+**/*.mocks.dart

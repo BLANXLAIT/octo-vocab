@@ -1,6 +1,8 @@
 include: package:very_good_analysis/analysis_options.yaml
 
 analyzer:
+  errors:
+    public_member_api_docs: ignore
   exclude:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
@@ -18,3 +20,4 @@ linter:
     avoid_print: true
     prefer_const_literals_to_create_immutables: true
     prefer_final_locals: true
+    sort_pub_dependencies: false

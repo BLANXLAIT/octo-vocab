@@ -1,0 +1,92 @@
+[
+  {
+    "id": "hola",
+    "latin": "hola",
+    "english": "hello",
+    "pos": "interjection",
+    "exampleLatin": "Hola, ¿cómo estás?",
+    "exampleEnglish": "Hello, how are you?",
+    "tags": ["grade8", "set1"]
+  },
+  {
+    "id": "adios",
+    "latin": "adiós",
+    "english": "goodbye",
+    "pos": "interjection",
+    "exampleLatin": "Adiós, nos vemos mañana.",
+    "exampleEnglish": "Goodbye, see you tomorrow.",
+    "tags": ["grade8", "set1"]
+  },
+  {
+    "id": "gracias",
+    "latin": "gracias",
+    "english": "thank you",
+    "pos": "expression",
+    "exampleLatin": "Muchas gracias por tu ayuda.",
+    "exampleEnglish": "Thank you very much for your help.",
+    "tags": ["grade8", "set1"]
+  },
+  {
+    "id": "por_favor",
+    "latin": "por favor",
+    "english": "please",
+    "pos": "expression",
+    "exampleLatin": "¿Me pasas el libro, por favor?",
+    "exampleEnglish": "Can you pass me the book, please?",
+    "tags": ["grade8", "set1"]
+  },
+  {
+    "id": "escuela",
+    "latin": "escuela",
+    "english": "school",
+    "pos": "noun",
+    "exampleLatin": "La escuela abre a las ocho.",
+    "exampleEnglish": "The school opens at eight.",
+    "tags": ["grade8", "set1"]
+  },
+  {
+    "id": "libro",
+    "latin": "libro",
+    "english": "book",
+    "pos": "noun",
+    "exampleLatin": "Estoy leyendo un libro interesante.",
+    "exampleEnglish": "I am reading an interesting book.",
+    "tags": ["grade8", "set1"]
+  },
+  {
+    "id": "comer",
+    "latin": "comer",
+    "english": "to eat",
+    "pos": "verb",
+    "exampleLatin": "Vamos a comer pizza esta noche.",
+    "exampleEnglish": "We are going to eat pizza tonight.",
+    "tags": ["grade8", "set1"]
+  },
+  {
+    "id": "beber",
+    "latin": "beber",
+    "english": "to drink",
+    "pos": "verb",
+    "exampleLatin": "Necesito beber más agua.",
+    "exampleEnglish": "I need to drink more water.",
+    "tags": ["grade8", "set1"]
+  },
+  {
+    "id": "correr",
+    "latin": "correr",
+    "english": "to run",
+    "pos": "verb",
+    "exampleLatin": "Ellos van a correr en el parque.",
+    "exampleEnglish": "They are going to run in the park.",
+    "tags": ["grade8", "set1"]
+  },
+  {
+    "id": "grande",
+    "latin": "grande",
+    "english": "big, large",
+    "pos": "adjective",
+    "exampleLatin": "La casa es muy grande.",
+    "exampleEnglish": "The house is very big.",
+    "tags": ["grade8", "set1"]
+  }
+]
