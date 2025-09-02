@@ -71,6 +71,22 @@ Deploy to TestFlight for beta testing
 
 Deploy to App Store for production release
 
+### ios screenshots
+
+```sh
+[bundle exec] fastlane ios screenshots
+```
+
+Generate App Store screenshots
+
+### ios upload_screenshots
+
+```sh
+[bundle exec] fastlane ios upload_screenshots
+```
+
+Generate and upload App Store screenshots
+
 ### ios update_metadata
 
 ```sh
@@ -78,6 +94,14 @@ Deploy to App Store for production release
 ```
 
 Update App Store metadata and screenshots
+
+### ios update_store_assets
+
+```sh
+[bundle exec] fastlane ios update_store_assets
+```
+
+Generate screenshots and update metadata
 
 ### ios setup
 
