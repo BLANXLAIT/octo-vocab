@@ -13,7 +13,7 @@ import 'package:flutter_saas_template/features/flashcards/animated_flashcard.dar
 final vocabSetProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
   final lang = ref.watch(appLanguageProvider);
   final level = ref.watch(vocabularyLevelProvider);
-  
+
   // For now, use the first available set for the selected level
   final sets = VocabularySets.getSetsForLevel(level);
   if (sets.isEmpty) {
@@ -22,7 +22,7 @@ final vocabSetProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
     final jsonStr = await rootBundle.loadString(path);
     return Word.listFromJsonString(jsonStr);
   }
-  
+
   // Load the first set for the level
   final set = sets.first;
   final path = vocabularySetAssetPath(lang, set);
@@ -99,14 +99,17 @@ class FlashcardsScreen extends ConsumerWidget {
                     child: AnimatedFlashcard(
                       word: word,
                       showBack: showBack,
-                      onFlip: () => ref.read(showBackProvider.notifier).state = !showBack,
+                      onFlip: () =>
+                          ref.read(showBackProvider.notifier).state = !showBack,
                       onKnown: () {
                         ref.read(showBackProvider.notifier).state = false;
-                        ref.read(flashcardIndexProvider.notifier).state = index + 1;
+                        ref.read(flashcardIndexProvider.notifier).state =
+                            index + 1;
                       },
                       onUnknown: () {
                         ref.read(showBackProvider.notifier).state = false;
-                        ref.read(flashcardIndexProvider.notifier).state = index + 1;
+                        ref.read(flashcardIndexProvider.notifier).state =
+                            index + 1;
                       },
                     ),
                   ),
@@ -117,9 +120,13 @@ class FlashcardsScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     FilledButton.tonal(
-                      onPressed: () => ref.read(showBackProvider.notifier).state = !showBack,
+                      onPressed: () =>
+                          ref.read(showBackProvider.notifier).state = !showBack,
                       style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 16,
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -134,10 +141,14 @@ class FlashcardsScreen extends ConsumerWidget {
                     FilledButton(
                       onPressed: () {
                         ref.read(showBackProvider.notifier).state = false;
-                        ref.read(flashcardIndexProvider.notifier).state = index + 1;
+                        ref.read(flashcardIndexProvider.notifier).state =
+                            index + 1;
                       },
                       style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,

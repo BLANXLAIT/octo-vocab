@@ -5,11 +5,7 @@ import 'package:flutter/material.dart';
 
 /// A celebration overlay with confetti animation for correct answers
 class CelebrationOverlay extends StatefulWidget {
-  const CelebrationOverlay({
-    required this.isVisible,
-    this.child,
-    super.key,
-  });
+  const CelebrationOverlay({required this.isVisible, this.child, super.key});
 
   final bool isVisible;
   final Widget? child;
@@ -114,10 +110,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
           AnimatedBuilder(
             animation: _fadeController,
             builder: (context, child) {
-              return Opacity(
-                opacity: _fadeController.value,
-                child: child,
-              );
+              return Opacity(opacity: _fadeController.value, child: child);
             },
             child: AnimatedBuilder(
               animation: _confettiController,
@@ -169,10 +162,7 @@ class ConfettiParticle {
 }
 
 class ConfettiPainter extends CustomPainter {
-  ConfettiPainter({
-    required this.particles,
-    required this.progress,
-  });
+  ConfettiPainter({required this.particles, required this.progress});
 
   final List<ConfettiParticle> particles;
   final double progress;
@@ -183,8 +173,10 @@ class ConfettiPainter extends CustomPainter {
       // Update particle position based on progress
       final updatedParticle = ConfettiParticle(
         x: particle.x + particle.velocityX * progress,
-        y: particle.y + particle.velocityY * progress + 
-           particle.gravity * progress * progress * 0.5,
+        y:
+            particle.y +
+            particle.velocityY * progress +
+            particle.gravity * progress * progress * 0.5,
         color: particle.color,
         size: particle.size,
         rotation: particle.rotation + particle.rotationSpeed * progress,
@@ -215,11 +207,7 @@ class ConfettiPainter extends CustomPainter {
         switch (shapeType) {
           case 0:
             // Circle
-            canvas.drawCircle(
-              Offset.zero,
-              updatedParticle.size * 0.5,
-              paint,
-            );
+            canvas.drawCircle(Offset.zero, updatedParticle.size * 0.5, paint);
             break;
           case 1:
             // Square

@@ -76,12 +76,12 @@ final themeVariantProvider = StateProvider<ThemeVariant>(
 final dynamicThemeProvider = Provider<ThemeData>((ref) {
   final variant = ref.watch(themeVariantProvider);
   final language = ref.watch(appLanguageProvider);
-  
+
   // Use language-specific color if variant is vibrant, otherwise use variant color
   final seedColor = variant == ThemeVariant.vibrant
       ? DynamicColorSchemes.getSeedColorForLanguage(language)
       : variant.seedColor;
-  
+
   final colorScheme = DynamicColorSchemes.createVibrantScheme(
     seedColor: seedColor,
     brightness: Brightness.light,
@@ -95,16 +95,12 @@ final dynamicThemeProvider = Provider<ThemeData>((ref) {
     // Custom card theme with elevated surfaces
     cardTheme: CardThemeData(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       surfaceTintColor: colorScheme.surfaceTint,
     ),
     // Enhanced FAB theme
     floatingActionButtonTheme: FloatingActionButtonThemeData(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 3,
       focusElevation: 4,
       hoverElevation: 4,
@@ -132,25 +128,19 @@ final dynamicThemeProvider = Provider<ThemeData>((ref) {
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       ),
     ),
@@ -160,7 +150,7 @@ final dynamicThemeProvider = Provider<ThemeData>((ref) {
 /// Enhanced text theme with better hierarchy and readability
 TextTheme _createEnhancedTextTheme(ColorScheme colorScheme) {
   const baseTextTheme = TextTheme();
-  
+
   return baseTextTheme.copyWith(
     // Display styles for large text like vocabulary words
     displayLarge: baseTextTheme.displayLarge?.copyWith(

@@ -57,29 +57,17 @@ class _AnimatedQuizOptionState extends State<AnimatedQuizOption>
       vsync: this,
     );
 
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.95,
-    ).animate(CurvedAnimation(
-      parent: _scaleController,
-      curve: Curves.easeInOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
+    );
 
-    _resultAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _resultController,
-      curve: Curves.easeOutBack,
-    ));
+    _resultAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _resultController, curve: Curves.easeOutBack),
+    );
 
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.1,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
 
     // Add entrance animation with staggered delay
     Future.delayed(Duration(milliseconds: widget.index * 100), () {
@@ -204,8 +192,9 @@ class _AnimatedQuizOptionState extends State<AnimatedQuizOption>
               boxShadow: widget.isSelected || widget.showResult
                   ? [
                       BoxShadow(
-                        color: (borderColor ?? colorScheme.primary)
-                            .withValues(alpha: 0.2),
+                        color: (borderColor ?? colorScheme.primary).withValues(
+                          alpha: 0.2,
+                        ),
                         blurRadius: 8,
                         spreadRadius: 0,
                         offset: const Offset(0, 2),
@@ -225,9 +214,11 @@ class _AnimatedQuizOptionState extends State<AnimatedQuizOption>
                       Expanded(
                         child: AnimatedDefaultTextStyle(
                           duration: const Duration(milliseconds: 200),
-                          style: theme.textTheme.bodyLarge?.copyWith(
+                          style:
+                              theme.textTheme.bodyLarge?.copyWith(
                                 color: textColor,
-                                fontWeight: widget.isSelected || widget.showResult
+                                fontWeight:
+                                    widget.isSelected || widget.showResult
                                     ? FontWeight.w600
                                     : FontWeight.w400,
                               ) ??
@@ -240,11 +231,7 @@ class _AnimatedQuizOptionState extends State<AnimatedQuizOption>
                           scale: _resultAnimation.value,
                           duration: const Duration(milliseconds: 400),
                           curve: Curves.elasticOut,
-                          child: Icon(
-                            resultIcon,
-                            color: iconColor,
-                            size: 28,
-                          ),
+                          child: Icon(resultIcon, color: iconColor, size: 28),
                         ),
                     ],
                   ),

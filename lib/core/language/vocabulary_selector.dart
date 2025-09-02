@@ -37,10 +37,7 @@ class VocabularySelector extends ConsumerWidget {
           enabled: false,
           child: Text(
             'Language',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
         ),
         for (final lang in AppLanguage.values)
@@ -58,19 +55,16 @@ class VocabularySelector extends ConsumerWidget {
               ],
             ),
           ),
-        
+
         // Divider
         const PopupMenuDivider(),
-        
-        // Level Section  
+
+        // Level Section
         const PopupMenuItem<VocabularySelection>(
           enabled: false,
           child: Text(
             'Difficulty Level',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
         ),
         for (final lvl in VocabularyLevel.values)
@@ -95,10 +89,7 @@ class VocabularySelector extends ConsumerWidget {
                   padding: const EdgeInsets.only(left: 26),
                   child: Text(
                     lvl.description,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                   ),
                 ),
               ],
@@ -111,10 +102,7 @@ class VocabularySelector extends ConsumerWidget {
 
 /// Data class for vocabulary selection
 class VocabularySelection {
-  const VocabularySelection({
-    required this.language,
-    required this.level,
-  });
+  const VocabularySelection({required this.language, required this.level});
 
   final AppLanguage language;
   final VocabularyLevel level;
@@ -201,16 +189,13 @@ class LanguageSegmentedButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentLanguage = ref.watch(appLanguageProvider);
-    
+
     return SegmentedButton<AppLanguage>(
       segments: AppLanguage.values.map((language) {
         return ButtonSegment<AppLanguage>(
           value: language,
           icon: Icon(language.icon, size: 18),
-          label: Text(
-            language.label,
-            style: const TextStyle(fontSize: 12),
-          ),
+          label: Text(language.label, style: const TextStyle(fontSize: 12)),
         );
       }).toList(),
       selected: {currentLanguage},
@@ -219,9 +204,7 @@ class LanguageSegmentedButton extends ConsumerWidget {
           ref.read(appLanguageProvider.notifier).state = selected.first;
         }
       },
-      style: SegmentedButton.styleFrom(
-        visualDensity: VisualDensity.compact,
-      ),
+      style: SegmentedButton.styleFrom(visualDensity: VisualDensity.compact),
     );
   }
 }
@@ -233,13 +216,13 @@ class VocabularyLevelChips extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentLevel = ref.watch(vocabularyLevelProvider);
-    
+
     return Wrap(
       spacing: 8,
       runSpacing: 4,
       children: VocabularyLevel.values.map((level) {
         final isSelected = currentLevel == level;
-        
+
         return FilterChip(
           selected: isSelected,
           label: Row(
@@ -248,7 +231,7 @@ class VocabularyLevelChips extends ConsumerWidget {
               Icon(
                 level.icon,
                 size: 16,
-                color: isSelected 
+                color: isSelected
                     ? Theme.of(context).colorScheme.onSecondaryContainer
                     : level.color,
               ),

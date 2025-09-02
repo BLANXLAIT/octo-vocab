@@ -13,7 +13,7 @@ class MorphingFAB extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentIndex = ref.watch(navigationIndexProvider);
     final destination = AppDestination.values[currentIndex];
-    
+
     return _buildFABForDestination(context, ref, destination, currentIndex);
   }
 
@@ -24,7 +24,7 @@ class MorphingFAB extends ConsumerWidget {
     int currentIndex,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     switch (destination) {
       case AppDestination.learn:
         return AnimatedFAB(
@@ -43,7 +43,7 @@ class MorphingFAB extends ConsumerWidget {
             );
           },
         );
-        
+
       case AppDestination.quiz:
         return AnimatedFAB(
           icon: Icons.refresh,
@@ -61,7 +61,7 @@ class MorphingFAB extends ConsumerWidget {
             );
           },
         );
-        
+
       case AppDestination.review:
         return AnimatedFAB(
           icon: Icons.school,
@@ -74,7 +74,7 @@ class MorphingFAB extends ConsumerWidget {
             ref.read(navigationIndexProvider.notifier).state = 0;
           },
         );
-        
+
       case AppDestination.progress:
         return AnimatedFAB(
           icon: Icons.timeline,
@@ -86,7 +86,7 @@ class MorphingFAB extends ConsumerWidget {
             _showProgressDialog(context);
           },
         );
-        
+
       case AppDestination.settings:
         return AnimatedFAB(
           icon: Icons.backup,
@@ -160,9 +160,7 @@ class MorphingFAB extends ConsumerWidget {
             onPressed: () {
               Navigator.of(context).pop();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Export feature coming soon!'),
-                ),
+                const SnackBar(content: Text('Export feature coming soon!')),
               );
             },
             child: const Text('Export'),
@@ -216,27 +214,19 @@ class _AnimatedFABState extends State<AnimatedFAB>
       vsync: this,
     );
 
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.9,
-    ).animate(CurvedAnimation(
-      parent: _scaleController,
-      curve: Curves.easeInOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
+    );
 
-    _rotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 0.5,
-    ).animate(CurvedAnimation(
-      parent: _rotationController,
-      curve: Curves.easeInOut,
-    ));
+    _rotationAnimation = Tween<double>(begin: 0.0, end: 0.5).animate(
+      CurvedAnimation(parent: _rotationController, curve: Curves.easeInOut),
+    );
   }
 
   @override
   void didUpdateWidget(AnimatedFAB oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Animate rotation when icon changes
     if (widget.icon != oldWidget.icon) {
       _rotationController.forward().then((_) {

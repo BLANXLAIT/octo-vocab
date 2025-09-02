@@ -12,7 +12,7 @@ enum VocabularyLevel {
     color: Color(0xFF4CAF50), // Green
   ),
   intermediate(
-    code: 'intermediate', 
+    code: 'intermediate',
     label: 'Intermediate',
     description: 'Grades 9-10 • Common vocabulary and grammar',
     icon: Icons.star_half,
@@ -20,7 +20,7 @@ enum VocabularyLevel {
   ),
   advanced(
     code: 'advanced',
-    label: 'Advanced', 
+    label: 'Advanced',
     description: 'Grades 11-12 • Complex texts and literature',
     icon: Icons.star,
     color: Color(0xFF9C27B0), // Purple
@@ -86,7 +86,7 @@ class VocabularySets {
   ];
 
   static const List<VocabularySet> advanced = [
-    // Will be populated as we add more sets  
+    // Will be populated as we add more sets
   ];
 
   static List<VocabularySet> getAllSets() {

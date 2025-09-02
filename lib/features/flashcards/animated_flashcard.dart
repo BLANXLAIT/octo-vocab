@@ -41,54 +41,42 @@ class _AnimatedFlashcardState extends State<AnimatedFlashcard>
   @override
   void initState() {
     super.initState();
-    
+
     // Flip animation controller
     _flipController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     // Swipe animation controller
     _swipeController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     // Scale animation controller for interactions
     _scaleController = AnimationController(
       duration: const Duration(milliseconds: 150),
       vsync: this,
     );
 
-    _flipAnimation = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(
-      parent: _flipController,
-      curve: Curves.easeInOut,
-    ));
+    _flipAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _flipController, curve: Curves.easeInOut),
+    );
 
-    _swipeAnimation = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(
-      parent: _swipeController,
-      curve: Curves.easeOutCubic,
-    ));
+    _swipeAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _swipeController, curve: Curves.easeOutCubic),
+    );
 
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.95,
-    ).animate(CurvedAnimation(
-      parent: _scaleController,
-      curve: Curves.easeInOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
+    );
   }
 
   @override
   void didUpdateWidget(AnimatedFlashcard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Animate flip when showBack changes
     if (widget.showBack != oldWidget.showBack) {
       if (widget.showBack) {
@@ -122,17 +110,17 @@ class _AnimatedFlashcardState extends State<AnimatedFlashcard>
 
   void _handlePanEnd(DragEndDetails details) {
     const swipeThreshold = 100.0;
-    
+
     setState(() {
       _isDragging = false;
     });
-    
+
     _scaleController.reverse();
 
     if (_dragDelta.abs() > swipeThreshold) {
       // Provide haptic feedback
       HapticFeedback.lightImpact();
-      
+
       // Determine swipe direction
       if (_dragDelta > 0) {
         // Swipe right - Known
@@ -156,7 +144,7 @@ class _AnimatedFlashcardState extends State<AnimatedFlashcard>
       } else {
         widget.onUnknown();
       }
-      
+
       // Reset animations
       _swipeController.reset();
       setState(() {
@@ -174,7 +162,7 @@ class _AnimatedFlashcardState extends State<AnimatedFlashcard>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     return GestureDetector(
       onTap: _handleTap,
       onPanStart: _handlePanStart,
@@ -279,7 +267,7 @@ class _AnimatedFlashcardState extends State<AnimatedFlashcard>
 
   Widget _buildFlashcardContent(BuildContext context, ThemeData theme) {
     final colorScheme = theme.colorScheme;
-    
+
     return Transform(
       alignment: Alignment.center,
       transform: Matrix4.identity()
@@ -288,19 +276,14 @@ class _AnimatedFlashcardState extends State<AnimatedFlashcard>
       child: Card(
         elevation: 0,
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                colorScheme.surface,
-                colorScheme.surfaceContainerLow,
-              ],
+              colors: [colorScheme.surface, colorScheme.surfaceContainerLow],
             ),
             border: Border.all(
               color: colorScheme.outline.withValues(alpha: 0.2),
@@ -379,13 +362,15 @@ class _AnimatedFlashcardState extends State<AnimatedFlashcard>
             ),
             textAlign: TextAlign.center,
           ),
-          if (widget.word.exampleLatin != null || 
+          if (widget.word.exampleLatin != null ||
               widget.word.exampleEnglish != null) ...[
             const SizedBox(height: 24),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
+                color: theme.colorScheme.secondaryContainer.withValues(
+                  alpha: 0.3,
+                ),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -399,7 +384,7 @@ class _AnimatedFlashcardState extends State<AnimatedFlashcard>
                       ),
                       textAlign: TextAlign.center,
                     ),
-                  if (widget.word.exampleLatin != null && 
+                  if (widget.word.exampleLatin != null &&
                       widget.word.exampleEnglish != null)
                     const SizedBox(height: 8),
                   if (widget.word.exampleEnglish != null)

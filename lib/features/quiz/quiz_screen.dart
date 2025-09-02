@@ -103,7 +103,9 @@ class QuizScreen extends ConsumerWidget {
                       child: Text(
                         '${i + 1}/${words.length}',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimaryContainer,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -124,26 +126,33 @@ class QuizScreen extends ConsumerWidget {
                       color: Theme.of(context).colorScheme.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: Theme.of(context).colorScheme.outline
-                            .withValues(alpha: 0.2),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.outline.withValues(alpha: 0.2),
                       ),
                     ),
                     child: Column(
                       children: [
                         Text(
                           'What is the English translation?',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface
-                                .withValues(alpha: 0.8),
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.8),
+                              ),
                         ),
                         const SizedBox(height: 16),
                         AnimatedDefaultTextStyle(
                           duration: const Duration(milliseconds: 300),
-                          style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                          style:
+                              Theme.of(
+                                context,
+                              ).textTheme.displaySmall?.copyWith(
                                 color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.w600,
-                              ) ?? const TextStyle(),
+                              ) ??
+                              const TextStyle(),
                           child: Text(
                             current.latin,
                             textAlign: TextAlign.center,
@@ -169,7 +178,8 @@ class QuizScreen extends ConsumerWidget {
                           showResult: showResult,
                           index: idx,
                           onTap: () {
-                            ref.read(selectedAnswerProvider.notifier).state = opt;
+                            ref.read(selectedAnswerProvider.notifier).state =
+                                opt;
                           },
                         );
                       },
@@ -181,10 +191,16 @@ class QuizScreen extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: showResult ? null : () {
-                            ref.read(selectedAnswerProvider.notifier).state = null;
-                            ref.read(showResultProvider.notifier).state = false;
-                          },
+                          onPressed: showResult
+                              ? null
+                              : () {
+                                  ref
+                                          .read(selectedAnswerProvider.notifier)
+                                          .state =
+                                      null;
+                                  ref.read(showResultProvider.notifier).state =
+                                      false;
+                                },
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
@@ -195,18 +211,35 @@ class QuizScreen extends ConsumerWidget {
                       Expanded(
                         flex: 2,
                         child: FilledButton(
-                          onPressed: selected == null ? null : () {
-                            ref.read(showResultProvider.notifier).state = true;
-                            // Show celebration if correct
-                            if (isCorrect) {
-                              ref.read(showCelebrationProvider.notifier).state = true;
-                              Future.delayed(const Duration(seconds: 2), () {
-                                if (ref.context.mounted) {
-                                  ref.read(showCelebrationProvider.notifier).state = false;
-                                }
-                              });
-                            }
-                          },
+                          onPressed: selected == null
+                              ? null
+                              : () {
+                                  ref.read(showResultProvider.notifier).state =
+                                      true;
+                                  // Show celebration if correct
+                                  if (isCorrect) {
+                                    ref
+                                            .read(
+                                              showCelebrationProvider.notifier,
+                                            )
+                                            .state =
+                                        true;
+                                    Future.delayed(
+                                      const Duration(seconds: 2),
+                                      () {
+                                        if (ref.context.mounted) {
+                                          ref
+                                                  .read(
+                                                    showCelebrationProvider
+                                                        .notifier,
+                                                  )
+                                                  .state =
+                                              false;
+                                        }
+                                      },
+                                    );
+                                  }
+                                },
                           style: FilledButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
@@ -220,12 +253,18 @@ class QuizScreen extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.tonal(
-                      onPressed: showResult ? () {
-                        ref.read(quizIndexProvider.notifier).state = index + 1;
-                        ref.read(selectedAnswerProvider.notifier).state = null;
-                        ref.read(showResultProvider.notifier).state = false;
-                        ref.read(showCelebrationProvider.notifier).state = false;
-                      } : null,
+                      onPressed: showResult
+                          ? () {
+                              ref.read(quizIndexProvider.notifier).state =
+                                  index + 1;
+                              ref.read(selectedAnswerProvider.notifier).state =
+                                  null;
+                              ref.read(showResultProvider.notifier).state =
+                                  false;
+                              ref.read(showCelebrationProvider.notifier).state =
+                                  false;
+                            }
+                          : null,
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
@@ -241,7 +280,9 @@ class QuizScreen extends ConsumerWidget {
                           ],
                           Text(
                             showResult
-                                ? (isCorrect ? 'Correct! Next Question' : 'Try Again - Next Question')
+                                ? (isCorrect
+                                      ? 'Correct! Next Question'
+                                      : 'Try Again - Next Question')
                                 : 'Next Question',
                           ),
                           const SizedBox(width: 8),

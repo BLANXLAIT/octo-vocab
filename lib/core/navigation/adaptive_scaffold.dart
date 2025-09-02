@@ -13,16 +13,8 @@ import 'package:flutter_saas_template/features/review/review_screen.dart';
 
 /// Navigation destinations for the app
 enum AppDestination {
-  learn(
-    icon: Icons.style,
-    selectedIcon: Icons.style,
-    label: 'Learn',
-  ),
-  quiz(
-    icon: Icons.quiz_outlined,
-    selectedIcon: Icons.quiz,
-    label: 'Quiz',
-  ),
+  learn(icon: Icons.style, selectedIcon: Icons.style, label: 'Learn'),
+  quiz(icon: Icons.quiz_outlined, selectedIcon: Icons.quiz, label: 'Quiz'),
   review(
     icon: Icons.refresh_outlined,
     selectedIcon: Icons.refresh,
@@ -101,9 +93,7 @@ class AdaptiveScaffold extends ConsumerWidget {
                   .toList(),
             ),
             const VerticalDivider(thickness: 1, width: 1),
-            Expanded(
-              child: _buildBody(currentIndex),
-            ),
+            Expanded(child: _buildBody(currentIndex)),
           ],
         ),
         floatingActionButton: const MorphingFAB(),
@@ -155,9 +145,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Delete All Data'),
           ),
         ],
@@ -167,14 +155,14 @@ class SettingsScreen extends ConsumerWidget {
     if (confirmed ?? false) {
       final dataService = await ref.read(localDataServiceProvider.future);
       final success = await dataService.resetAllData();
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              success 
-                ? 'All data has been deleted from this device'
-                : 'Failed to delete data. Please try again.',
+              success
+                  ? 'All data has been deleted from this device'
+                  : 'Failed to delete data. Please try again.',
             ),
             backgroundColor: success ? Colors.green : Colors.red,
           ),
@@ -267,44 +255,40 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Theme Section
             const Text(
               'Appearance',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            
+
             const ThemeSelectorCard(),
-            
+
             const SizedBox(height: 16),
-            
+
             // Privacy Section
             const Text(
               'Privacy & Data',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            
+
             Card(
               child: ListTile(
                 leading: const Icon(Icons.privacy_tip, color: Colors.green),
                 title: const Text('Privacy Protection'),
-                subtitle: const Text('COPPA/FERPA compliant • No data collection'),
+                subtitle: const Text(
+                  'COPPA/FERPA compliant • No data collection',
+                ),
                 onTap: () => _showPrivacyInfo(context),
               ),
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             Card(
               child: ListTile(
                 leading: const Icon(Icons.delete_forever, color: Colors.red),
@@ -313,9 +297,9 @@ class SettingsScreen extends ConsumerWidget {
                 onTap: () => _showResetDataDialog(context, ref),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // About Section
             const Card(
               child: ListTile(
@@ -324,9 +308,9 @@ class SettingsScreen extends ConsumerWidget {
                 subtitle: Text('Privacy-first vocabulary learning'),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Privacy Notice
             Container(
               padding: const EdgeInsets.all(12),
@@ -344,10 +328,7 @@ class SettingsScreen extends ConsumerWidget {
                     child: Text(
                       'Your privacy is protected. All data stays on your '
                       'device and you can delete it anytime.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.green,
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.green),
                     ),
                   ),
                 ],
@@ -367,7 +348,7 @@ class ThemeSelectorCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentVariant = ref.watch(themeVariantProvider);
-    
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -380,10 +361,7 @@ class ThemeSelectorCard extends ConsumerWidget {
                 const SizedBox(width: 12),
                 const Text(
                   'Color Theme',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 const Spacer(),
                 // Current theme color indicator
@@ -409,10 +387,7 @@ class ThemeSelectorCard extends ConsumerWidget {
             const SizedBox(height: 12),
             const Text(
               'Choose a color theme to personalize your learning experience',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
             const SizedBox(height: 16),
             // Theme variant chips

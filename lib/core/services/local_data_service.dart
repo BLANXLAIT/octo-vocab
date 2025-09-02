@@ -52,8 +52,7 @@ class LocalDataService {
   }
 
   Future<bool> addStudySession(DateTime session) async {
-    final sessions = getStudySessions()
-      ..add(session);
+    final sessions = getStudySessions()..add(session);
     return _prefs.setString(
       _keyStudySessions,
       jsonEncode(sessions.map((e) => e.toIso8601String()).toList()),
@@ -136,8 +135,9 @@ class LocalDataService {
   Map<String, dynamic> getAllUserData() {
     return {
       'word_progress': getWordProgress(),
-      'study_sessions':
-          getStudySessions().map((e) => e.toIso8601String()).toList(),
+      'study_sessions': getStudySessions()
+          .map((e) => e.toIso8601String())
+          .toList(),
       'quiz_results': getQuizResults(),
       'app_settings': getAppSettings(),
       'selected_language': getSelectedLanguage(),
@@ -150,8 +150,7 @@ class LocalDataService {
     return jsonEncode({
       'app': 'Octo Vocab',
       'export_date': DateTime.now().toIso8601String(),
-      'privacy_note':
-          'This data never leaves your device unless you share it',
+      'privacy_note': 'This data never leaves your device unless you share it',
       'data': getAllUserData(),
     });
   }
