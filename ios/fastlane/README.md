@@ -71,6 +71,14 @@ Deploy to TestFlight for beta testing
 
 Deploy to App Store for production release
 
+### ios update_metadata
+
+```sh
+[bundle exec] fastlane ios update_metadata
+```
+
+Update App Store metadata and screenshots
+
 ### ios setup
 
 ```sh
