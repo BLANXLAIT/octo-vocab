@@ -37,7 +37,7 @@ Create app on App Store Connect and Developer Portal
 [bundle exec] fastlane ios sync_certificates
 ```
 
-Sync certificates and provisioning profiles using Match
+Sync certificates and provisioning profiles using match
 
 ### ios build
 
@@ -46,6 +46,14 @@ Sync certificates and provisioning profiles using Match
 ```
 
 Build the iOS app
+
+### ios build_only
+
+```sh
+[bundle exec] fastlane ios build_only
+```
+
+Build app for distribution
 
 ### ios beta
 

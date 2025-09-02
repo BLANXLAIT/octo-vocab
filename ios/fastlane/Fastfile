@@ -12,20 +12,19 @@ platform :ios do
   before_all do
     # Ensure we're using the latest version of fastlane
     # update_fastlane
+    
+    # Verify required environment variables are set
+    required_vars = ["APP_STORE_CONNECT_ISSUER_ID", "FASTLANE_TEAM_ID", "MATCH_PASSWORD"]
+    required_vars.each do |var|
+      UI.user_error!("Environment variable #{var} is required") unless ENV[var]
+    end
+    
+    UI.message "🔑 Using App Store Connect API authentication"
   end
 
   desc "Create bundle identifier on Apple Developer Portal"
   lane :create_bundle_id do
     UI.message "📱 Creating bundle identifier on Apple Developer Portal..."
-    
-    # Configure App Store Connect API key globally
-    app_store_connect_api_key(
-      key_id: "S9RAGF997L",
-      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_filepath: File.expand_path("~/.appstoreconnect/private_keys/AuthKey_S9RAGF997L.p8"),
-      duration: 1200,
-      in_house: false
-    )
     
     begin
       # Try to create bundle identifier using spaceship
@@ -64,15 +63,6 @@ platform :ios do
   lane :create_app do
     UI.message "🚀 Creating app on App Store Connect..."
     
-    # Configure App Store Connect API key globally
-    app_store_connect_api_key(
-      key_id: "S9RAGF997L",
-      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_filepath: File.expand_path("~/.appstoreconnect/private_keys/AuthKey_S9RAGF997L.p8"),
-      duration: 1200,
-      in_house: false
-    )
-    
     produce(
       app_identifier: "com.blanxlait.octo-vocab",
       app_name: "Octo Vocab",
@@ -89,44 +79,40 @@ platform :ios do
     UI.success "✅ App created successfully!"
   end
 
-  desc "Sync certificates and provisioning profiles using Match"
+  desc "Sync certificates and provisioning profiles using match"
   lane :sync_certificates do
-    UI.message "📱 Syncing certificates and provisioning profiles..."
+    UI.message "📱 Syncing certificates and provisioning profiles using match..."
     
+    # Use match for certificate and provisioning profile management in readonly mode
     match(
       type: "appstore",
-      app_identifier: ["com.blanxlait.octo-vocab"],
-      readonly: false,
-      force_for_new_devices: true
+      app_identifier: "com.blanxlait.octo-vocab",
+      git_url: "https://github.com/BLANXLAIT/blanxlait-ci-shared",
+      readonly: true  # Skip verification with Apple Developer Portal
     )
     
-    UI.success "✅ Certificates synced successfully!"
+    UI.success "✅ Certificates and provisioning profiles synced successfully!"
   end
 
   desc "Build the iOS app"
   lane :build do |options|
     UI.message "🏗️ Building iOS app..."
     
+    # Configure Flutter for release build
+    UI.message "🐦 Configuring Flutter for release..."
+    sh("cd .. && flutter build ios --config-only --release")
+    
     # Increment build number
     increment_build_number(
       xcodeproj: "Runner.xcodeproj"
     )
     
-    # Configure App Store Connect API key globally
-    app_store_connect_api_key(
-      key_id: "S9RAGF997L",
-      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_filepath: File.expand_path("~/.appstoreconnect/private_keys/AuthKey_S9RAGF997L.p8"),
-      duration: 1200,
-      in_house: false
-    )
+    # Skip match for now since we have the certificate installed
+    # and use the manual provisioning profile
+    UI.message "📱 Using existing certificates and manual provisioning profile..."
     
-    # Get and update certificates
-    match(
-      type: "appstore",
-      app_identifier: ["com.blanxlait.octo-vocab"],
-      readonly: true
-    )
+    # Build the app using match-managed certificates
+    UI.message "📱 Building with match-managed certificates..."
     
     # Build the app
     build_app(
@@ -134,39 +120,54 @@ platform :ios do
       scheme: "Runner",
       configuration: "Release",
       export_method: "app-store",
-      export_options: {
-        provisioningProfiles: {
-          "com.blanxlait.octo-vocab" => "match AppStore com.blanxlait.octo-vocab"
-        }
-      },
       # Clean build
       clean: true,
       # Flutter specific
       archive_path: "./build/Runner.xcarchive",
-      output_directory: "./build"
+      output_directory: "./build",
+      # Use manual signing with specific certificate and profile
+      export_options: {
+        method: "app-store",
+        teamID: ENV["FASTLANE_TEAM_ID"],
+        signingCertificate: "Apple Distribution: BLANXLAIT, LLC (GCRLV5UC4Q)",
+        provisioningProfiles: {
+          "com.blanxlait.octo-vocab" => "7ccd7f5c-8fba-49bc-a4c4-b2b7ff4fa6e2"
+        }
+      }
     )
     
     UI.success "✅ App built successfully!"
+  end
+
+  desc "Build app for distribution"
+  lane :build_only do
+    UI.message "🧪 Building app for distribution..."
+    
+    # Build the app
+    build
+    
+    UI.success "✅ App built successfully! IPA available at: ./build/Runner.ipa"
   end
 
   desc "Deploy to TestFlight for beta testing"
   lane :beta do
     UI.message "🧪 Deploying to TestFlight..."
     
-    # Configure App Store Connect API key globally
-    app_store_connect_api_key(
-      key_id: "S9RAGF997L",
-      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_filepath: File.expand_path("~/.appstoreconnect/private_keys/AuthKey_S9RAGF997L.p8"),
-      duration: 1200,
-      in_house: false
-    )
-    
     # Build the app
     build
     
+    # Configure App Store Connect API for upload only
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_filepath: ENV["APP_STORE_CONNECT_API_KEY_PATH"],
+      duration: 1200, # 20 minutes
+      in_house: false
+    )
+    
     # Upload to TestFlight
     upload_to_testflight(
+      api_key: api_key,
       app_identifier: "com.blanxlait.octo-vocab",
       skip_waiting_for_build_processing: true,
       skip_submission: true,
@@ -183,15 +184,6 @@ platform :ios do
   desc "Deploy to App Store for production release"
   lane :release do
     UI.message "🚀 Deploying to App Store..."
-    
-    # Configure App Store Connect API key globally
-    app_store_connect_api_key(
-      key_id: "S9RAGF997L",
-      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_filepath: File.expand_path("~/.appstoreconnect/private_keys/AuthKey_S9RAGF997L.p8"),
-      duration: 1200,
-      in_house: false
-    )
     
     # Build the app
     build
