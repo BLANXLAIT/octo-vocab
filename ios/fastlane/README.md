@@ -87,6 +87,14 @@ Generate App Store screenshots
 
 Generate and upload App Store screenshots
 
+### ios upload_existing_screenshots
+
+```sh
+[bundle exec] fastlane ios upload_existing_screenshots
+```
+
+Upload existing screenshots to App Store Connect
+
 ### ios update_metadata
 
 ```sh

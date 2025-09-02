@@ -22,46 +22,106 @@ final class RunnerUITests: XCTestCase {
     
     @MainActor
     func testScreenshots() throws {
-        // Launch screen
+        // Launch screen - show the app loading
         snapshot("01_Launch")
         
-        // Wait for app to load
-        sleep(2)
+        // Wait for app to load and animations to complete
+        sleep(3)
         
-        // Main menu/home screen
-        snapshot("02_Home")
+        // Debug: Print accessibility tree to help troubleshoot
+        printAccessibilityTree()
         
-        // Navigate to language selection if available
-        // This is a basic example - you'll need to adapt based on your actual app flow
-        if app.buttons["Latin"].exists {
-            app.buttons["Latin"].tap()
-            sleep(1)
-            snapshot("03_Latin_Selection")
-        }
+        // The first screen after launch is already Learn, so capture it
+        snapshot("02_Home") // This is actually showing Learn screen
         
-        // If there's a vocabulary list or study mode
-        if app.buttons["Study"].exists || app.buttons["Flashcards"].exists {
-            if app.buttons["Study"].exists {
-                app.buttons["Study"].tap()
-            } else {
-                app.buttons["Flashcards"].tap()
+        // Navigate through each tab using multiple strategies
+        // Tab 0: Learn (already on it)
+        snapshot("03_Learn")
+        
+        // Tab 1: Quiz
+        navigateToTabByIndex(1, screenshotName: "04_Quiz")
+        
+        // Tab 2: Review
+        navigateToTabByIndex(2, screenshotName: "05_Review")
+        
+        // Tab 3: Progress
+        navigateToTabByIndex(3, screenshotName: "06_Progress")
+        
+        // Tab 4: Settings
+        navigateToTabByIndex(4, screenshotName: "07_Settings")
+    }
+    
+    @MainActor
+    private func navigateToTabByIndex(_ index: Int, screenshotName: String) {
+        print("Attempting to navigate to tab \(index) for screenshot: \(screenshotName)")
+        
+        // Strategy 1: Try coordinate-based approach first (most reliable for Flutter)
+        navigateByCoordinates(index: index, screenshotName: screenshotName)
+        
+        // If coordinate approach worked, we're done
+        return
+    }
+    
+    @MainActor
+    private func navigateByCoordinates(index: Int, screenshotName: String) {
+        let screenWidth = app.frame.width
+        let screenHeight = app.frame.height
+        
+        print("Screen dimensions: \(screenWidth) x \(screenHeight)")
+        
+        // Bottom navigation bar coordinates - more precise positioning
+        let tabCount: CGFloat = 5 // 5 tabs: Learn, Quiz, Review, Progress, Settings
+        let tabWidth = screenWidth / tabCount
+        let xPosition = (CGFloat(index) * tabWidth) + (tabWidth / 2) // Center of each tab
+        
+        // Bottom navigation is typically around 80-100 points from bottom
+        // Using 90 points from bottom to hit the center of the nav bar
+        let yPosition = screenHeight - 90
+        
+        print("Attempting to tap tab \(index) at coordinates: (\(xPosition), \(yPosition))")
+        
+        // Create coordinate and tap
+        let coordinate = app.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0))
+            .withOffset(CGVector(dx: xPosition, dy: yPosition))
+        
+        coordinate.tap()
+        
+        // Wait for navigation animation
+        sleep(3)
+        
+        // Take screenshot
+        snapshot(screenshotName)
+        
+        // Brief pause before next navigation
+        sleep(1)
+    }
+    
+    @MainActor
+    private func printAccessibilityTree() {
+        print("\n=== ACCESSIBILITY TREE DEBUG ===")
+        print("TabBars count: \(app.tabBars.count)")
+        print("NavigationBars count: \(app.navigationBars.count)")
+        print("Buttons count: \(app.buttons.count)")
+        
+        print("\nAll buttons:")
+        for i in 0..<min(app.buttons.count, 10) { // Limit to first 10
+            let button = app.buttons.element(boundBy: i)
+            if button.exists {
+                print("Button \(i): identifier='\(button.identifier)', label='\(button.label)', isHittable=\(button.isHittable)")
             }
-            sleep(2)
-            snapshot("04_Study_Mode")
         }
         
-        // If there's a quiz mode
-        if app.buttons["Quiz"].exists {
-            app.buttons["Quiz"].tap()
-            sleep(2)
-            snapshot("05_Quiz_Mode")
+        print("\nTabBar buttons:")
+        if app.tabBars.count > 0 {
+            let tabBar = app.tabBars.firstMatch
+            for i in 0..<min(tabBar.buttons.count, 10) {
+                let button = tabBar.buttons.element(boundBy: i)
+                if button.exists {
+                    print("TabBar Button \(i): identifier='\(button.identifier)', label='\(button.label)', isHittable=\(button.isHittable)")
+                }
+            }
         }
         
-        // Settings or about screen
-        if app.buttons["Settings"].exists {
-            app.buttons["Settings"].tap()
-            sleep(1)
-            snapshot("06_Settings")
-        }
+        print("=== END ACCESSIBILITY TREE ===\n")
     }
 }
