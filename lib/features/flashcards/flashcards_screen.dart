@@ -128,12 +128,12 @@ class FlashcardsScreen extends ConsumerWidget {
                           vertical: 16,
                         ),
                       ),
-                      child: Row(
+                      child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.flip_to_back, size: 20),
-                          const SizedBox(width: 8),
-                          const Text('Flip Card'),
+                          Icon(Icons.flip_to_back, size: 20),
+                          SizedBox(width: 8),
+                          Text('Flip Card'),
                         ],
                       ),
                     ),
@@ -150,12 +150,12 @@ class FlashcardsScreen extends ConsumerWidget {
                           vertical: 16,
                         ),
                       ),
-                      child: Row(
+                      child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.navigate_next, size: 20),
-                          const SizedBox(width: 8),
-                          const Text('Next Card'),
+                          Icon(Icons.navigate_next, size: 20),
+                          SizedBox(width: 8),
+                          Text('Next Card'),
                         ],
                       ),
                     ),

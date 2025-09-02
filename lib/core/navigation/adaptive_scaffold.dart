@@ -220,17 +220,17 @@ class SettingsScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Language Selection with Material 3 SegmentedButton
-            Card(
+            const Card(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.language),
-                        const SizedBox(width: 12),
-                        const Text(
+                        Icon(Icons.language),
+                        SizedBox(width: 12),
+                        Text(
                           'Learning Language',
                           style: TextStyle(
                             fontSize: 16,
@@ -239,18 +239,18 @@ class SettingsScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    const LanguageSegmentedButton(),
-                    const SizedBox(height: 16),
-                    const Text(
+                    SizedBox(height: 16),
+                    LanguageSegmentedButton(),
+                    SizedBox(height: 16),
+                    Text(
                       'Difficulty Level',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    const VocabularyLevelChips(),
+                    SizedBox(height: 8),
+                    VocabularyLevelChips(),
                   ],
                 ),
               ),
