@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_saas_template/core/language/language.dart';
-import 'package:flutter_saas_template/core/navigation/morphing_fab.dart';
 import 'package:flutter_saas_template/core/services/local_data_service.dart';
 import 'package:flutter_saas_template/core/theme/dynamic_theme.dart';
 import 'package:flutter_saas_template/features/flashcards/flashcards_screen.dart';
@@ -96,8 +95,6 @@ class AdaptiveScaffold extends ConsumerWidget {
             Expanded(child: _buildBody(currentIndex)),
           ],
         ),
-        floatingActionButton: const MorphingFAB(),
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       );
     } else {
       // Phone layout with BottomNavigationBar
@@ -118,8 +115,6 @@ class AdaptiveScaffold extends ConsumerWidget {
               )
               .toList(),
         ),
-        floatingActionButton: const IntegratedFAB(),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       );
     }
   }

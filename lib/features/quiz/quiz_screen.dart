@@ -185,111 +185,123 @@ class QuizScreen extends ConsumerWidget {
                       },
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  // Action buttons with enhanced styling
+                  // Flexible spacer to push buttons to bottom
+                  const SizedBox(height: 8),
+                  // Single row with all action buttons
                   Row(
                     children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: showResult
-                              ? null
-                              : () {
-                                  ref
-                                          .read(selectedAnswerProvider.notifier)
-                                          .state =
-                                      null;
-                                  ref.read(showResultProvider.notifier).state =
-                                      false;
-                                },
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                      // Clear button (smaller)
+                      OutlinedButton(
+                        onPressed: showResult
+                            ? null
+                            : () {
+                                ref
+                                        .read(selectedAnswerProvider.notifier)
+                                        .state =
+                                    null;
+                                ref.read(showResultProvider.notifier).state =
+                                    false;
+                              },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 16,
                           ),
-                          child: const Text('Clear'),
+                          minimumSize: const Size(60, 48),
                         ),
+                        child: const Text('Clear'),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 12),
+                      // Check Answer / Next Question button (takes remaining space)
                       Expanded(
-                        flex: 2,
                         child: FilledButton(
-                          onPressed: selected == null
+                          onPressed: selected == null && !showResult
                               ? null
-                              : () {
-                                  ref.read(showResultProvider.notifier).state =
-                                      true;
-                                  // Show celebration if correct
-                                  if (isCorrect) {
-                                    ref
-                                            .read(
-                                              showCelebrationProvider.notifier,
-                                            )
-                                            .state =
-                                        true;
-                                    Future.delayed(
-                                      const Duration(seconds: 2),
-                                      () {
-                                        if (ref.context.mounted) {
-                                          ref
-                                                  .read(
-                                                    showCelebrationProvider
-                                                        .notifier,
-                                                  )
-                                                  .state =
-                                              false;
-                                        }
-                                      },
-                                    );
-                                  }
-                                },
+                              : showResult
+                                  ? () {
+                                      // Next question
+                                      ref.read(quizIndexProvider.notifier).state =
+                                          index + 1;
+                                      ref
+                                              .read(selectedAnswerProvider.notifier)
+                                              .state =
+                                          null;
+                                      ref.read(showResultProvider.notifier).state =
+                                          false;
+                                      ref
+                                              .read(
+                                                showCelebrationProvider.notifier,
+                                              )
+                                              .state =
+                                          false;
+                                    }
+                                  : () {
+                                      // Check answer
+                                      ref.read(showResultProvider.notifier).state =
+                                          true;
+                                      // Show celebration if correct
+                                      if (isCorrect) {
+                                        ref
+                                                .read(
+                                                  showCelebrationProvider.notifier,
+                                                )
+                                                .state =
+                                            true;
+                                        Future.delayed(
+                                          const Duration(seconds: 2),
+                                          () {
+                                            if (ref.context.mounted) {
+                                              ref
+                                                      .read(
+                                                        showCelebrationProvider
+                                                            .notifier,
+                                                      )
+                                                      .state =
+                                                  false;
+                                            }
+                                          },
+                                        );
+                                      }
+                                    },
                           style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
-                          child: const Text('Check Answer'),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (showResult && isCorrect)
+                                const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                  size: 20,
+                                )
+                              else if (showResult && !isCorrect)
+                                const Icon(
+                                  Icons.cancel,
+                                  color: Colors.red,
+                                  size: 20,
+                                ),
+                              if (showResult) const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  showResult
+                                      ? (isCorrect
+                                            ? 'Correct! Next Question'
+                                            : 'Try Again - Next')
+                                      : 'Check Answer',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (showResult) ...[
+                                const SizedBox(width: 4),
+                                const Icon(Icons.navigate_next, size: 20),
+                              ],
+                            ],
+                          ),
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 16),
-                  // Next button with result feedback
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.tonal(
-                      onPressed: showResult
-                          ? () {
-                              ref.read(quizIndexProvider.notifier).state =
-                                  index + 1;
-                              ref.read(selectedAnswerProvider.notifier).state =
-                                  null;
-                              ref.read(showResultProvider.notifier).state =
-                                  false;
-                              ref.read(showCelebrationProvider.notifier).state =
-                                  false;
-                            }
-                          : null,
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          if (showResult) ...[
-                            Icon(
-                              isCorrect ? Icons.check_circle : Icons.cancel,
-                              color: isCorrect ? Colors.green : Colors.red,
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                          Text(
-                            showResult
-                                ? (isCorrect
-                                      ? 'Correct! Next Question'
-                                      : 'Try Again - Next Question')
-                                : 'Next Question',
-                          ),
-                          const SizedBox(width: 8),
-                          const Icon(Icons.navigate_next),
-                        ],
-                      ),
-                    ),
                   ),
                 ],
               ),

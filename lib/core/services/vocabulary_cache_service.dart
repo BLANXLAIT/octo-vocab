@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs
 
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -71,20 +72,26 @@ class VocabularyCacheService {
 
       PerformanceMonitor.instance.recordCacheMiss();
       
-      // Load from assets with error recovery
-      final words = await ErrorRecoveryService.instance.handleError<List<Word>>(
-        ErrorType.vocabularyLoadFailure,
-        'Failed to load vocabulary: ${language.name} ${level.code} $setName',
-        'Asset loading error',
-        context: {
-          'language': language.name,
-          'level': level.code,
-          'setName': setName,
-          'cacheKey': cacheKey,
-        },
-        retryFunction: () => _loadFromAssets(language, level, setName),
-        fallbackFunction: () => _getFallbackVocabulary(language, level, setName),
-      ) ?? [];
+      // Load from assets with smart fallback handling
+      List<Word> words;
+      try {
+        words = await _loadFromAssets(language, level, setName);
+      } catch (e) {
+        // Only use error recovery for genuine unexpected errors
+        words = await ErrorRecoveryService.instance.handleError<List<Word>>(
+          ErrorType.vocabularyLoadFailure,
+          'Failed to load vocabulary: ${language.name} ${level.code} $setName',
+          e,
+          context: {
+            'language': language.name,
+            'level': level.code,
+            'setName': setName,
+            'cacheKey': cacheKey,
+          },
+          retryFunction: () => _loadFromAssets(language, level, setName),
+          fallbackFunction: () => _getFallbackVocabulary(language, level, setName),
+        ) ?? [];
+      }
 
       _cacheVocabulary(cacheKey, words);
       
@@ -116,17 +123,40 @@ class VocabularyCacheService {
     VocabularyLevel level,
     String setName,
   ) async {
-    // Try level-specific path first
-    String assetPath = 'assets/vocab/${language.name}/${level.code}/$setName.json';
+    // Try language root path first (for grade8_set1.json files)
+    String assetPath = 'assets/vocab/${language.name}/$setName.json';
     
     try {
       final jsonStr = await rootBundle.loadString(assetPath);
       return Word.listFromJsonString(jsonStr);
     } catch (e) {
-      // Fallback to grade8_set1.json structure
-      assetPath = 'assets/vocab/${language.name}/$setName.json';
-      final jsonStr = await rootBundle.loadString(assetPath);
-      return Word.listFromJsonString(jsonStr);
+      // Try level-specific path as fallback
+      assetPath = 'assets/vocab/${language.name}/${level.code}/$setName.json';
+      try {
+        final jsonStr = await rootBundle.loadString(assetPath);
+        return Word.listFromJsonString(jsonStr);
+      } catch (e2) {
+        // Handle level-specific fallbacks for grade8_set1
+        if (setName == 'grade8_set1') {
+          switch (level) {
+            case VocabularyLevel.beginner:
+              // Use set1_essentials for beginner
+              assetPath = 'assets/vocab/${language.name}/${level.code}/set1_essentials.json';
+              try {
+                final jsonStr = await rootBundle.loadString(assetPath);
+                return Word.listFromJsonString(jsonStr);
+              } catch (e3) {
+                // If level-specific file doesn't exist, return empty list for intermediate/advanced
+                return [];
+              }
+            case VocabularyLevel.intermediate:
+            case VocabularyLevel.advanced:
+              // These levels don't have content yet, return empty list instead of failing
+              return [];
+          }
+        }
+        rethrow;
+      }
     }
   }
 

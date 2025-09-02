@@ -98,14 +98,6 @@ final dynamicThemeProvider = Provider<ThemeData>((ref) {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       surfaceTintColor: colorScheme.surfaceTint,
     ),
-    // Enhanced FAB theme
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 3,
-      focusElevation: 4,
-      hoverElevation: 4,
-      highlightElevation: 6,
-    ),
     // Enhanced AppBar theme
     appBarTheme: AppBarTheme(
       centerTitle: false,
