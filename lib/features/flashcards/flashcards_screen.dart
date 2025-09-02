@@ -7,6 +7,7 @@ import 'package:flutter_saas_template/core/language/language.dart';
 import 'package:flutter_saas_template/core/language/vocabulary_selector.dart';
 import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
 import 'package:flutter_saas_template/core/models/word.dart';
+import 'package:flutter_saas_template/features/flashcards/animated_flashcard.dart';
 
 /// Loads vocabulary based on current language and level selection
 final vocabSetProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
@@ -92,80 +93,64 @@ class FlashcardsScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                const SizedBox(height: 16),
+                const SizedBox(height: 32),
                 Expanded(
                   child: Center(
-                    child: Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(24),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                showBack ? word.english : word.latin,
-                                style: Theme.of(context).textTheme.displaySmall,
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 12),
-                              if (showBack &&
-                                  (word.exampleLatin != null ||
-                                      word.exampleEnglish != null))
-                                Text(
-                                  [
-                                    if (word.exampleLatin != null)
-                                      '“${word.exampleLatin}”',
-                                    if (word.exampleEnglish != null)
-                                      '— ${word.exampleEnglish}',
-                                  ].join(' '),
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.titleMedium,
-                                  textAlign: TextAlign.center,
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
+                    child: AnimatedFlashcard(
+                      word: word,
+                      showBack: showBack,
+                      onFlip: () => ref.read(showBackProvider.notifier).state = !showBack,
+                      onKnown: () {
+                        ref.read(showBackProvider.notifier).state = false;
+                        ref.read(flashcardIndexProvider.notifier).state = index + 1;
+                      },
+                      onUnknown: () {
+                        ref.read(showBackProvider.notifier).state = false;
+                        ref.read(flashcardIndexProvider.notifier).state = index + 1;
+                      },
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 32),
+                // Enhanced action buttons with better styling
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.flip),
-                      label: const Text('Flip'),
-                      onPressed: () =>
-                          ref.read(showBackProvider.notifier).state = !showBack,
+                    FilledButton.tonal(
+                      onPressed: () => ref.read(showBackProvider.notifier).state = !showBack,
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.flip_to_back, size: 20),
+                          const SizedBox(width: 8),
+                          const Text('Flip Card'),
+                        ],
+                      ),
                     ),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.close),
-                      label: const Text('Unknown'),
+                    const SizedBox(width: 16),
+                    FilledButton(
                       onPressed: () {
                         ref.read(showBackProvider.notifier).state = false;
-                        ref.read(flashcardIndexProvider.notifier).state =
-                            index + 1;
+                        ref.read(flashcardIndexProvider.notifier).state = index + 1;
                       },
-                    ),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.check),
-                      label: const Text('Known'),
-                      onPressed: () {
-                        ref.read(showBackProvider.notifier).state = false;
-                        ref.read(flashcardIndexProvider.notifier).state =
-                            index + 1;
-                      },
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.navigate_next, size: 20),
+                          const SizedBox(width: 8),
+                          const Text('Next Card'),
+                        ],
+                      ),
                     ),
                   ],
                 ),
+                const SizedBox(height: 16),
               ],
             ),
           ),

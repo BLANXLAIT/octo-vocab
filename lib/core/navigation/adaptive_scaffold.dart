@@ -2,7 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_saas_template/core/language/language.dart';
+import 'package:flutter_saas_template/core/language/vocabulary_selector.dart';
+import 'package:flutter_saas_template/core/navigation/morphing_fab.dart';
 import 'package:flutter_saas_template/core/services/local_data_service.dart';
+import 'package:flutter_saas_template/core/theme/dynamic_theme.dart';
 import 'package:flutter_saas_template/features/flashcards/flashcards_screen.dart';
 import 'package:flutter_saas_template/features/progress/progress_screen.dart';
 import 'package:flutter_saas_template/features/quiz/quiz_screen.dart';
@@ -103,6 +106,8 @@ class AdaptiveScaffold extends ConsumerWidget {
             ),
           ],
         ),
+        floatingActionButton: const MorphingFAB(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       );
     } else {
       // Phone layout with BottomNavigationBar
@@ -123,6 +128,8 @@ class AdaptiveScaffold extends ConsumerWidget {
               )
               .toList(),
         ),
+        floatingActionButton: const MorphingFAB(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       );
     }
   }
@@ -224,15 +231,56 @@ class SettingsScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Language Selection
-            const Card(
-              child: ListTile(
-                leading: Icon(Icons.language),
-                title: Text('Language'),
-                subtitle: Text('Select your learning language'),
-                trailing: LanguageSwitcherAction(),
+            // Language Selection with Material 3 SegmentedButton
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.language),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Learning Language',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const LanguageSegmentedButton(),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Difficulty Level',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const VocabularyLevelChips(),
+                  ],
+                ),
               ),
             ),
+            
+            const SizedBox(height: 16),
+            
+            // Theme Section
+            const Text(
+              'Appearance',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            
+            const ThemeSelectorCard(),
             
             const SizedBox(height: 16),
             
@@ -304,6 +352,101 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Animated theme selector card with color preview
+class ThemeSelectorCard extends ConsumerWidget {
+  const ThemeSelectorCard({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentVariant = ref.watch(themeVariantProvider);
+    
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.palette),
+                const SizedBox(width: 12),
+                const Text(
+                  'Color Theme',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const Spacer(),
+                // Current theme color indicator
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: currentVariant.seedColor,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: currentVariant.seedColor.withValues(alpha: 0.4),
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Choose a color theme to personalize your learning experience',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Theme variant chips
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: ThemeVariant.values.map((variant) {
+                final isSelected = currentVariant == variant;
+                return AnimatedScale(
+                  scale: isSelected ? 1.05 : 1.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: FilterChip(
+                    selected: isSelected,
+                    label: Text(variant.displayName),
+                    avatar: isSelected
+                        ? null
+                        : Container(
+                            width: 16,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              color: variant.seedColor,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                    selectedColor: variant.seedColor.withValues(alpha: 0.2),
+                    checkmarkColor: variant.seedColor,
+                    onSelected: (selected) {
+                      if (selected) {
+                        ref.read(themeVariantProvider.notifier).state = variant;
+                      }
+                    },
+                  ),
+                );
+              }).toList(),
             ),
           ],
         ),

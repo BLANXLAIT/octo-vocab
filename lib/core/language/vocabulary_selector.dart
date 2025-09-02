@@ -193,3 +193,89 @@ class LevelSelector extends ConsumerWidget {
     );
   }
 }
+
+/// Material 3 SegmentedButton for language selection
+class LanguageSegmentedButton extends ConsumerWidget {
+  const LanguageSegmentedButton({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentLanguage = ref.watch(appLanguageProvider);
+    
+    return SegmentedButton<AppLanguage>(
+      segments: AppLanguage.values.map((language) {
+        return ButtonSegment<AppLanguage>(
+          value: language,
+          icon: Icon(language.icon, size: 18),
+          label: Text(
+            language.label,
+            style: const TextStyle(fontSize: 12),
+          ),
+        );
+      }).toList(),
+      selected: {currentLanguage},
+      onSelectionChanged: (Set<AppLanguage> selected) {
+        if (selected.isNotEmpty) {
+          ref.read(appLanguageProvider.notifier).state = selected.first;
+        }
+      },
+      style: SegmentedButton.styleFrom(
+        visualDensity: VisualDensity.compact,
+      ),
+    );
+  }
+}
+
+/// Material 3 Chips for vocabulary level selection
+class VocabularyLevelChips extends ConsumerWidget {
+  const VocabularyLevelChips({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentLevel = ref.watch(vocabularyLevelProvider);
+    
+    return Wrap(
+      spacing: 8,
+      runSpacing: 4,
+      children: VocabularyLevel.values.map((level) {
+        final isSelected = currentLevel == level;
+        
+        return FilterChip(
+          selected: isSelected,
+          label: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                level.icon,
+                size: 16,
+                color: isSelected 
+                    ? Theme.of(context).colorScheme.onSecondaryContainer
+                    : level.color,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                level.label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          onSelected: (selected) {
+            if (selected) {
+              ref.read(vocabularyLevelProvider.notifier).state = level;
+            }
+          },
+          backgroundColor: level.color.withValues(alpha: 0.1),
+          selectedColor: level.color.withValues(alpha: 0.2),
+          checkmarkColor: level.color,
+          side: BorderSide(
+            color: level.color.withValues(alpha: isSelected ? 0.6 : 0.3),
+            width: isSelected ? 2 : 1,
+          ),
+        );
+      }).toList(),
+    );
+  }
+}

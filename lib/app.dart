@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_saas_template/core/theme/dynamic_theme.dart';
 import 'package:flutter_saas_template/routing/router.dart';
 
 class OctoVocabApp extends ConsumerWidget {
@@ -9,10 +10,7 @@ class OctoVocabApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-      useMaterial3: true,
-    );
+    final theme = ref.watch(dynamicThemeProvider);
 
     return MaterialApp.router(
       title: 'Octo Vocab',
