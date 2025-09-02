@@ -10,6 +10,7 @@ import XCTest
 final class RunnerUITests: XCTestCase {
     var app: XCUIApplication!
     
+    @MainActor
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
         continueAfterFailure = false
@@ -19,6 +20,7 @@ final class RunnerUITests: XCTestCase {
         app.launch()
     }
     
+    @MainActor
     func testScreenshots() throws {
         // Launch screen
         snapshot("01_Launch")

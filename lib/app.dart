@@ -18,6 +18,7 @@ class OctoVocabApp extends ConsumerWidget {
       title: 'Octo Vocab',
       theme: theme,
       routerConfig: appRouter,
+      debugShowCheckedModeBanner: false,
     );
   }
 }
