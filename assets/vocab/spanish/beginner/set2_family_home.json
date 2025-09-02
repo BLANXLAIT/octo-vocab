@@ -1,0 +1,182 @@
+[
+  {
+    "id": "padre",
+    "latin": "padre",
+    "english": "father",
+    "pos": "noun",
+    "exampleLatin": "Mi padre trabaja en una oficina.",
+    "exampleEnglish": "My father works in an office.",
+    "tags": ["beginner", "family", "noun", "masculine"]
+  },
+  {
+    "id": "madre",
+    "latin": "madre",
+    "english": "mother",
+    "pos": "noun",
+    "exampleLatin": "Mi madre cocina muy bien.",
+    "exampleEnglish": "My mother cooks very well.",
+    "tags": ["beginner", "family", "noun", "feminine"]
+  },
+  {
+    "id": "hijo",
+    "latin": "hijo",
+    "english": "son",
+    "pos": "noun",
+    "exampleLatin": "Su hijo estudia medicina.",
+    "exampleEnglish": "Her son studies medicine.",
+    "tags": ["beginner", "family", "noun", "masculine"]
+  },
+  {
+    "id": "hija",
+    "latin": "hija",
+    "english": "daughter",
+    "pos": "noun",
+    "exampleLatin": "La hija pequeña juega en el jardín.",
+    "exampleEnglish": "The little daughter plays in the garden.",
+    "tags": ["beginner", "family", "noun", "feminine"]
+  },
+  {
+    "id": "hermano",
+    "latin": "hermano",
+    "english": "brother",
+    "pos": "noun",
+    "exampleLatin": "Mi hermano mayor es médico.",
+    "exampleEnglish": "My older brother is a doctor.",
+    "tags": ["beginner", "family", "noun", "masculine"]
+  },
+  {
+    "id": "hermana",
+    "latin": "hermana",
+    "english": "sister",
+    "pos": "noun",
+    "exampleLatin": "Mi hermana menor está en la universidad.",
+    "exampleEnglish": "My younger sister is at university.",
+    "tags": ["beginner", "family", "noun", "feminine"]
+  },
+  {
+    "id": "abuelo",
+    "latin": "abuelo",
+    "english": "grandfather",
+    "pos": "noun",
+    "exampleLatin": "Mi abuelo cuenta historias interesantes.",
+    "exampleEnglish": "My grandfather tells interesting stories.",
+    "tags": ["beginner", "family", "noun", "masculine"]
+  },
+  {
+    "id": "abuela",
+    "latin": "abuela",
+    "english": "grandmother",
+    "pos": "noun",
+    "exampleLatin": "La abuela hace pasteles deliciosos.",
+    "exampleEnglish": "Grandmother makes delicious cakes.",
+    "tags": ["beginner", "family", "noun", "feminine"]
+  },
+  {
+    "id": "tío",
+    "latin": "tío",
+    "english": "uncle",
+    "pos": "noun",
+    "exampleLatin": "Mi tío vive en otra ciudad.",
+    "exampleEnglish": "My uncle lives in another city.",
+    "tags": ["beginner", "family", "noun", "masculine"]
+  },
+  {
+    "id": "tía",
+    "latin": "tía",
+    "english": "aunt",
+    "pos": "noun",
+    "exampleLatin": "Mi tía es profesora de español.",
+    "exampleEnglish": "My aunt is a Spanish teacher.",
+    "tags": ["beginner", "family", "noun", "feminine"]
+  },
+  {
+    "id": "casa",
+    "latin": "casa",
+    "english": "house, home",
+    "pos": "noun",
+    "exampleLatin": "Nuestra casa tiene un jardín grande.",
+    "exampleEnglish": "Our house has a big garden.",
+    "tags": ["beginner", "home", "noun", "feminine"]
+  },
+  {
+    "id": "habitación",
+    "latin": "habitación",
+    "english": "room, bedroom",
+    "pos": "noun",
+    "exampleLatin": "Mi habitación está en el segundo piso.",
+    "exampleEnglish": "My room is on the second floor.",
+    "tags": ["beginner", "home", "noun", "feminine"]
+  },
+  {
+    "id": "cocina",
+    "latin": "cocina",
+    "english": "kitchen",
+    "pos": "noun",
+    "exampleLatin": "Preparamos el desayuno en la cocina.",
+    "exampleEnglish": "We prepare breakfast in the kitchen.",
+    "tags": ["beginner", "home", "noun", "feminine"]
+  },
+  {
+    "id": "baño",
+    "latin": "baño",
+    "english": "bathroom",
+    "pos": "noun",
+    "exampleLatin": "El baño está al final del pasillo.",
+    "exampleEnglish": "The bathroom is at the end of the hallway.",
+    "tags": ["beginner", "home", "noun", "masculine"]
+  },
+  {
+    "id": "sala",
+    "latin": "sala",
+    "english": "living room",
+    "pos": "noun",
+    "exampleLatin": "Vemos televisión en la sala.",
+    "exampleEnglish": "We watch television in the living room.",
+    "tags": ["beginner", "home", "noun", "feminine"]
+  },
+  {
+    "id": "comedor",
+    "latin": "comedor",
+    "english": "dining room",
+    "pos": "noun",
+    "exampleLatin": "Cenamos todos juntos en el comedor.",
+    "exampleEnglish": "We all have dinner together in the dining room.",
+    "tags": ["beginner", "home", "noun", "masculine"]
+  },
+  {
+    "id": "puerta",
+    "latin": "puerta",
+    "english": "door",
+    "pos": "noun",
+    "exampleLatin": "Cierra la puerta, por favor.",
+    "exampleEnglish": "Close the door, please.",
+    "tags": ["beginner", "home", "noun", "feminine"]
+  },
+  {
+    "id": "ventana",
+    "latin": "ventana",
+    "english": "window",
+    "pos": "noun",
+    "exampleLatin": "Abro la ventana para que entre aire fresco.",
+    "exampleEnglish": "I open the window so fresh air can enter.",
+    "tags": ["beginner", "home", "noun", "feminine"]
+  },
+  {
+    "id": "mesa",
+    "latin": "mesa",
+    "english": "table",
+    "pos": "noun",
+    "exampleLatin": "Los libros están sobre la mesa.",
+    "exampleEnglish": "The books are on the table.",
+    "tags": ["beginner", "home", "noun", "feminine"]
+  },
+  {
+    "id": "silla",
+    "latin": "silla",
+    "english": "chair",
+    "pos": "noun",
+    "exampleLatin": "Me siento en mi silla favorita.",
+    "exampleEnglish": "I sit in my favorite chair.",
+    "tags": ["beginner", "home", "noun", "feminine"]
+  }
+]

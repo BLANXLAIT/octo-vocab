@@ -1,0 +1,227 @@
+[
+  {
+    "id": "amo",
+    "latin": "amo",
+    "english": "I love",
+    "pos": "verb",
+    "exampleLatin": "Patriam meam amo.",
+    "exampleEnglish": "I love my country.",
+    "tags": ["intermediate", "verbs", "emotions", "conjugation"]
+  },
+  {
+    "id": "video",
+    "latin": "video",
+    "english": "I see",
+    "pos": "verb",
+    "exampleLatin": "Stellas in caelo video.",
+    "exampleEnglish": "I see stars in the sky.",
+    "tags": ["intermediate", "verbs", "senses", "conjugation"]
+  },
+  {
+    "id": "audio",
+    "latin": "audio",
+    "english": "I hear",
+    "pos": "verb",
+    "exampleLatin": "Musicam dulcem audio.",
+    "exampleEnglish": "I hear sweet music.",
+    "tags": ["intermediate", "verbs", "senses", "conjugation"]
+  },
+  {
+    "id": "dico",
+    "latin": "dico",
+    "english": "I say, I speak",
+    "pos": "verb",
+    "exampleLatin": "Veritatem semper dico.",
+    "exampleEnglish": "I always speak the truth.",
+    "tags": ["intermediate", "verbs", "communication", "irregular"]
+  },
+  {
+    "id": "facio",
+    "latin": "facio",
+    "english": "I make, I do",
+    "pos": "verb",
+    "exampleLatin": "Opus bonum facio.",
+    "exampleEnglish": "I do good work.",
+    "tags": ["intermediate", "verbs", "actions", "irregular"]
+  },
+  {
+    "id": "venio",
+    "latin": "venio",
+    "english": "I come",
+    "pos": "verb",
+    "exampleLatin": "Ad scholam cotidie venio.",
+    "exampleEnglish": "I come to school every day.",
+    "tags": ["intermediate", "verbs", "movement", "conjugation"]
+  },
+  {
+    "id": "vado",
+    "latin": "vado",
+    "english": "I go",
+    "pos": "verb",
+    "exampleLatin": "Domum vado.",
+    "exampleEnglish": "I go home.",
+    "tags": ["intermediate", "verbs", "movement", "conjugation"]
+  },
+  {
+    "id": "porto",
+    "latin": "porto",
+    "english": "I carry",
+    "pos": "verb",
+    "exampleLatin": "Libros in sarcina porto.",
+    "exampleEnglish": "I carry books in my bag.",
+    "tags": ["intermediate", "verbs", "actions", "conjugation"]
+  },
+  {
+    "id": "puto",
+    "latin": "puto",
+    "english": "I think",
+    "pos": "verb",
+    "exampleLatin": "De vita puto.",
+    "exampleEnglish": "I think about life.",
+    "tags": ["intermediate", "verbs", "mental", "conjugation"]
+  },
+  {
+    "id": "scio",
+    "latin": "scio",
+    "english": "I know",
+    "pos": "verb",
+    "exampleLatin": "Linguam Latinam scio.",
+    "exampleEnglish": "I know Latin.",
+    "tags": ["intermediate", "verbs", "mental", "conjugation"]
+  },
+  {
+    "id": "habeo",
+    "latin": "habeo",
+    "english": "I have",
+    "pos": "verb",
+    "exampleLatin": "Multos amicos habeo.",
+    "exampleEnglish": "I have many friends.",
+    "tags": ["intermediate", "verbs", "possession", "conjugation"]
+  },
+  {
+    "id": "do",
+    "latin": "do",
+    "english": "I give",
+    "pos": "verb",
+    "exampleLatin": "Donum tibi do.",
+    "exampleEnglish": "I give you a gift.",
+    "tags": ["intermediate", "verbs", "actions", "irregular"]
+  },
+  {
+    "id": "capio",
+    "latin": "capio",
+    "english": "I take, I capture",
+    "pos": "verb",
+    "exampleLatin": "Consilium bonum capio.",
+    "exampleEnglish": "I take good advice.",
+    "tags": ["intermediate", "verbs", "actions", "irregular"]
+  },
+  {
+    "id": "mitto",
+    "latin": "mitto",
+    "english": "I send",
+    "pos": "verb",
+    "exampleLatin": "Epistulam ad amicum mitto.",
+    "exampleEnglish": "I send a letter to my friend.",
+    "tags": ["intermediate", "verbs", "communication", "conjugation"]
+  },
+  {
+    "id": "pono",
+    "latin": "pono",
+    "english": "I place, I put",
+    "pos": "verb",
+    "exampleLatin": "Librum super mensam pono.",
+    "exampleEnglish": "I place the book on the table.",
+    "tags": ["intermediate", "verbs", "actions", "conjugation"]
+  },
+  {
+    "id": "teneo",
+    "latin": "teneo",
+    "english": "I hold",
+    "pos": "verb",
+    "exampleLatin": "Manum tuam teneo.",
+    "exampleEnglish": "I hold your hand.",
+    "tags": ["intermediate", "verbs", "actions", "conjugation"]
+  },
+  {
+    "id": "moveo",
+    "latin": "moveo",
+    "english": "I move",
+    "pos": "verb",
+    "exampleLatin": "Saxa gravia moveo.",
+    "exampleEnglish": "I move heavy stones.",
+    "tags": ["intermediate", "verbs", "movement", "conjugation"]
+  },
+  {
+    "id": "maneo",
+    "latin": "maneo",
+    "english": "I remain, I stay",
+    "pos": "verb",
+    "exampleLatin": "Domi maneo.",
+    "exampleEnglish": "I stay at home.",
+    "tags": ["intermediate", "verbs", "position", "conjugation"]
+  },
+  {
+    "id": "dormio",
+    "latin": "dormio",
+    "english": "I sleep",
+    "pos": "verb",
+    "exampleLatin": "Nocte profunde dormio.",
+    "exampleEnglish": "I sleep deeply at night.",
+    "tags": ["intermediate", "verbs", "daily-life", "conjugation"]
+  },
+  {
+    "id": "spero",
+    "latin": "spero",
+    "english": "I hope",
+    "pos": "verb",
+    "exampleLatin": "Meliora tempora spero.",
+    "exampleEnglish": "I hope for better times.",
+    "tags": ["intermediate", "verbs", "emotions", "conjugation"]
+  },
+  {
+    "id": "timeo",
+    "latin": "timeo",
+    "english": "I fear",
+    "pos": "verb",
+    "exampleLatin": "Tenebras timeo.",
+    "exampleEnglish": "I fear darkness.",
+    "tags": ["intermediate", "verbs", "emotions", "conjugation"]
+  },
+  {
+    "id": "rideo",
+    "latin": "rideo",
+    "english": "I laugh",
+    "pos": "verb",
+    "exampleLatin": "De fabulis rideo.",
+    "exampleEnglish": "I laugh at stories.",
+    "tags": ["intermediate", "verbs", "emotions", "conjugation"]
+  },
+  {
+    "id": "credo",
+    "latin": "credo",
+    "english": "I believe",
+    "pos": "verb",
+    "exampleLatin": "In veritatem credo.",
+    "exampleEnglish": "I believe in truth.",
+    "tags": ["intermediate", "verbs", "mental", "conjugation"]
+  },
+  {
+    "id": "doceo",
+    "latin": "doceo",
+    "english": "I teach",
+    "pos": "verb",
+    "exampleLatin": "Discipulos linguam doceo.",
+    "exampleEnglish": "I teach students language.",
+    "tags": ["intermediate", "verbs", "education", "conjugation"]
+  },
+  {
+    "id": "disco",
+    "latin": "disco",
+    "english": "I learn",
+    "pos": "verb",
+    "exampleLatin": "Novas res disco.",
+    "exampleEnglish": "I learn new things.",
+    "tags": ["intermediate", "verbs", "education", "conjugation"]
+  }
+]

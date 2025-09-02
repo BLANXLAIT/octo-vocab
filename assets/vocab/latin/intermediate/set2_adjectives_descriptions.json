@@ -1,0 +1,227 @@
+[
+  {
+    "id": "magnus",
+    "latin": "magnus",
+    "english": "big, great, large",
+    "pos": "adjective",
+    "exampleLatin": "Urbs magna est.",
+    "exampleEnglish": "The city is large.",
+    "tags": ["intermediate", "adjectives", "size", "common"]
+  },
+  {
+    "id": "parvus",
+    "latin": "parvus",
+    "english": "small, little",
+    "pos": "adjective",
+    "exampleLatin": "Canis parvus currit.",
+    "exampleEnglish": "The small dog runs.",
+    "tags": ["intermediate", "adjectives", "size", "common"]
+  },
+  {
+    "id": "bonus",
+    "latin": "bonus",
+    "english": "good",
+    "pos": "adjective",
+    "exampleLatin": "Vir bonus et sapiens est.",
+    "exampleEnglish": "He is a good and wise man.",
+    "tags": ["intermediate", "adjectives", "quality", "common"]
+  },
+  {
+    "id": "malus",
+    "latin": "malus",
+    "english": "bad, evil",
+    "pos": "adjective",
+    "exampleLatin": "Tempestas mala venit.",
+    "exampleEnglish": "A bad storm is coming.",
+    "tags": ["intermediate", "adjectives", "quality", "common"]
+  },
+  {
+    "id": "pulcher",
+    "latin": "pulcher",
+    "english": "beautiful, handsome",
+    "pos": "adjective",
+    "exampleLatin": "Puella pulchra cantat.",
+    "exampleEnglish": "The beautiful girl sings.",
+    "tags": ["intermediate", "adjectives", "appearance", "common"]
+  },
+  {
+    "id": "longus",
+    "latin": "longus",
+    "english": "long",
+    "pos": "adjective",
+    "exampleLatin": "Via longa et difficilis est.",
+    "exampleEnglish": "The road is long and difficult.",
+    "tags": ["intermediate", "adjectives", "size", "common"]
+  },
+  {
+    "id": "brevis",
+    "latin": "brevis",
+    "english": "short, brief",
+    "pos": "adjective",
+    "exampleLatin": "Vita brevis est.",
+    "exampleEnglish": "Life is short.",
+    "tags": ["intermediate", "adjectives", "size", "common"]
+  },
+  {
+    "id": "altus",
+    "latin": "altus",
+    "english": "high, tall, deep",
+    "pos": "adjective",
+    "exampleLatin": "Mons altus nubes tangit.",
+    "exampleEnglish": "The high mountain touches the clouds.",
+    "tags": ["intermediate", "adjectives", "size", "common"]
+  },
+  {
+    "id": "novus",
+    "latin": "novus",
+    "english": "new",
+    "pos": "adjective",
+    "exampleLatin": "Vestimentum novum porto.",
+    "exampleEnglish": "I wear new clothes.",
+    "tags": ["intermediate", "adjectives", "age", "common"]
+  },
+  {
+    "id": "vetus",
+    "latin": "vetus",
+    "english": "old, ancient",
+    "pos": "adjective",
+    "exampleLatin": "Liber vetus sapientiam continet.",
+    "exampleEnglish": "The old book contains wisdom.",
+    "tags": ["intermediate", "adjectives", "age", "common"]
+  },
+  {
+    "id": "multus",
+    "latin": "multus",
+    "english": "much, many",
+    "pos": "adjective",
+    "exampleLatin": "Multam aquam bibo.",
+    "exampleEnglish": "I drink much water.",
+    "tags": ["intermediate", "adjectives", "quantity", "common"]
+  },
+  {
+    "id": "paucus",
+    "latin": "paucus",
+    "english": "few, little",
+    "pos": "adjective",
+    "exampleLatin": "Pauci homines hoc sciunt.",
+    "exampleEnglish": "Few people know this.",
+    "tags": ["intermediate", "adjectives", "quantity", "common"]
+  },
+  {
+    "id": "laetus",
+    "latin": "laetus",
+    "english": "happy, joyful",
+    "pos": "adjective",
+    "exampleLatin": "Pueri laeti ludunt.",
+    "exampleEnglish": "The happy children play.",
+    "tags": ["intermediate", "adjectives", "emotions", "common"]
+  },
+  {
+    "id": "tristis",
+    "latin": "tristis",
+    "english": "sad, sorrowful",
+    "pos": "adjective",
+    "exampleLatin": "Mater tristis flet.",
+    "exampleEnglish": "The sad mother cries.",
+    "tags": ["intermediate", "adjectives", "emotions", "common"]
+  },
+  {
+    "id": "fortis",
+    "latin": "fortis",
+    "english": "brave, strong",
+    "pos": "adjective",
+    "exampleLatin": "Miles fortis pugnat.",
+    "exampleEnglish": "The brave soldier fights.",
+    "tags": ["intermediate", "adjectives", "character", "common"]
+  },
+  {
+    "id": "sapiens",
+    "latin": "sapiens",
+    "english": "wise",
+    "pos": "adjective",
+    "exampleLatin": "Magister sapiens nos docet.",
+    "exampleEnglish": "The wise teacher teaches us.",
+    "tags": ["intermediate", "adjectives", "character", "common"]
+  },
+  {
+    "id": "celer",
+    "latin": "celer",
+    "english": "fast, swift",
+    "pos": "adjective",
+    "exampleLatin": "Equus celer currit.",
+    "exampleEnglish": "The swift horse runs.",
+    "tags": ["intermediate", "adjectives", "speed", "common"]
+  },
+  {
+    "id": "tardus",
+    "latin": "tardus",
+    "english": "slow, late",
+    "pos": "adjective",
+    "exampleLatin": "Testudo tarda ambulat.",
+    "exampleEnglish": "The turtle walks slowly.",
+    "tags": ["intermediate", "adjectives", "speed", "common"]
+  },
+  {
+    "id": "clarus",
+    "latin": "clarus",
+    "english": "clear, bright, famous",
+    "pos": "adjective",
+    "exampleLatin": "Stella clara fulget.",
+    "exampleEnglish": "The bright star shines.",
+    "tags": ["intermediate", "adjectives", "appearance", "common"]
+  },
+  {
+    "id": "obscurus",
+    "latin": "obscurus",
+    "english": "dark, unclear",
+    "pos": "adjective",
+    "exampleLatin": "Nox obscura venit.",
+    "exampleEnglish": "Dark night comes.",
+    "tags": ["intermediate", "adjectives", "appearance", "common"]
+  },
+  {
+    "id": "facilis",
+    "latin": "facilis",
+    "english": "easy",
+    "pos": "adjective",
+    "exampleLatin": "Haec lingua facilis est.",
+    "exampleEnglish": "This language is easy.",
+    "tags": ["intermediate", "adjectives", "difficulty", "common"]
+  },
+  {
+    "id": "difficilis",
+    "latin": "difficilis",
+    "english": "difficult, hard",
+    "pos": "adjective",
+    "exampleLatin": "Opus difficile perficere volo.",
+    "exampleEnglish": "I want to complete the difficult work.",
+    "tags": ["intermediate", "adjectives", "difficulty", "common"]
+  },
+  {
+    "id": "gravis",
+    "latin": "gravis",
+    "english": "heavy, serious",
+    "pos": "adjective",
+    "exampleLatin": "Sarcina gravis est.",
+    "exampleEnglish": "The bag is heavy.",
+    "tags": ["intermediate", "adjectives", "weight", "common"]
+  },
+  {
+    "id": "levis",
+    "latin": "levis",
+    "english": "light, gentle",
+    "pos": "adjective",
+    "exampleLatin": "Ventus levis spirat.",
+    "exampleEnglish": "A gentle wind blows.",
+    "tags": ["intermediate", "adjectives", "weight", "common"]
+  },
+  {
+    "id": "dulcis",
+    "latin": "dulcis",
+    "english": "sweet",
+    "pos": "adjective",
+    "exampleLatin": "Mel dulce est.",
+    "exampleEnglish": "Honey is sweet.",
+    "tags": ["intermediate", "adjectives", "taste", "common"]
+  }
+]

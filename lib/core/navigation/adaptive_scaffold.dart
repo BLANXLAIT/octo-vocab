@@ -12,33 +12,55 @@ import 'package:flutter_saas_template/features/settings/language_learning_settin
 
 /// Navigation destinations for the app
 enum AppDestination {
-  learn(icon: Icons.style, selectedIcon: Icons.style, label: 'Learn'),
-  quiz(icon: Icons.quiz_outlined, selectedIcon: Icons.quiz, label: 'Quiz'),
+  learn(
+    icon: Icons.style, 
+    selectedIcon: Icons.style, 
+    label: 'Learn',
+    semanticLabel: 'Learn with flashcards',
+    accessibilityKey: 'learn_tab'
+  ),
+  quiz(
+    icon: Icons.quiz_outlined, 
+    selectedIcon: Icons.quiz, 
+    label: 'Quiz',
+    semanticLabel: 'Take vocabulary quiz',
+    accessibilityKey: 'quiz_tab'
+  ),
   review(
     icon: Icons.psychology_outlined,
     selectedIcon: Icons.psychology,
     label: 'Review',
+    semanticLabel: 'Review vocabulary words',
+    accessibilityKey: 'review_tab'
   ),
   progress(
     icon: Icons.insights_outlined,
     selectedIcon: Icons.insights,
     label: 'Progress',
+    semanticLabel: 'View learning progress',
+    accessibilityKey: 'progress_tab'
   ),
   settings(
     icon: Icons.settings_outlined,
     selectedIcon: Icons.settings,
     label: 'Settings',
+    semanticLabel: 'App settings and preferences',
+    accessibilityKey: 'settings_tab'
   );
 
   const AppDestination({
     required this.icon,
     required this.selectedIcon,
     required this.label,
+    required this.semanticLabel,
+    required this.accessibilityKey,
   });
 
   final IconData icon;
   final IconData selectedIcon;
   final String label;
+  final String semanticLabel;
+  final String accessibilityKey;
 }
 
 /// Current navigation index provider
@@ -82,12 +104,32 @@ class AdaptiveScaffold extends ConsumerWidget {
               },
               labelType: NavigationRailLabelType.all,
               destinations: AppDestination.values
+                  .asMap()
+                  .entries
                   .map(
-                    (dest) => NavigationRailDestination(
-                      icon: Icon(dest.icon),
-                      selectedIcon: Icon(dest.selectedIcon),
-                      label: Text(dest.label),
-                    ),
+                    (entry) {
+                      final index = entry.key;
+                      final dest = entry.value;
+                      return NavigationRailDestination(
+                        icon: Semantics(
+                          identifier: dest.accessibilityKey,
+                          label: dest.semanticLabel,
+                          tooltip: dest.semanticLabel,
+                          child: Icon(dest.icon),
+                        ),
+                        selectedIcon: Semantics(
+                          identifier: dest.accessibilityKey,
+                          label: dest.semanticLabel,
+                          tooltip: dest.semanticLabel,
+                          child: Icon(dest.selectedIcon),
+                        ),
+                        label: Semantics(
+                          identifier: '${dest.accessibilityKey}_label',
+                          label: '${dest.label} navigation tab',
+                          child: Text(dest.label),
+                        ),
+                      );
+                    },
                   )
                   .toList(),
             ),
@@ -100,20 +142,41 @@ class AdaptiveScaffold extends ConsumerWidget {
       // Phone layout with BottomNavigationBar
       return Scaffold(
         body: _buildBody(currentIndex),
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: currentIndex,
-          onDestinationSelected: (index) {
-            ref.read(navigationIndexProvider.notifier).state = index;
-          },
-          destinations: AppDestination.values
-              .map(
-                (dest) => NavigationDestination(
-                  icon: Icon(dest.icon),
-                  selectedIcon: Icon(dest.selectedIcon),
-                  label: dest.label,
-                ),
-              )
-              .toList(),
+        bottomNavigationBar: Semantics(
+          identifier: 'main_navigation_bar',
+          label: 'Main navigation with 5 tabs',
+          child: NavigationBar(
+            selectedIndex: currentIndex,
+            onDestinationSelected: (index) {
+              ref.read(navigationIndexProvider.notifier).state = index;
+            },
+            destinations: AppDestination.values
+                .asMap()
+                .entries
+                .map(
+                  (entry) {
+                    final index = entry.key;
+                    final dest = entry.value;
+                    return NavigationDestination(
+                      icon: Semantics(
+                        identifier: dest.accessibilityKey,
+                        label: dest.semanticLabel,
+                        tooltip: dest.semanticLabel,
+                        child: Icon(dest.icon),
+                      ),
+                      selectedIcon: Semantics(
+                        identifier: dest.accessibilityKey,
+                        label: dest.semanticLabel,
+                        tooltip: dest.semanticLabel,
+                        child: Icon(dest.selectedIcon),
+                      ),
+                      label: dest.label,
+                      tooltip: dest.semanticLabel,
+                    );
+                  },
+                )
+                .toList(),
+          ),
         ),
       );
     }
@@ -207,7 +270,13 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Settings'),
         automaticallyImplyLeading: false,
-        actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
+        actions: [
+          Semantics(
+            label: 'Switch learning language',
+            child: LanguageSwitcherAction(),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -238,24 +307,32 @@ class SettingsScreen extends ConsumerWidget {
             const SizedBox(height: 8),
 
             Card(
-              child: ListTile(
-                leading: const Icon(Icons.privacy_tip, color: Colors.green),
-                title: const Text('Privacy Protection'),
-                subtitle: const Text(
-                  'COPPA/FERPA compliant • No data collection',
+              key: const Key('privacy_info_card'),
+              child: Semantics(
+                label: 'Privacy information - COPPA and FERPA compliant with no data collection',
+                child: ListTile(
+                  leading: const Icon(Icons.privacy_tip, color: Colors.green),
+                  title: const Text('Privacy Protection'),
+                  subtitle: const Text(
+                    'COPPA/FERPA compliant • No data collection',
+                  ),
+                  onTap: () => _showPrivacyInfo(context),
                 ),
-                onTap: () => _showPrivacyInfo(context),
               ),
             ),
 
             const SizedBox(height: 8),
 
             Card(
-              child: ListTile(
-                leading: const Icon(Icons.delete_forever, color: Colors.red),
-                title: const Text('Reset My Data'),
-                subtitle: const Text('Delete all progress and preferences'),
-                onTap: () => _showResetDataDialog(context, ref),
+              key: const Key('reset_data_card'),
+              child: Semantics(
+                label: 'Reset all learning data and preferences - this action cannot be undone',
+                child: ListTile(
+                  leading: const Icon(Icons.delete_forever, color: Colors.red),
+                  title: const Text('Reset My Data'),
+                  subtitle: const Text('Delete all progress and preferences'),
+                  onTap: () => _showResetDataDialog(context, ref),
+                ),
               ),
             ),
 

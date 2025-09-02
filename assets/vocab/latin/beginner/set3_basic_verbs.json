@@ -1,0 +1,182 @@
+[
+  {
+    "id": "amo",
+    "latin": "amo",
+    "english": "I love",
+    "pos": "verb",
+    "exampleLatin": "Familiam meam amo.",
+    "exampleEnglish": "I love my family.",
+    "tags": ["beginner", "verbs", "emotions", "high-frequency"]
+  },
+  {
+    "id": "habeo",
+    "latin": "habeo",
+    "english": "I have",
+    "pos": "verb",
+    "exampleLatin": "Librum bonum habeo.",
+    "exampleEnglish": "I have a good book.",
+    "tags": ["beginner", "verbs", "possession", "high-frequency"]
+  },
+  {
+    "id": "video",
+    "latin": "video",
+    "english": "I see",
+    "pos": "verb",
+    "exampleLatin": "Canem parvum video.",
+    "exampleEnglish": "I see a small dog.",
+    "tags": ["beginner", "verbs", "senses", "high-frequency"]
+  },
+  {
+    "id": "audio",
+    "latin": "audio",
+    "english": "I hear",
+    "pos": "verb",
+    "exampleLatin": "Aves cantantes audio.",
+    "exampleEnglish": "I hear birds singing.",
+    "tags": ["beginner", "verbs", "senses", "high-frequency"]
+  },
+  {
+    "id": "do",
+    "latin": "do",
+    "english": "I give",
+    "pos": "verb",
+    "exampleLatin": "Amico meo donum do.",
+    "exampleEnglish": "I give my friend a gift.",
+    "tags": ["beginner", "verbs", "actions", "high-frequency"]
+  },
+  {
+    "id": "facio",
+    "latin": "facio",
+    "english": "I make, I do",
+    "pos": "verb",
+    "exampleLatin": "Cenam bonam facio.",
+    "exampleEnglish": "I make a good dinner.",
+    "tags": ["beginner", "verbs", "actions", "high-frequency"]
+  },
+  {
+    "id": "dico",
+    "latin": "dico",
+    "english": "I say",
+    "pos": "verb",
+    "exampleLatin": "Veritatem dico.",
+    "exampleEnglish": "I tell the truth.",
+    "tags": ["beginner", "verbs", "communication", "high-frequency"]
+  },
+  {
+    "id": "voco",
+    "latin": "voco",
+    "english": "I call",
+    "pos": "verb",
+    "exampleLatin": "Amicum meum voco.",
+    "exampleEnglish": "I call my friend.",
+    "tags": ["beginner", "verbs", "communication", "high-frequency"]
+  },
+  {
+    "id": "venio",
+    "latin": "venio",
+    "english": "I come",
+    "pos": "verb",
+    "exampleLatin": "Ad scholam venio.",
+    "exampleEnglish": "I come to school.",
+    "tags": ["beginner", "verbs", "movement", "high-frequency"]
+  },
+  {
+    "id": "ambulo",
+    "latin": "ambulo",
+    "english": "I walk",
+    "pos": "verb",
+    "exampleLatin": "In horto ambulo.",
+    "exampleEnglish": "I walk in the garden.",
+    "tags": ["beginner", "verbs", "movement", "high-frequency"]
+  },
+  {
+    "id": "sedeo",
+    "latin": "sedeo",
+    "english": "I sit",
+    "pos": "verb",
+    "exampleLatin": "In sella sedeo.",
+    "exampleEnglish": "I sit in the chair.",
+    "tags": ["beginner", "verbs", "position", "high-frequency"]
+  },
+  {
+    "id": "sto",
+    "latin": "sto",
+    "english": "I stand",
+    "pos": "verb",
+    "exampleLatin": "Ante ianuam sto.",
+    "exampleEnglish": "I stand in front of the door.",
+    "tags": ["beginner", "verbs", "position", "high-frequency"]
+  },
+  {
+    "id": "dormio",
+    "latin": "dormio",
+    "english": "I sleep",
+    "pos": "verb",
+    "exampleLatin": "Nocte bene dormio.",
+    "exampleEnglish": "I sleep well at night.",
+    "tags": ["beginner", "verbs", "daily-life", "high-frequency"]
+  },
+  {
+    "id": "vigilo",
+    "latin": "vigilo",
+    "english": "I am awake",
+    "pos": "verb",
+    "exampleLatin": "Mane vigilo.",
+    "exampleEnglish": "I am awake in the morning.",
+    "tags": ["beginner", "verbs", "daily-life", "high-frequency"]
+  },
+  {
+    "id": "edo",
+    "latin": "edo",
+    "english": "I eat",
+    "pos": "verb",
+    "exampleLatin": "Panem edo.",
+    "exampleEnglish": "I eat bread.",
+    "tags": ["beginner", "verbs", "daily-life", "high-frequency"]
+  },
+  {
+    "id": "bibo",
+    "latin": "bibo",
+    "english": "I drink",
+    "pos": "verb",
+    "exampleLatin": "Aquam puram bibo.",
+    "exampleEnglish": "I drink pure water.",
+    "tags": ["beginner", "verbs", "daily-life", "high-frequency"]
+  },
+  {
+    "id": "lego",
+    "latin": "lego",
+    "english": "I read",
+    "pos": "verb",
+    "exampleLatin": "Librum Latinum lego.",
+    "exampleEnglish": "I read a Latin book.",
+    "tags": ["beginner", "verbs", "education", "high-frequency"]
+  },
+  {
+    "id": "scribo",
+    "latin": "scribo",
+    "english": "I write",
+    "pos": "verb",
+    "exampleLatin": "Epistulam scribo.",
+    "exampleEnglish": "I write a letter.",
+    "tags": ["beginner", "verbs", "education", "high-frequency"]
+  },
+  {
+    "id": "laboro",
+    "latin": "laboro",
+    "english": "I work",
+    "pos": "verb",
+    "exampleLatin": "In agro laboro.",
+    "exampleEnglish": "I work in the field.",
+    "tags": ["beginner", "verbs", "work", "high-frequency"]
+  },
+  {
+    "id": "puto",
+    "latin": "puto",
+    "english": "I think",
+    "pos": "verb",
+    "exampleLatin": "De amicis puto.",
+    "exampleEnglish": "I think about friends.",
+    "tags": ["beginner", "verbs", "mental", "high-frequency"]
+  }
+]

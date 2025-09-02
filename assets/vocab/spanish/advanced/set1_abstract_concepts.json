@@ -1,0 +1,227 @@
+[
+  {
+    "id": "justicia",
+    "latin": "justicia",
+    "english": "justice",
+    "pos": "noun",
+    "exampleLatin": "La justicia es fundamental en una sociedad democrática.",
+    "exampleEnglish": "Justice is fundamental in a democratic society.",
+    "tags": ["advanced", "philosophy", "politics", "abstract"]
+  },
+  {
+    "id": "libertad",
+    "latin": "libertad",
+    "english": "freedom, liberty",
+    "pos": "noun",
+    "exampleLatin": "La libertad de expresión es un derecho humano básico.",
+    "exampleEnglish": "Freedom of expression is a basic human right.",
+    "tags": ["advanced", "politics", "rights", "philosophy"]
+  },
+  {
+    "id": "igualdad",
+    "latin": "igualdad",
+    "english": "equality",
+    "pos": "noun",
+    "exampleLatin": "Luchamos por la igualdad de oportunidades.",
+    "exampleEnglish": "We fight for equality of opportunities.",
+    "tags": ["advanced", "social-justice", "politics", "abstract"]
+  },
+  {
+    "id": "dignidad",
+    "latin": "dignidad",
+    "english": "dignity",
+    "pos": "noun",
+    "exampleLatin": "Todos los seres humanos nacen con dignidad inherente.",
+    "exampleEnglish": "All human beings are born with inherent dignity.",
+    "tags": ["advanced", "human-rights", "philosophy", "abstract"]
+  },
+  {
+    "id": "solidaridad",
+    "latin": "solidaridad",
+    "english": "solidarity",
+    "pos": "noun",
+    "exampleLatin": "La solidaridad entre pueblos fortalece la paz mundial.",
+    "exampleEnglish": "Solidarity between peoples strengthens world peace.",
+    "tags": ["advanced", "social", "cooperation", "abstract"]
+  },
+  {
+    "id": "democracia",
+    "latin": "democracia",
+    "english": "democracy",
+    "pos": "noun",
+    "exampleLatin": "La democracia requiere participación ciudadana activa.",
+    "exampleEnglish": "Democracy requires active citizen participation.",
+    "tags": ["advanced", "politics", "government", "system"]
+  },
+  {
+    "id": "responsabilidad",
+    "latin": "responsabilidad",
+    "english": "responsibility",
+    "pos": "noun",
+    "exampleLatin": "Tenemos la responsabilidad de proteger el medio ambiente.",
+    "exampleEnglish": "We have the responsibility to protect the environment.",
+    "tags": ["advanced", "ethics", "duty", "abstract"]
+  },
+  {
+    "id": "conciencia",
+    "latin": "conciencia",
+    "english": "conscience, awareness",
+    "pos": "noun",
+    "exampleLatin": "La conciencia social nos impulsa a actuar con justicia.",
+    "exampleEnglish": "Social conscience drives us to act with justice.",
+    "tags": ["advanced", "psychology", "ethics", "awareness"]
+  },
+  {
+    "id": "tolerancia",
+    "latin": "tolerancia",
+    "english": "tolerance",
+    "pos": "noun",
+    "exampleLatin": "La tolerancia es esencial en sociedades multiculturales.",
+    "exampleEnglish": "Tolerance is essential in multicultural societies.",
+    "tags": ["advanced", "social", "acceptance", "virtue"]
+  },
+  {
+    "id": "diversidad",
+    "latin": "diversidad",
+    "english": "diversity",
+    "pos": "noun",
+    "exampleLatin": "La diversidad cultural enriquece nuestras comunidades.",
+    "exampleEnglish": "Cultural diversity enriches our communities.",
+    "tags": ["advanced", "culture", "variety", "social"]
+  },
+  {
+    "id": "sostenibilidad",
+    "latin": "sostenibilidad",
+    "english": "sustainability",
+    "pos": "noun",
+    "exampleLatin": "La sostenibilidad ambiental es crucial para el futuro.",
+    "exampleEnglish": "Environmental sustainability is crucial for the future.",
+    "tags": ["advanced", "environment", "future", "responsibility"]
+  },
+  {
+    "id": "innovación",
+    "latin": "innovación",
+    "english": "innovation",
+    "pos": "noun",
+    "exampleLatin": "La innovación tecnológica transforma nuestras vidas.",
+    "exampleEnglish": "Technological innovation transforms our lives.",
+    "tags": ["advanced", "technology", "progress", "change"]
+  },
+  {
+    "id": "globalización",
+    "latin": "globalización",
+    "english": "globalization",
+    "pos": "noun",
+    "exampleLatin": "La globalización conecta economías mundiales.",
+    "exampleEnglish": "Globalization connects world economies.",
+    "tags": ["advanced", "economics", "world", "process"]
+  },
+  {
+    "id": "identidad",
+    "latin": "identidad",
+    "english": "identity",
+    "pos": "noun",
+    "exampleLatin": "La identidad cultural se preserva a través de las tradiciones.",
+    "exampleEnglish": "Cultural identity is preserved through traditions.",
+    "tags": ["advanced", "culture", "self", "psychology"]
+  },
+  {
+    "id": "herencia",
+    "latin": "herencia",
+    "english": "heritage, inheritance",
+    "pos": "noun",
+    "exampleLatin": "Protegemos nuestra herencia histórica para futuras generaciones.",
+    "exampleEnglish": "We protect our historical heritage for future generations.",
+    "tags": ["advanced", "history", "culture", "legacy"]
+  },
+  {
+    "id": "perspectiva",
+    "latin": "perspectiva",
+    "english": "perspective, outlook",
+    "pos": "noun",
+    "exampleLatin": "Es importante considerar diferentes perspectivas del problema.",
+    "exampleEnglish": "It's important to consider different perspectives on the problem.",
+    "tags": ["advanced", "viewpoint", "analysis", "thinking"]
+  },
+  {
+    "id": "paradigma",
+    "latin": "paradigma",
+    "english": "paradigm",
+    "pos": "noun",
+    "exampleLatin": "El nuevo paradigma científico revoluciona nuestra comprensión.",
+    "exampleEnglish": "The new scientific paradigm revolutionizes our understanding.",
+    "tags": ["advanced", "science", "model", "framework"]
+  },
+  {
+    "id": "metodología",
+    "latin": "metodología",
+    "english": "methodology",
+    "pos": "noun",
+    "exampleLatin": "La metodología de investigación debe ser rigurosa.",
+    "exampleEnglish": "Research methodology must be rigorous.",
+    "tags": ["advanced", "research", "method", "academic"]
+  },
+  {
+    "id": "epistemología",
+    "latin": "epistemología",
+    "english": "epistemology",
+    "pos": "noun",
+    "exampleLatin": "La epistemología estudia la naturaleza del conocimiento.",
+    "exampleEnglish": "Epistemology studies the nature of knowledge.",
+    "tags": ["advanced", "philosophy", "knowledge", "academic"]
+  },
+  {
+    "id": "fenómeno",
+    "latin": "fenómeno",
+    "english": "phenomenon",
+    "pos": "noun",
+    "exampleLatin": "Este fenómeno social requiere análisis profundo.",
+    "exampleEnglish": "This social phenomenon requires deep analysis.",
+    "tags": ["advanced", "science", "observation", "analysis"]
+  },
+  {
+    "id": "hipótesis",
+    "latin": "hipótesis",
+    "english": "hypothesis",
+    "pos": "noun",
+    "exampleLatin": "Los científicos formulan hipótesis basadas en observaciones.",
+    "exampleEnglish": "Scientists formulate hypotheses based on observations.",
+    "tags": ["advanced", "science", "theory", "research"]
+  },
+  {
+    "id": "dialéctica",
+    "latin": "dialéctica",
+    "english": "dialectic",
+    "pos": "noun",
+    "exampleLatin": "La dialéctica ayuda a resolver contradicciones aparentes.",
+    "exampleEnglish": "Dialectic helps resolve apparent contradictions.",
+    "tags": ["advanced", "philosophy", "logic", "reasoning"]
+  },
+  {
+    "id": "síntesis",
+    "latin": "síntesis",
+    "english": "synthesis",
+    "pos": "noun",
+    "exampleLatin": "La síntesis combina elementos diferentes en una nueva unidad.",
+    "exampleEnglish": "Synthesis combines different elements into a new unity.",
+    "tags": ["advanced", "integration", "combination", "academic"]
+  },
+  {
+    "id": "antítesis",
+    "latin": "antítesis",
+    "english": "antithesis",
+    "pos": "noun",
+    "exampleLatin": "La antítesis presenta el contraste directo de ideas.",
+    "exampleEnglish": "Antithesis presents the direct contrast of ideas.",
+    "tags": ["advanced", "contrast", "opposition", "rhetoric"]
+  },
+  {
+    "id": "transcendencia",
+    "latin": "transcendencia",
+    "english": "transcendence",
+    "pos": "noun",
+    "exampleLatin": "La transcendencia espiritual es búsqueda humana universal.",
+    "exampleEnglish": "Spiritual transcendence is a universal human quest.",
+    "tags": ["advanced", "spirituality", "philosophy", "metaphysics"]
+  }
+]

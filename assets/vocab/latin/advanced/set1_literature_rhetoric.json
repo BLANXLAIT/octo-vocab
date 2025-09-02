@@ -1,0 +1,227 @@
+[
+  {
+    "id": "eloquentia",
+    "latin": "eloquentia",
+    "english": "eloquence",
+    "pos": "noun",
+    "exampleLatin": "Ciceronis eloquentia nota est.",
+    "exampleEnglish": "Cicero's eloquence is well-known.",
+    "tags": ["advanced", "rhetoric", "literature", "abstract"]
+  },
+  {
+    "id": "sapientia",
+    "latin": "sapientia",
+    "english": "wisdom",
+    "pos": "noun",
+    "exampleLatin": "Sapientia philosophorum admiranda est.",
+    "exampleEnglish": "The wisdom of philosophers is admirable.",
+    "tags": ["advanced", "philosophy", "abstract", "virtue"]
+  },
+  {
+    "id": "virtus",
+    "latin": "virtus",
+    "english": "virtue, courage, excellence",
+    "pos": "noun",
+    "exampleLatin": "Virtus in adversis probatur.",
+    "exampleEnglish": "Virtue is tested in adversity.",
+    "tags": ["advanced", "philosophy", "virtue", "character"]
+  },
+  {
+    "id": "gloria",
+    "latin": "gloria",
+    "english": "glory, fame",
+    "pos": "noun",
+    "exampleLatin": "Gloria militum per saecula durat.",
+    "exampleEnglish": "The glory of soldiers lasts through the ages.",
+    "tags": ["advanced", "honor", "military", "abstract"]
+  },
+  {
+    "id": "honos",
+    "latin": "honos",
+    "english": "honor, office, respect",
+    "pos": "noun",
+    "exampleLatin": "Honos virtutem sequitur.",
+    "exampleEnglish": "Honor follows virtue.",
+    "tags": ["advanced", "honor", "politics", "abstract"]
+  },
+  {
+    "id": "dignitas",
+    "latin": "dignitas",
+    "english": "dignity, worth, rank",
+    "pos": "noun",
+    "exampleLatin": "Dignitas humana inviolabilis est.",
+    "exampleEnglish": "Human dignity is inviolable.",
+    "tags": ["advanced", "honor", "philosophy", "abstract"]
+  },
+  {
+    "id": "clementia",
+    "latin": "clementia",
+    "english": "mercy, clemency",
+    "pos": "noun",
+    "exampleLatin": "Clementia tyranni mira est.",
+    "exampleEnglish": "The tyrant's mercy is surprising.",
+    "tags": ["advanced", "virtue", "politics", "abstract"]
+  },
+  {
+    "id": "iustitia",
+    "latin": "iustitia",
+    "english": "justice",
+    "pos": "noun",
+    "exampleLatin": "Iustitia fundamentum regnorum est.",
+    "exampleEnglish": "Justice is the foundation of kingdoms.",
+    "tags": ["advanced", "virtue", "politics", "philosophy"]
+  },
+  {
+    "id": "pietas",
+    "latin": "pietas",
+    "english": "duty, devotion, piety",
+    "pos": "noun",
+    "exampleLatin": "Pietas erga parentes sacra est.",
+    "exampleEnglish": "Devotion to parents is sacred.",
+    "tags": ["advanced", "virtue", "religion", "family"]
+  },
+  {
+    "id": "constantia",
+    "latin": "constantia",
+    "english": "steadfastness, consistency",
+    "pos": "noun",
+    "exampleLatin": "Constantia in proposito laudanda est.",
+    "exampleEnglish": "Steadfastness in purpose is praiseworthy.",
+    "tags": ["advanced", "virtue", "character", "abstract"]
+  },
+  {
+    "id": "prudentia",
+    "latin": "prudentia",
+    "english": "prudence, discretion",
+    "pos": "noun",
+    "exampleLatin": "Prudentia senectutis propria est.",
+    "exampleEnglish": "Prudence is characteristic of old age.",
+    "tags": ["advanced", "virtue", "wisdom", "abstract"]
+  },
+  {
+    "id": "temperantia",
+    "latin": "temperantia",
+    "english": "moderation, self-control",
+    "pos": "noun",
+    "exampleLatin": "Temperantia in omnibus necessaria est.",
+    "exampleEnglish": "Moderation is necessary in all things.",
+    "tags": ["advanced", "virtue", "philosophy", "abstract"]
+  },
+  {
+    "id": "fortitudo",
+    "latin": "fortitudo",
+    "english": "courage, bravery",
+    "pos": "noun",
+    "exampleLatin": "Fortitudo animi maxima est.",
+    "exampleEnglish": "Courage of spirit is the greatest.",
+    "tags": ["advanced", "virtue", "character", "abstract"]
+  },
+  {
+    "id": "veritas",
+    "latin": "veritas",
+    "english": "truth",
+    "pos": "noun",
+    "exampleLatin": "Veritas temporis filia dicitur.",
+    "exampleEnglish": "Truth is called the daughter of time.",
+    "tags": ["advanced", "philosophy", "abstract", "knowledge"]
+  },
+  {
+    "id": "libertas",
+    "latin": "libertas",
+    "english": "freedom, liberty",
+    "pos": "noun",
+    "exampleLatin": "Libertas pretiosior vita est.",
+    "exampleEnglish": "Freedom is more precious than life.",
+    "tags": ["advanced", "politics", "philosophy", "abstract"]
+  },
+  {
+    "id": "auctoritas",
+    "latin": "auctoritas",
+    "english": "authority, influence",
+    "pos": "noun",
+    "exampleLatin": "Auctoritas senatus magna erat.",
+    "exampleEnglish": "The authority of the senate was great.",
+    "tags": ["advanced", "politics", "power", "abstract"]
+  },
+  {
+    "id": "imperium",
+    "latin": "imperium",
+    "english": "command, empire, power",
+    "pos": "noun",
+    "exampleLatin": "Imperium sine fine dedi.",
+    "exampleEnglish": "I have given empire without end.",
+    "tags": ["advanced", "politics", "military", "power"]
+  },
+  {
+    "id": "consilium",
+    "latin": "consilium",
+    "english": "plan, advice, council",
+    "pos": "noun",
+    "exampleLatin": "Consilium prudentis bonum est.",
+    "exampleEnglish": "The advice of a wise person is good.",
+    "tags": ["advanced", "wisdom", "politics", "abstract"]
+  },
+  {
+    "id": "ingenium",
+    "latin": "ingenium",
+    "english": "talent, character, genius",
+    "pos": "noun",
+    "exampleLatin": "Ingenium poetae divinum est.",
+    "exampleEnglish": "The poet's talent is divine.",
+    "tags": ["advanced", "talent", "character", "abstract"]
+  },
+  {
+    "id": "studium",
+    "latin": "studium",
+    "english": "zeal, eagerness, study",
+    "pos": "noun",
+    "exampleLatin": "Studium discendi magnum habeo.",
+    "exampleEnglish": "I have great zeal for learning.",
+    "tags": ["advanced", "education", "passion", "abstract"]
+  },
+  {
+    "id": "otium",
+    "latin": "otium",
+    "english": "leisure, peace, rest",
+    "pos": "noun",
+    "exampleLatin": "Otium sine litteris mors est.",
+    "exampleEnglish": "Leisure without literature is death.",
+    "tags": ["advanced", "lifestyle", "philosophy", "abstract"]
+  },
+  {
+    "id": "negotium",
+    "latin": "negotium",
+    "english": "business, trouble, work",
+    "pos": "noun",
+    "exampleLatin": "Negotium publicum privato anteponendum est.",
+    "exampleEnglish": "Public business should be put before private.",
+    "tags": ["advanced", "work", "politics", "abstract"]
+  },
+  {
+    "id": "exemplum",
+    "latin": "exemplum",
+    "english": "example, model, precedent",
+    "pos": "noun",
+    "exampleLatin": "Exempla clarorum virorum sequimur.",
+    "exampleEnglish": "We follow the examples of famous men.",
+    "tags": ["advanced", "model", "history", "abstract"]
+  },
+  {
+    "id": "monumentum",
+    "latin": "monumentum",
+    "english": "monument, memorial, record",
+    "pos": "noun",
+    "exampleLatin": "Monumentum aere perennius exegi.",
+    "exampleEnglish": "I have built a monument more lasting than bronze.",
+    "tags": ["advanced", "memory", "literature", "legacy"]
+  },
+  {
+    "id": "memoria",
+    "latin": "memoria",
+    "english": "memory, recollection",
+    "pos": "noun",
+    "exampleLatin": "Memoria praeteritorum bonorum jucunda est.",
+    "exampleEnglish": "The memory of past good things is pleasant.",
+    "tags": ["advanced", "memory", "psychology", "abstract"]
+  }
+]

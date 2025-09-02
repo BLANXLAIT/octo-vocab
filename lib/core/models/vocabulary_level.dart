@@ -79,14 +79,60 @@ class VocabularySets {
       level: VocabularyLevel.beginner,
       estimatedWords: 20,
     ),
+    VocabularySet(
+      id: 'basic_verbs',
+      name: 'Basic Verbs',
+      description: 'Essential action words for daily communication',
+      filename: 'set3_basic_verbs.json',
+      level: VocabularyLevel.beginner,
+      estimatedWords: 20,
+    ),
   ];
 
   static const List<VocabularySet> intermediate = [
-    // Will be populated as we add more sets
+    VocabularySet(
+      id: 'verbs_actions',
+      name: 'Verbs & Actions',
+      description: 'Common verbs and action words for daily communication',
+      filename: 'set1_verbs_actions.json',
+      level: VocabularyLevel.intermediate,
+      estimatedWords: 25,
+    ),
+    VocabularySet(
+      id: 'adjectives_descriptions',
+      name: 'Adjectives & Descriptions',
+      description: 'Descriptive words for people, places, and things',
+      filename: 'set2_adjectives_descriptions.json',
+      level: VocabularyLevel.intermediate,
+      estimatedWords: 25,
+    ),
+    VocabularySet(
+      id: 'daily_activities',
+      name: 'Daily Activities',
+      description: 'Verbs and phrases for everyday activities and routines',
+      filename: 'set1_daily_activities.json',
+      level: VocabularyLevel.intermediate,
+      estimatedWords: 25,
+    ),
   ];
 
   static const List<VocabularySet> advanced = [
-    // Will be populated as we add more sets
+    VocabularySet(
+      id: 'literature_rhetoric',
+      name: 'Literature & Rhetoric',
+      description: 'Advanced vocabulary for classical literature and philosophy',
+      filename: 'set1_literature_rhetoric.json',
+      level: VocabularyLevel.advanced,
+      estimatedWords: 25,
+    ),
+    VocabularySet(
+      id: 'abstract_concepts',
+      name: 'Abstract Concepts',
+      description: 'Complex philosophical, political, and academic terminology',
+      filename: 'set1_abstract_concepts.json',
+      level: VocabularyLevel.advanced,
+      estimatedWords: 25,
+    ),
   ];
 
   static List<VocabularySet> getAllSets() {

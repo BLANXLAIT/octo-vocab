@@ -1,0 +1,227 @@
+[
+  {
+    "id": "trabajar",
+    "latin": "trabajo",
+    "english": "I work",
+    "pos": "verb",
+    "exampleLatin": "Trabajo en una oficina.",
+    "exampleEnglish": "I work in an office.",
+    "tags": ["intermediate", "verbs", "work", "daily-life"]
+  },
+  {
+    "id": "estudiar",
+    "latin": "estudio",
+    "english": "I study",
+    "pos": "verb",
+    "exampleLatin": "Estudio matemáticas en la universidad.",
+    "exampleEnglish": "I study mathematics at the university.",
+    "tags": ["intermediate", "verbs", "education", "daily-life"]
+  },
+  {
+    "id": "cocinar",
+    "latin": "cocino",
+    "english": "I cook",
+    "pos": "verb",
+    "exampleLatin": "Cocino la cena para mi familia.",
+    "exampleEnglish": "I cook dinner for my family.",
+    "tags": ["intermediate", "verbs", "food", "daily-life"]
+  },
+  {
+    "id": "caminar",
+    "latin": "camino",
+    "english": "I walk",
+    "pos": "verb",
+    "exampleLatin": "Camino por el parque cada mañana.",
+    "exampleEnglish": "I walk through the park every morning.",
+    "tags": ["intermediate", "verbs", "movement", "exercise"]
+  },
+  {
+    "id": "correr",
+    "latin": "corro",
+    "english": "I run",
+    "pos": "verb",
+    "exampleLatin": "Corro cinco kilómetros diariamente.",
+    "exampleEnglish": "I run five kilometers daily.",
+    "tags": ["intermediate", "verbs", "exercise", "daily-life"]
+  },
+  {
+    "id": "nadar",
+    "latin": "nado",
+    "english": "I swim",
+    "pos": "verb",
+    "exampleLatin": "Nado en la piscina los fines de semana.",
+    "exampleEnglish": "I swim in the pool on weekends.",
+    "tags": ["intermediate", "verbs", "exercise", "sports"]
+  },
+  {
+    "id": "conducir",
+    "latin": "conduzco",
+    "english": "I drive",
+    "pos": "verb",
+    "exampleLatin": "Conduzco mi coche al trabajo.",
+    "exampleEnglish": "I drive my car to work.",
+    "tags": ["intermediate", "verbs", "transportation", "daily-life"]
+  },
+  {
+    "id": "viajar",
+    "latin": "viajo",
+    "english": "I travel",
+    "pos": "verb",
+    "exampleLatin": "Viajo a países diferentes cada año.",
+    "exampleEnglish": "I travel to different countries every year.",
+    "tags": ["intermediate", "verbs", "travel", "leisure"]
+  },
+  {
+    "id": "comprar",
+    "latin": "compro",
+    "english": "I buy",
+    "pos": "verb",
+    "exampleLatin": "Compro comida en el mercado.",
+    "exampleEnglish": "I buy food at the market.",
+    "tags": ["intermediate", "verbs", "shopping", "daily-life"]
+  },
+  {
+    "id": "vender",
+    "latin": "vendo",
+    "english": "I sell",
+    "pos": "verb",
+    "exampleLatin": "Vendo libros usados en línea.",
+    "exampleEnglish": "I sell used books online.",
+    "tags": ["intermediate", "verbs", "commerce", "business"]
+  },
+  {
+    "id": "ayudar",
+    "latin": "ayudo",
+    "english": "I help",
+    "pos": "verb",
+    "exampleLatin": "Ayudo a mis padres con las tareas domésticas.",
+    "exampleEnglish": "I help my parents with household chores.",
+    "tags": ["intermediate", "verbs", "family", "assistance"]
+  },
+  {
+    "id": "explicar",
+    "latin": "explico",
+    "english": "I explain",
+    "pos": "verb",
+    "exampleLatin": "Explico las reglas del juego.",
+    "exampleEnglish": "I explain the rules of the game.",
+    "tags": ["intermediate", "verbs", "communication", "teaching"]
+  },
+  {
+    "id": "entender",
+    "latin": "entiendo",
+    "english": "I understand",
+    "pos": "verb",
+    "exampleLatin": "Entiendo las instrucciones perfectamente.",
+    "exampleEnglish": "I understand the instructions perfectly.",
+    "tags": ["intermediate", "verbs", "comprehension", "mental"]
+  },
+  {
+    "id": "recordar",
+    "latin": "recuerdo",
+    "english": "I remember",
+    "pos": "verb",
+    "exampleLatin": "Recuerdo mi infancia con cariño.",
+    "exampleEnglish": "I remember my childhood fondly.",
+    "tags": ["intermediate", "verbs", "memory", "mental"]
+  },
+  {
+    "id": "olvidar",
+    "latin": "olvido",
+    "english": "I forget",
+    "pos": "verb",
+    "exampleLatin": "Siempre olvido dónde puse las llaves.",
+    "exampleEnglish": "I always forget where I put the keys.",
+    "tags": ["intermediate", "verbs", "memory", "mental"]
+  },
+  {
+    "id": "decidir",
+    "latin": "decido",
+    "english": "I decide",
+    "pos": "verb",
+    "exampleLatin": "Decido qué película ver esta noche.",
+    "exampleEnglish": "I decide which movie to watch tonight.",
+    "tags": ["intermediate", "verbs", "decision", "mental"]
+  },
+  {
+    "id": "elegir",
+    "latin": "elijo",
+    "english": "I choose",
+    "pos": "verb",
+    "exampleLatin": "Elijo la opción más económica.",
+    "exampleEnglish": "I choose the most economical option.",
+    "tags": ["intermediate", "verbs", "choice", "decision"]
+  },
+  {
+    "id": "preferir",
+    "latin": "prefiero",
+    "english": "I prefer",
+    "pos": "verb",
+    "exampleLatin": "Prefiero el café al té.",
+    "exampleEnglish": "I prefer coffee to tea.",
+    "tags": ["intermediate", "verbs", "preference", "choice"]
+  },
+  {
+    "id": "necesitar",
+    "latin": "necesito",
+    "english": "I need",
+    "pos": "verb",
+    "exampleLatin": "Necesito más tiempo para terminar.",
+    "exampleEnglish": "I need more time to finish.",
+    "tags": ["intermediate", "verbs", "necessity", "needs"]
+  },
+  {
+    "id": "desear",
+    "latin": "deseo",
+    "english": "I wish, I desire",
+    "pos": "verb",
+    "exampleLatin": "Deseo un futuro mejor para todos.",
+    "exampleEnglish": "I wish for a better future for everyone.",
+    "tags": ["intermediate", "verbs", "desires", "emotions"]
+  },
+  {
+    "id": "esperar",
+    "latin": "espero",
+    "english": "I wait, I hope",
+    "pos": "verb",
+    "exampleLatin": "Espero noticias de mi hermana.",
+    "exampleEnglish": "I wait for news from my sister.",
+    "tags": ["intermediate", "verbs", "waiting", "hope"]
+  },
+  {
+    "id": "buscar",
+    "latin": "busco",
+    "english": "I look for, I search",
+    "pos": "verb",
+    "exampleLatin": "Busco un nuevo apartamento.",
+    "exampleEnglish": "I'm looking for a new apartment.",
+    "tags": ["intermediate", "verbs", "searching", "daily-life"]
+  },
+  {
+    "id": "encontrar",
+    "latin": "encuentro",
+    "english": "I find",
+    "pos": "verb",
+    "exampleLatin": "Encuentro la solución al problema.",
+    "exampleEnglish": "I find the solution to the problem.",
+    "tags": ["intermediate", "verbs", "finding", "discovery"]
+  },
+  {
+    "id": "perder",
+    "latin": "pierdo",
+    "english": "I lose",
+    "pos": "verb",
+    "exampleLatin": "Pierdo las llaves frecuentemente.",
+    "exampleEnglish": "I lose my keys frequently.",
+    "tags": ["intermediate", "verbs", "losing", "daily-life"]
+  },
+  {
+    "id": "ganar",
+    "latin": "gano",
+    "english": "I win, I earn",
+    "pos": "verb",
+    "exampleLatin": "Gano dinero trabajando como profesor.",
+    "exampleEnglish": "I earn money working as a teacher.",
+    "tags": ["intermediate", "verbs", "earning", "success"]
+  }
+]
