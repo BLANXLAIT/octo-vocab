@@ -1,0 +1,39 @@
+# Octo Vocab Screenshot Configuration
+
+# Current App Store required devices for screenshots
+devices([
+  "iPhone 15 Pro Max",    # 6.7" Display
+  "iPhone 15",            # 6.1" Display  
+  "iPhone SE (3rd generation)", # 4.7" Display
+  "iPad Pro (12.9-inch) (6th generation)", # 12.9" Display
+  "iPad Pro (11-inch) (4th generation)"    # 11" Display
+])
+
+# Languages supported by the app
+languages([
+  "en-US"  # English - United States
+])
+
+# UI Test scheme name (will be created)
+scheme("RunnerUITests")
+
+# Output directory for generated screenshots
+output_directory("./fastlane/screenshots")
+
+# Clear previous screenshots to ensure fresh captures
+clear_previous_screenshots(true)
+
+# Clean status bar for professional appearance
+override_status_bar(true)
+
+# Launch arguments for consistent screenshot environment
+launch_arguments([
+  "-snapshot_mode", "true",     # Enable screenshot mode
+  "-disable_animations", "true" # Disable animations for consistency
+])
+
+# Arguments to pass to the app on launch. See https://docs.fastlane.tools/actions/snapshot/#launch-arguments
+# launch_arguments(["-favColor red"])
+
+# For more information about all available options run
+# fastlane action snapshot
