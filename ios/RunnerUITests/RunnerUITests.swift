@@ -1,6 +1,13 @@
+//
+//  RunnerUITests.swift
+//  RunnerUITests
+//
+//  Created by Ryan William Niemes on 9/2/25.
+//
+
 import XCTest
 
-class RunnerUITests: XCTestCase {
+final class RunnerUITests: XCTestCase {
     var app: XCUIApplication!
     
     override func setUpWithError() throws {
