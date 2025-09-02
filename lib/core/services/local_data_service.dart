@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:flutter_saas_template/core/language/language.dart';
+import 'package:flutter_saas_template/core/models/language_study_config.dart';
+
 /// Privacy-first local data storage service
 /// All user data stays on device - no network transmission
 class LocalDataService {
@@ -17,6 +20,7 @@ class LocalDataService {
   static const String _keyKnownWords = 'known_words';
   static const String _keyStudyingLanguages = 'studying_languages';
   static const String _keyPerLanguageProgress = 'per_language_progress';
+  static const String _keyStudyConfiguration = 'study_configuration';
 
   final SharedPreferences _prefs;
 
@@ -159,6 +163,7 @@ class LocalDataService {
         _prefs.remove(_keyKnownWords),
         _prefs.remove(_keyStudyingLanguages),
         _prefs.remove(_keyPerLanguageProgress),
+        _prefs.remove(_keyStudyConfiguration),
       ]);
       return true;
     } catch (e) {
@@ -402,6 +407,118 @@ class LocalDataService {
     final difficultWords = getDifficultWords()..remove(wordId);
     await _prefs.setString(_keyDifficultWords, jsonEncode(difficultWords.toList()));
     return _prefs.setString(_keyKnownWords, jsonEncode(knownWords.toList()));
+  }
+
+  /// New Study Configuration System
+  /// Stores language + difficulty level configurations with enabled state
+  
+  /// Get the current study configuration set
+  StudyConfigurationSet getStudyConfiguration() {
+    final json = _prefs.getString(_keyStudyConfiguration);
+    if (json == null) {
+      // Create and save default configuration
+      final defaultConfig = StudyConfigurationSet.createDefault();
+      setStudyConfiguration(defaultConfig);
+      return defaultConfig;
+    }
+    
+    try {
+      final decoded = jsonDecode(json) as Map<String, dynamic>;
+      return StudyConfigurationSet.fromJson(decoded);
+    } catch (e) {
+      // If corrupted, return default
+      final defaultConfig = StudyConfigurationSet.createDefault();
+      setStudyConfiguration(defaultConfig);
+      return defaultConfig;
+    }
+  }
+  
+  /// Save the study configuration set
+  Future<bool> setStudyConfiguration(StudyConfigurationSet config) async {
+    return _prefs.setString(_keyStudyConfiguration, jsonEncode(config.toJson()));
+  }
+  
+  /// Update configuration for a specific language
+  Future<bool> updateLanguageConfig(
+    AppLanguage language,
+    LanguageStudyConfig config,
+  ) async {
+    final currentConfig = getStudyConfiguration();
+    final updatedConfig = currentConfig.updateLanguageConfig(language, config);
+    return setStudyConfiguration(updatedConfig);
+  }
+  
+  /// Set the current active language
+  Future<bool> setCurrentLanguage(AppLanguage language) async {
+    final currentConfig = getStudyConfiguration();
+    final updatedConfig = currentConfig.withCurrentLanguage(language);
+    return setStudyConfiguration(updatedConfig);
+  }
+  
+  /// Get all enabled language configurations
+  List<LanguageStudyConfig> getEnabledLanguageConfigs() {
+    return getStudyConfiguration().enabledConfigurations;
+  }
+  
+  /// Get the current active language configuration
+  LanguageStudyConfig? getCurrentLanguageConfig() {
+    return getStudyConfiguration().currentConfiguration;
+  }
+  
+  /// Migration: Convert existing settings to new configuration system
+  Future<bool> migrateToNewConfigSystem() async {
+    // Check if already migrated
+    final existingConfig = _prefs.getString(_keyStudyConfiguration);
+    if (existingConfig != null) {
+      return true; // Already migrated
+    }
+    
+    // Create default configuration
+    var configSet = StudyConfigurationSet.createDefault();
+    
+    // Migrate selected language if it exists
+    final selectedLang = getSelectedLanguage();
+    if (selectedLang != null) {
+      try {
+        final appLang = AppLanguage.values.firstWhere(
+          (lang) => lang.name == selectedLang,
+        );
+        configSet = configSet.withCurrentLanguage(appLang);
+        
+        // Enable the selected language
+        final currentConfig = configSet.getConfigForLanguage(appLang);
+        if (currentConfig != null) {
+          configSet = configSet.updateLanguageConfig(
+            appLang,
+            currentConfig.copyWith(isEnabled: true),
+          );
+        }
+      } catch (e) {
+        // If language not found, keep default
+      }
+    }
+    
+    // Migrate studying languages if they exist
+    final studyingLanguages = getStudyingLanguages();
+    for (final langName in studyingLanguages) {
+      try {
+        final appLang = AppLanguage.values.firstWhere(
+          (lang) => lang.name == langName,
+        );
+        final currentConfig = configSet.getConfigForLanguage(appLang);
+        if (currentConfig != null) {
+          configSet = configSet.updateLanguageConfig(
+            appLang,
+            currentConfig.copyWith(isEnabled: true),
+          );
+        }
+      } catch (e) {
+        // If language not found, skip
+      }
+    }
+    
+    // Save the migrated configuration
+    return setStudyConfiguration(configSet);
   }
 }
 

@@ -5,61 +5,86 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flutter_saas_template/core/language/language.dart';
-import 'package:flutter_saas_template/core/language/vocabulary_selector.dart';
 import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
 import 'package:flutter_saas_template/core/models/word.dart';
-import 'package:flutter_saas_template/core/navigation/adaptive_scaffold.dart';
+import 'package:flutter_saas_template/core/providers/study_config_providers.dart';
 import 'package:flutter_saas_template/core/services/local_data_service.dart';
+import 'package:flutter_saas_template/core/services/vocabulary_cache_service.dart';
 
-/// Multi-language progress data provider
-final multiLanguageProgressProvider = FutureProvider.autoDispose<MultiLanguageProgressData>((ref) async {
+/// Optimized multi-language progress data provider with caching
+final multiLanguageProgressProvider = FutureProvider<MultiLanguageProgressData>((ref) async {
   final dataService = await ref.read(localDataServiceProvider.future);
-  final studyingLanguages = dataService.getStudyingLanguages();
-  final level = ref.watch(vocabularyLevelProvider);
+  final enabledConfigs = ref.watch(enabledLanguageConfigsProvider);
+  final cacheService = ref.read(vocabularyCacheServiceProvider);
   
   final languageProgressMap = <String, LanguageProgressData>{};
   
-  for (final language in studyingLanguages) {
-    // Load vocabulary for this language
-    List<Word> allWords;
+  // Load vocabulary concurrently for better performance
+  final vocabularyFutures = <String, Future<List<Word>>>{};
+  
+  for (final config in enabledConfigs) {
+    final language = config.language.name;
+    final level = config.level;
+    
+    // Start async vocabulary loading
     final sets = VocabularySets.getSetsForLevel(level);
-    if (sets.isEmpty) {
-      final path = vocabAssetPath(AppLanguage.values.firstWhere((l) => l.name == language), 'grade8_set1.json');
-      final jsonStr = await rootBundle.loadString(path);
-      allWords = Word.listFromJsonString(jsonStr);
-    } else {
-      final set = sets.first;
-      final path = vocabularySetAssetPath(AppLanguage.values.firstWhere((l) => l.name == language), set);
-      final jsonStr = await rootBundle.loadString(path);
-      allWords = Word.listFromJsonString(jsonStr);
-    }
+    final setName = sets.isEmpty ? 'grade8_set1' : 'grade8_set1'; // Simplified for now
     
-    // Get statistics for this language
-    final stats = dataService.getLearningStatsForLanguage(language);
-    final difficultWords = dataService.getDifficultWordsForLanguage(language);
-    final knownWords = dataService.getKnownWordsForLanguage(language);
-    
-    languageProgressMap[language] = LanguageProgressData(
-      language: language,
-      totalWords: allWords.length,
-      masteredCount: stats['known_count'] ?? 0,
-      learningCount: stats['difficult_count'] ?? 0,
-      unstudiedCount: allWords.length - (stats['total_studied'] ?? 0),
-      difficultWordIds: difficultWords,
-      knownWordIds: knownWords,
+    vocabularyFutures[language] = cacheService.loadVocabulary(
+      language: config.language,
+      level: level,
+      setName: setName,
     );
   }
+  
+  // Wait for all vocabulary to load and build progress data
+  for (final config in enabledConfigs) {
+    final language = config.language.name;
+    
+    try {
+      final allWords = await vocabularyFutures[language]!;
+      
+      // Get statistics for this language
+      final stats = dataService.getLearningStatsForLanguage(language);
+      final difficultWords = dataService.getDifficultWordsForLanguage(language);
+      final knownWords = dataService.getKnownWordsForLanguage(language);
+      
+      languageProgressMap[language] = LanguageProgressData(
+        language: language,
+        totalWords: allWords.length,
+        masteredCount: stats['known_count'] ?? 0,
+        learningCount: stats['difficult_count'] ?? 0,
+        unstudiedCount: allWords.length - (stats['total_studied'] ?? 0),
+        difficultWordIds: difficultWords,
+        knownWordIds: knownWords,
+      );
+    } catch (e) {
+      // Graceful fallback for failed vocabulary loading
+      languageProgressMap[language] = LanguageProgressData(
+        language: language,
+        totalWords: 0,
+        masteredCount: 0,
+        learningCount: 0,
+        unstudiedCount: 0,
+        difficultWordIds: const {},
+        knownWordIds: const {},
+      );
+    }
+  }
+  
+  // Create set of studying languages from enabled configs
+  final studyingLanguages = enabledConfigs.map((config) => config.language.name).toSet();
   
   return MultiLanguageProgressData(
     languages: languageProgressMap,
     studyingLanguages: studyingLanguages,
   );
-});
+}, dependencies: [localDataServiceProvider, enabledLanguageConfigsProvider]);
 
 /// Combined progress data including vocabulary and learning statistics (backward compatibility)
 final progressDataProvider = FutureProvider.autoDispose<ProgressData>((ref) async {
   final multiLangProgress = await ref.watch(multiLanguageProgressProvider.future);
-  final currentLang = ref.watch(appLanguageProvider);
+  final currentLang = ref.watch(currentLanguageProvider);
   
   // Return current language progress or combined if no specific language data
   final langProgress = multiLangProgress.languages[currentLang.name];
@@ -180,390 +205,52 @@ class ProgressScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progressAsync = ref.watch(progressDataProvider);
-
-    return progressAsync.when(
-      loading: () => Scaffold(
-        appBar: AppBar(
-          title: const Text('Progress'),
-          automaticallyImplyLeading: false,
-          actions: const [VocabularySelector(), SizedBox(width: 8)],
-        ),
-        body: const Center(child: CircularProgressIndicator()),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Progress'),
+        automaticallyImplyLeading: false,
+        actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
       ),
-      error: (e, st) => Scaffold(
-        appBar: AppBar(
-          title: const Text('Progress'),
-          automaticallyImplyLeading: false,
-          actions: const [VocabularySelector(), SizedBox(width: 8)],
-        ),
-        body: Center(child: Text('Failed to load progress: $e')),
-      ),
-      data: (progress) => Scaffold(
-        appBar: AppBar(
-          title: const Text('Progress'),
-          automaticallyImplyLeading: false,
-          actions: const [VocabularySelector(), SizedBox(width: 8)],
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Overall Progress Card
-              _buildOverallProgressCard(context, progress),
-              
-              const SizedBox(height: 16),
-              
-              // Statistics Grid
-              _buildStatisticsGrid(context, progress),
-              
-              const SizedBox(height: 16),
-              
-              // Progress Breakdown
-              _buildProgressBreakdown(context, progress),
-              
-              const SizedBox(height: 16),
-              
-              // Language-specific Progress
-              _buildLanguageProgressSection(context, ref),
-              
-              const SizedBox(height: 16),
-              
-              // Quick Actions
-              _buildQuickActions(context, ref),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOverallProgressCard(BuildContext context, ProgressData progress) {
-    final theme = Theme.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.trending_up, 
-                  color: theme.colorScheme.primary,
-                  size: 24,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Learning Progress',
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            
-            // Progress indicators
-            _buildProgressIndicator(
-              context,
-              label: 'Mastery',
-              value: progress.masteryPercentage,
-              color: Colors.green,
-              count: progress.masteredCount,
-              total: progress.totalWords,
-            ),
-            
-            const SizedBox(height: 12),
-            
-            _buildProgressIndicator(
-              context,
-              label: 'Overall Study',
-              value: progress.studiedPercentage,
-              color: Colors.blue,
-              count: progress.masteredCount + progress.learningCount,
-              total: progress.totalWords,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProgressIndicator(
-    BuildContext context, {
-    required String label,
-    required double value,
-    required Color color,
-    required int count,
-    required int total,
-  }) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            Text(
-              '$count / $total (${value.toStringAsFixed(1)}%)',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: color,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        LinearProgressIndicator(
-          value: value / 100,
-          backgroundColor: color.withValues(alpha: 0.2),
-          valueColor: AlwaysStoppedAnimation(color),
-          minHeight: 8,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatisticsGrid(BuildContext context, ProgressData progress) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Statistics',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 1.8,
-          children: [
-            _buildStatCard(
-              context,
-              icon: Icons.check_circle,
-              color: Colors.green,
-              label: 'Mastered',
-              value: '${progress.masteredCount}',
-            ),
-            _buildStatCard(
-              context,
-              icon: Icons.psychology,
-              color: Colors.orange,
-              label: 'In Review',
-              value: '${progress.learningCount}',
-            ),
-            _buildStatCard(
-              context,
-              icon: Icons.fiber_new,
-              color: Colors.blue,
-              label: 'Unstudied',
-              value: '${progress.unstudiedCount}',
-            ),
-            _buildStatCard(
-              context,
-              icon: Icons.library_books,
-              color: Colors.purple,
-              label: 'Total Words',
-              value: '${progress.totalWords}',
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard(
-    BuildContext context, {
-    required IconData icon,
-    required Color color,
-    required String label,
-    required String value,
-  }) {
-    final theme = Theme.of(context);
-    return Card(
-      child: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 6),
-            Text(
-              value,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: theme.textTheme.bodySmall,
-              textAlign: TextAlign.center,
-            ),
+            // Language-specific Progress
+            _buildLanguageProgressSection(context, ref),
+            
+            const SizedBox(height: 16),
+            
+            // Privacy notice
+            _buildPrivacyNotice(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProgressBreakdown(BuildContext context, ProgressData progress) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Progress Breakdown',
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Card(
-          child: Column(
-            children: [
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.green.withValues(alpha: 0.2),
-                  child: const Icon(Icons.check_circle, color: Colors.green),
-                ),
-                title: const Text('Mastered Words'),
-                subtitle: const Text('Words you know well'),
-                trailing: Text(
-                  '${progress.masteredCount}',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    color: Colors.green,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const Divider(height: 1),
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.orange.withValues(alpha: 0.2),
-                  child: const Icon(Icons.psychology, color: Colors.orange),
-                ),
-                title: const Text('In Review'),
-                subtitle: const Text('Words marked as difficult'),
-                trailing: Text(
-                  '${progress.learningCount}',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    color: Colors.orange,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const Divider(height: 1),
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.blue.withValues(alpha: 0.2),
-                  child: const Icon(Icons.fiber_new, color: Colors.blue),
-                ),
-                title: const Text('Not Yet Studied'),
-                subtitle: const Text('Words you have not encountered'),
-                trailing: Text(
-                  '${progress.unstudiedCount}',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
 
-  Widget _buildQuickActions(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Quick Actions',
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
+  Widget _buildPrivacyNotice(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        border: Border.all(color: Colors.green.shade200),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.shield, color: Colors.green, size: 20),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Your progress is stored privately on your device. No data is shared or uploaded.',
+              style: TextStyle(fontSize: 12, color: Colors.green),
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        Card(
-          child: Column(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.school, color: Colors.blue),
-                title: const Text('Continue Learning'),
-                subtitle: const Text('Study new vocabulary words'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  // Navigate to Learn tab
-                  ref.read(navigationIndexProvider.notifier).state = 0;
-                },
-              ),
-              const Divider(height: 1),
-              ListTile(
-                leading: const Icon(Icons.psychology, color: Colors.orange),
-                title: const Text('Review Difficult Words'),
-                subtitle: const Text('Focus on words you found challenging'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  // Navigate to Review tab
-                  ref.read(navigationIndexProvider.notifier).state = 2;
-                },
-              ),
-              const Divider(height: 1),
-              ListTile(
-                leading: const Icon(Icons.quiz, color: Colors.green),
-                title: const Text('Take a Quiz'),
-                subtitle: const Text('Test your knowledge'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  // Navigate to Quiz tab
-                  ref.read(navigationIndexProvider.notifier).state = 1;
-                },
-              ),
-            ],
-          ),
-        ),
-        
-        const SizedBox(height: 16),
-        
-        // Privacy notice
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.green.shade50,
-            border: Border.all(color: Colors.green.shade200),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.shield, color: Colors.green, size: 20),
-              SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Your progress is stored privately on your device. No data is shared or uploaded.',
-                  style: TextStyle(fontSize: 12, color: Colors.green),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -572,19 +259,25 @@ class ProgressScreen extends ConsumerWidget {
     
     return multiLangAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, st) => Text('Error loading multi-language progress: $e'),
+      error: (e, st) => Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              const Icon(Icons.error, color: Colors.red, size: 48),
+              const SizedBox(height: 8),
+              Text('Error loading progress: $e'),
+            ],
+          ),
+        ),
+      ),
       data: (multiLangData) {
-        if (multiLangData.languages.length <= 1) {
-          // Don't show language breakdown if only one language
-          return const SizedBox.shrink();
-        }
-        
         final theme = Theme.of(context);
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Progress by Language',
+              multiLangData.languages.length > 1 ? 'Progress by Language' : 'Your Progress',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),

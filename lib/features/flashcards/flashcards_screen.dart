@@ -5,15 +5,22 @@ import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flutter_saas_template/core/language/language.dart';
-import 'package:flutter_saas_template/core/language/vocabulary_selector.dart';
 import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
 import 'package:flutter_saas_template/core/models/word.dart';
+import 'package:flutter_saas_template/core/providers/study_config_providers.dart';
 import 'package:flutter_saas_template/core/services/local_data_service.dart';
 
-/// Loads vocabulary based on current language and level selection
+/// Loads vocabulary based on current study configuration
 final vocabSetProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
-  final lang = ref.watch(appLanguageProvider);
-  final level = ref.watch(vocabularyLevelProvider);
+  final currentConfig = ref.watch(currentLanguageConfigProvider);
+  
+  // If no configuration is available, return empty list
+  if (currentConfig == null || !currentConfig.isEnabled) {
+    return <Word>[];
+  }
+
+  final lang = currentConfig.language;
+  final level = currentConfig.level;
 
   // For now, use the first available set for the selected level
   final sets = VocabularySets.getSetsForLevel(level);
@@ -54,7 +61,7 @@ class FlashcardsScreen extends ConsumerWidget {
         appBar: AppBar(
           title: const Text('Learn'),
           automaticallyImplyLeading: false,
-          actions: const [VocabularySelector(), SizedBox(width: 8)],
+          actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
         ),
         body: const Center(child: CircularProgressIndicator()),
       ),
@@ -62,7 +69,7 @@ class FlashcardsScreen extends ConsumerWidget {
         appBar: AppBar(
           title: const Text('Learn'),
           automaticallyImplyLeading: false,
-          actions: const [VocabularySelector(), SizedBox(width: 8)],
+          actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
         ),
         body: Center(child: Text('Failed to load vocab: $e')),
       ),
@@ -83,7 +90,7 @@ class FlashcardsScreen extends ConsumerWidget {
             title: const Text('Learn'),
             automaticallyImplyLeading: false,
             actions: [
-              const VocabularySelector(),
+              const LanguageSwitcherAction(),
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -153,17 +160,20 @@ class FlashcardsScreen extends ConsumerWidget {
   ) async {
     try {
       final dataService = await ref.read(localDataServiceProvider.future);
+      final currentConfig = ref.read(currentLanguageConfigProvider);
       
-      if (!context.mounted) return;
+      if (!context.mounted || currentConfig == null) return;
+      
+      final languageName = currentConfig.language.name;
       
       if (direction == CardSwiperDirection.right) {
-        // Known - mark as known
-        await dataService.markWordAsKnown(word.id);
+        // Known - mark as known for current language
+        await dataService.markWordAsKnownForLanguage(word.id, languageName);
         if (!context.mounted) return;
         _showFeedbackSnackBar(context, 'Known! ✅', Colors.green);
       } else if (direction == CardSwiperDirection.left) {
-        // Unknown - mark as difficult
-        await dataService.markWordAsDifficult(word.id);
+        // Unknown - mark as difficult for current language
+        await dataService.markWordAsDifficultForLanguage(word.id, languageName);
         if (!context.mounted) return;
         _showFeedbackSnackBar(context, 'Will review later! 📚', Colors.orange);
       }

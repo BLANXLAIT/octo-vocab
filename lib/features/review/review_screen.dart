@@ -6,16 +6,22 @@ import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flutter_saas_template/core/language/language.dart';
-import 'package:flutter_saas_template/core/language/vocabulary_selector.dart';
 import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
 import 'package:flutter_saas_template/core/models/word.dart';
+import 'package:flutter_saas_template/core/providers/study_config_providers.dart';
 import 'package:flutter_saas_template/core/services/local_data_service.dart';
 
 /// Loads only words marked as difficult for focused review
 final difficultWordsProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
-  // Get all vocabulary for the current language and level
-  final lang = ref.watch(appLanguageProvider);
-  final level = ref.watch(vocabularyLevelProvider);
+  final currentConfig = ref.watch(currentLanguageConfigProvider);
+  
+  // If no configuration is available, return empty list
+  if (currentConfig == null || !currentConfig.isEnabled) {
+    return <Word>[];
+  }
+
+  final lang = currentConfig.language;
+  final level = currentConfig.level;
   
   // Load full vocabulary set
   List<Word> allWords;
@@ -33,9 +39,9 @@ final difficultWordsProvider = FutureProvider.autoDispose<List<Word>>((ref) asyn
     allWords = Word.listFromJsonString(jsonStr);
   }
   
-  // Get difficult word IDs from local storage
+  // Get difficult word IDs from local storage for the current language
   final dataService = await ref.read(localDataServiceProvider.future);
-  final difficultWordIds = dataService.getDifficultWords();
+  final difficultWordIds = dataService.getDifficultWordsForLanguage(lang.name);
   
   // Filter to only include difficult words
   return allWords.where((word) => difficultWordIds.contains(word.id)).toList();
@@ -64,7 +70,7 @@ class ReviewScreen extends ConsumerWidget {
         appBar: AppBar(
           title: const Text('Review'),
           automaticallyImplyLeading: false,
-          actions: const [VocabularySelector(), SizedBox(width: 8)],
+          actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
         ),
         body: const Center(child: CircularProgressIndicator()),
       ),
@@ -72,7 +78,7 @@ class ReviewScreen extends ConsumerWidget {
         appBar: AppBar(
           title: const Text('Review'),
           automaticallyImplyLeading: false,
-          actions: const [VocabularySelector(), SizedBox(width: 8)],
+          actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
         ),
         body: Center(child: Text('Failed to load difficult words: $e')),
       ),
@@ -82,7 +88,7 @@ class ReviewScreen extends ConsumerWidget {
             appBar: AppBar(
               title: const Text('Review'),
               automaticallyImplyLeading: false,
-              actions: const [VocabularySelector(), SizedBox(width: 8)],
+              actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
             ),
             body: _buildEmptyState(context),
           );
@@ -93,7 +99,7 @@ class ReviewScreen extends ConsumerWidget {
             title: const Text('Review'),
             automaticallyImplyLeading: false,
             actions: [
-              const VocabularySelector(),
+              const LanguageSwitcherAction(),
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -238,12 +244,15 @@ class ReviewScreen extends ConsumerWidget {
   ) async {
     try {
       final dataService = await ref.read(localDataServiceProvider.future);
+      final currentConfig = ref.read(currentLanguageConfigProvider);
       
-      if (!context.mounted) return;
+      if (!context.mounted || currentConfig == null) return;
+      
+      final languageName = currentConfig.language.name;
       
       if (direction == CardSwiperDirection.right) {
-        // Mastered - remove from difficult words
-        await dataService.markWordAsKnown(word.id);
+        // Mastered - remove from difficult words for current language
+        await dataService.markWordAsKnownForLanguage(word.id, languageName);
         if (!context.mounted) return;
         _showFeedbackSnackBar(context, 'Mastered! ✨', Colors.green);
         // Refresh the provider to update the list

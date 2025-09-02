@@ -29,13 +29,33 @@ dart run build_runner watch --delete-conflicting-outputs
 ```
 
 ### Testing
-**Always use the Dart MCP server for running tests** instead of terminal commands:
-- Use the `mcp__ide__executeCode` tool for running tests
-- The Dart MCP server provides better integration and output handling
-- Test organization follows `dart_test.yaml` configuration:
-  - Unit tests: `test/unit/**_test.dart`
-  - Widget tests: `test/widget/**_test.dart` 
-  - Integration tests: `test/integration/**_test.dart`
+The project includes comprehensive testing infrastructure with automated scripts:
+
+**Test Scripts:**
+```bash
+# Full test suite with coverage and HTML reports
+./scripts/test.sh all --coverage --html
+
+# Unit tests only
+./scripts/test.sh unit --coverage
+
+# Widget tests only  
+./scripts/test.sh widget
+
+# Quick test run (no coverage, for development)
+./scripts/test-quick.sh
+```
+
+**Test Organization:**
+- Test configuration: `dart_test.yaml`
+- Unit tests: `test/unit/**_test.dart`
+- Widget tests: `test/widget/**_test.dart`
+- Integration tests: `test/integration/**_test.dart`
+
+**Coverage Reports:**
+- Coverage data: `coverage/lcov.info`
+- HTML reports: `coverage/html/index.html`
+- Current coverage: ~29% (unit tests focused on study configuration system)
 
 ### Linting & Analysis
 ```bash

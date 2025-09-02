@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_saas_template/core/language/language.dart';
-import 'package:flutter_saas_template/core/language/vocabulary_selector.dart';
 import 'package:flutter_saas_template/core/navigation/morphing_fab.dart';
 import 'package:flutter_saas_template/core/services/local_data_service.dart';
 import 'package:flutter_saas_template/core/theme/dynamic_theme.dart';
@@ -10,7 +9,7 @@ import 'package:flutter_saas_template/features/flashcards/flashcards_screen.dart
 import 'package:flutter_saas_template/features/progress/progress_screen.dart';
 import 'package:flutter_saas_template/features/quiz/quiz_screen.dart';
 import 'package:flutter_saas_template/features/review/review_screen.dart';
-import 'package:flutter_saas_template/features/settings/studying_languages_card.dart';
+import 'package:flutter_saas_template/features/settings/language_learning_settings_card.dart';
 
 /// Navigation destinations for the app
 enum AppDestination {
@@ -220,47 +219,8 @@ class SettingsScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Language Selection with Material 3 SegmentedButton
-            const Card(
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.language),
-                        SizedBox(width: 12),
-                        Text(
-                          'Learning Language',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16),
-                    LanguageSegmentedButton(),
-                    SizedBox(height: 16),
-                    Text(
-                      'Difficulty Level',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    VocabularyLevelChips(),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Studying Languages Management
-            const StudyingLanguagesCard(),
+            // Language Learning Configuration
+            const LanguageLearningSettingsCard(),
 
             const SizedBox(height: 16),
 

@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
+import 'package:flutter_saas_template/core/providers/study_config_providers.dart';
 
 enum AppLanguage { latin, spanish }
 
@@ -34,12 +35,15 @@ extension AppLanguageX on AppLanguage {
   }
 }
 
+// Legacy providers - will be replaced by new system
 final appLanguageProvider = StateProvider<AppLanguage>((ref) {
-  return AppLanguage.latin; // default
+  // Use new system if available, fallback to default
+  return ref.watch(currentLanguageProvider);
 });
 
 final vocabularyLevelProvider = StateProvider<VocabularyLevel>((ref) {
-  return VocabularyLevel.beginner; // default
+  // Use new system if available, fallback to default
+  return ref.watch(currentLevelProvider);
 });
 
 String vocabAssetPath(AppLanguage lang, String filename) {
@@ -65,15 +69,25 @@ class LanguageSwitcherAction extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final lang = ref.watch(appLanguageProvider);
+    final lang = ref.watch(currentLanguageProvider);
+    final enabledConfigs = ref.watch(enabledLanguageConfigsProvider);
+    
+    // Only show languages that are enabled for study
+    final availableLanguages = enabledConfigs.map((config) => config.language).toList();
+    
+    if (availableLanguages.isEmpty || availableLanguages.length == 1) {
+      // If no enabled languages or only one, just show current language as icon
+      return Icon(lang.icon);
+    }
+    
     return PopupMenuButton<AppLanguage>(
-      tooltip: 'Language',
-      icon: const Icon(Icons.language),
+      tooltip: 'Switch Active Language',
+      icon: Icon(lang.icon),
       onSelected: (value) {
-        ref.read(appLanguageProvider.notifier).state = value;
+        ref.read(studyConfigurationProvider.notifier).setCurrentLanguage(value);
       },
       itemBuilder: (context) => [
-        for (final l in AppLanguage.values)
+        for (final l in availableLanguages)
           PopupMenuItem<AppLanguage>(
             value: l,
             child: Row(
