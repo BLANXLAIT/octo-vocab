@@ -118,8 +118,8 @@ class AdaptiveScaffold extends ConsumerWidget {
               )
               .toList(),
         ),
-        floatingActionButton: const MorphingFAB(),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: const IntegratedFAB(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       );
     }
   }

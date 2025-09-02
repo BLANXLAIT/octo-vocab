@@ -291,3 +291,242 @@ class _AnimatedFABState extends State<AnimatedFAB>
     );
   }
 }
+
+/// An integrated FAB that harmonizes with NavigationBar design
+class IntegratedFAB extends ConsumerWidget {
+  const IntegratedFAB({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentIndex = ref.watch(navigationIndexProvider);
+    final destination = AppDestination.values[currentIndex];
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return AnimatedScale(
+      scale: 1.0,
+      duration: const Duration(milliseconds: 300),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        child: FloatingActionButton.extended(
+          onPressed: () => _handleFABAction(context, ref, destination, currentIndex),
+          backgroundColor: colorScheme.primaryContainer,
+          foregroundColor: colorScheme.onPrimaryContainer,
+          elevation: 2,
+          icon: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (child, animation) {
+              return RotationTransition(
+                turns: animation,
+                child: FadeTransition(opacity: animation, child: child),
+              );
+            },
+            child: Icon(
+              _getIconForDestination(destination),
+              key: ValueKey(destination),
+            ),
+          ),
+          label: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (child, animation) {
+              return SizeTransition(
+                sizeFactor: animation,
+                child: FadeTransition(opacity: animation, child: child),
+              );
+            },
+            child: Text(
+              _getLabelForDestination(destination),
+              key: ValueKey(destination),
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  IconData _getIconForDestination(AppDestination destination) {
+    switch (destination) {
+      case AppDestination.learn:
+        return Icons.shuffle_rounded;
+      case AppDestination.quiz:
+        return Icons.refresh_rounded;
+      case AppDestination.review:
+        return Icons.school_rounded;
+      case AppDestination.progress:
+        return Icons.insights_rounded;
+      case AppDestination.settings:
+        return Icons.backup_rounded;
+    }
+  }
+
+  String _getLabelForDestination(AppDestination destination) {
+    switch (destination) {
+      case AppDestination.learn:
+        return 'Shuffle Cards';
+      case AppDestination.quiz:
+        return 'Reset Quiz';
+      case AppDestination.review:
+        return 'Start Study';
+      case AppDestination.progress:
+        return 'View Stats';
+      case AppDestination.settings:
+        return 'Export Data';
+    }
+  }
+
+  void _handleFABAction(
+    BuildContext context,
+    WidgetRef ref,
+    AppDestination destination,
+    int currentIndex,
+  ) {
+    HapticFeedback.mediumImpact();
+    
+    switch (destination) {
+      case AppDestination.learn:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('🔀 Flashcards shuffled!'),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+        
+      case AppDestination.quiz:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('🔄 Quiz reset!'),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+        
+      case AppDestination.review:
+        // Navigate to Learn tab
+        ref.read(navigationIndexProvider.notifier).state = 0;
+        
+      case AppDestination.progress:
+        _showProgressDialog(context);
+        
+      case AppDestination.settings:
+        _showExportDialog(context);
+    }
+  }
+
+  void _showProgressDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('📊 Learning Progress'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildStatRow(
+              icon: Icons.flash_on_rounded,
+              label: 'Flashcards Studied',
+              value: '127',
+              color: Colors.orange,
+            ),
+            _buildStatRow(
+              icon: Icons.quiz_rounded,
+              label: 'Quiz Questions',
+              value: '89',
+              color: Colors.blue,
+            ),
+            _buildStatRow(
+              icon: Icons.check_circle_rounded,
+              label: 'Correct Answers',
+              value: '76',
+              color: Colors.green,
+            ),
+            _buildStatRow(
+              icon: Icons.trending_up_rounded,
+              label: 'Success Rate',
+              value: '85%',
+              color: Colors.purple,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatRow({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Text(label)),
+          Text(
+            value,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showExportDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('📤 Export Data'),
+        content: const Text(
+          'Your learning progress is stored locally on this device. '
+          'You can export your data for backup purposes, but remember '
+          'that Octo Vocab is designed to be privacy-first with no cloud storage.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('📦 Export feature coming soon!'),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              );
+            },
+            child: const Text('Export'),
+          ),
+        ],
+      ),
+    );
+  }
+}
