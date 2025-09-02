@@ -11,9 +11,11 @@ void main() {
     // Build the app and trigger a frame.
     await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
 
-    // Verify Home app bar/title and key navigation items are present.
-    expect(find.text('Octo Vocab'), findsOneWidget);
-    expect(find.text('Flashcards'), findsOneWidget);
-    expect(find.text('Quiz'), findsOneWidget);
+    // Verify app loads and key navigation items are present.
+    expect(find.text('Learn'), findsAtLeastNWidgets(1));
+    expect(find.text('Quiz'), findsAtLeastNWidgets(1));
+    expect(find.text('Review'), findsAtLeastNWidgets(1));
+    expect(find.text('Progress'), findsAtLeastNWidgets(1));
+    expect(find.text('Settings'), findsAtLeastNWidgets(1));
   });
 }

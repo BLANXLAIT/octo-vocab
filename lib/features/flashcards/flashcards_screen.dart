@@ -8,6 +8,7 @@ import 'package:flutter_saas_template/core/language/language.dart';
 import 'package:flutter_saas_template/core/language/vocabulary_selector.dart';
 import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
 import 'package:flutter_saas_template/core/models/word.dart';
+import 'package:flutter_saas_template/core/services/local_data_service.dart';
 
 /// Loads vocabulary based on current language and level selection
 final vocabSetProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
@@ -95,9 +96,16 @@ class FlashcardsScreen extends ConsumerWidget {
             child: CardSwiper(
               controller: controller,
               cardsCount: words.length,
+              numberOfCardsDisplayed: 1,
               onSwipe: (previousIndex, currentIndex, direction) {
                 // Handle swipe logic
                 HapticFeedback.lightImpact();
+                
+                // Get the word that was just swiped
+                final swipedWord = words[previousIndex];
+                
+                // Track word difficulty based on swipe direction (async but don't block UI)
+                _trackWordDifficulty(context, ref, swipedWord, direction);
                 
                 // Reset flip state for next card
                 ref.read(isCardFlippedProvider.notifier).state = false;
@@ -105,15 +113,6 @@ class FlashcardsScreen extends ConsumerWidget {
                 // Update current index
                 if (currentIndex != null) {
                   ref.read(currentCardIndexProvider.notifier).state = currentIndex;
-                }
-                
-                // Handle swipe direction for learning logic
-                if (direction == CardSwiperDirection.right) {
-                  // Known - could track this for future features
-                  _showFeedbackSnackBar(context, 'Known! ✅', Colors.green);
-                } else if (direction == CardSwiperDirection.left) {
-                  // Unknown - could track this for future features  
-                  _showFeedbackSnackBar(context, 'Keep studying! 📚', Colors.orange);
                 }
                 
                 return true;
@@ -144,6 +143,40 @@ class FlashcardsScreen extends ConsumerWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
+  }
+
+  Future<void> _trackWordDifficulty(
+    BuildContext context,
+    WidgetRef ref,
+    Word word,
+    CardSwiperDirection direction,
+  ) async {
+    try {
+      final dataService = await ref.read(localDataServiceProvider.future);
+      
+      if (!context.mounted) return;
+      
+      if (direction == CardSwiperDirection.right) {
+        // Known - mark as known
+        await dataService.markWordAsKnown(word.id);
+        if (!context.mounted) return;
+        _showFeedbackSnackBar(context, 'Known! ✅', Colors.green);
+      } else if (direction == CardSwiperDirection.left) {
+        // Unknown - mark as difficult
+        await dataService.markWordAsDifficult(word.id);
+        if (!context.mounted) return;
+        _showFeedbackSnackBar(context, 'Will review later! 📚', Colors.orange);
+      }
+    } catch (e) {
+      // Silent fail - don't break the learning experience
+      if (!context.mounted) return;
+      
+      if (direction == CardSwiperDirection.right) {
+        _showFeedbackSnackBar(context, 'Known! ✅', Colors.green);
+      } else if (direction == CardSwiperDirection.left) {
+        _showFeedbackSnackBar(context, 'Will review later! 📚', Colors.orange);
+      }
+    }
   }
 }
 

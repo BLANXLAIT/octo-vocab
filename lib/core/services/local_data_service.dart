@@ -13,6 +13,10 @@ class LocalDataService {
   static const String _keyQuizResults = 'quiz_results';
   static const String _keyAppSettings = 'app_settings';
   static const String _keySelectedLanguage = 'selected_language';
+  static const String _keyDifficultWords = 'difficult_words';
+  static const String _keyKnownWords = 'known_words';
+  static const String _keyStudyingLanguages = 'studying_languages';
+  static const String _keyPerLanguageProgress = 'per_language_progress';
 
   final SharedPreferences _prefs;
 
@@ -97,6 +101,34 @@ class LocalDataService {
     return _prefs.setString(_keySelectedLanguage, language);
   }
 
+  /// Word Difficulty Tracking (Privacy-First Learning Analytics)
+  /// Tracks which words users find difficult for personalized review
+  
+  // Note: getDifficultWords, getKnownWords, markWordAsDifficult, and markWordAsKnown
+  // methods are now implemented at the end of this class with per-language support
+
+  /// Get basic learning statistics
+  Map<String, int> getLearningStats() {
+    final difficultWords = getDifficultWords();
+    final knownWords = getKnownWords();
+    
+    return {
+      'difficult_count': difficultWords.length,
+      'known_count': knownWords.length,
+      'total_studied': difficultWords.length + knownWords.length,
+    };
+  }
+
+  /// Check if a word is marked as difficult
+  bool isWordDifficult(String wordId) {
+    return getDifficultWords().contains(wordId);
+  }
+
+  /// Check if a word is marked as known
+  bool isWordKnown(String wordId) {
+    return getKnownWords().contains(wordId);
+  }
+
   /// App Settings (Local Configuration Only)
   Map<String, dynamic> getAppSettings() {
     final json = _prefs.getString(_keyAppSettings);
@@ -123,6 +155,10 @@ class LocalDataService {
         _prefs.remove(_keyQuizResults),
         _prefs.remove(_keyAppSettings),
         _prefs.remove(_keySelectedLanguage),
+        _prefs.remove(_keyDifficultWords),
+        _prefs.remove(_keyKnownWords),
+        _prefs.remove(_keyStudyingLanguages),
+        _prefs.remove(_keyPerLanguageProgress),
       ]);
       return true;
     } catch (e) {
@@ -141,6 +177,9 @@ class LocalDataService {
       'quiz_results': getQuizResults(),
       'app_settings': getAppSettings(),
       'selected_language': getSelectedLanguage(),
+      'difficult_words': getDifficultWords().toList(),
+      'known_words': getKnownWords().toList(),
+      'learning_stats': getLearningStats(),
     };
   }
 
@@ -153,6 +192,216 @@ class LocalDataService {
       'privacy_note': 'This data never leaves your device unless you share it',
       'data': getAllUserData(),
     });
+  }
+
+  /// Language Management for Multi-Language Learning
+  /// Tracks which languages the user is actively studying
+  
+  /// Get set of languages user is actively studying  
+  Set<String> getStudyingLanguages() {
+    final json = _prefs.getString(_keyStudyingLanguages);
+    if (json == null) {
+      // Default to current selected language if none set
+      final currentLang = getSelectedLanguage();
+      return currentLang != null ? {currentLang} : <String>{};
+    }
+    try {
+      final decoded = jsonDecode(json) as List<dynamic>;
+      return decoded.cast<String>().toSet();
+    } catch (e) {
+      return <String>{};
+    }
+  }
+  
+  /// Add a language to study list
+  Future<bool> addStudyingLanguage(String language) async {
+    final languages = getStudyingLanguages()..add(language);
+    return _prefs.setString(_keyStudyingLanguages, jsonEncode(languages.toList()));
+  }
+  
+  /// Remove a language from study list
+  Future<bool> removeStudyingLanguage(String language) async {
+    final languages = getStudyingLanguages()..remove(language);
+    return _prefs.setString(_keyStudyingLanguages, jsonEncode(languages.toList()));
+  }
+  
+  /// Set complete list of studying languages
+  Future<bool> setStudyingLanguages(Set<String> languages) async {
+    return _prefs.setString(_keyStudyingLanguages, jsonEncode(languages.toList()));
+  }
+
+  /// Per-Language Progress Tracking
+  /// Stores progress data separately for each language
+  
+  /// Get per-language progress data
+  Map<String, Map<String, dynamic>> getPerLanguageProgress() {
+    final json = _prefs.getString(_keyPerLanguageProgress);
+    if (json == null) return {};
+    try {
+      final decoded = jsonDecode(json) as Map<String, dynamic>;
+      return decoded.cast<String, Map<String, dynamic>>();
+    } catch (e) {
+      return {};
+    }
+  }
+  
+  /// Get difficult words for a specific language
+  Set<String> getDifficultWordsForLanguage(String language) {
+    final allProgress = getPerLanguageProgress();
+    final languageProgress = allProgress[language];
+    if (languageProgress == null) return <String>{};
+    
+    try {
+      final difficultWords = languageProgress['difficult_words'] as List<dynamic>?;
+      return difficultWords?.cast<String>().toSet() ?? <String>{};
+    } catch (e) {
+      return <String>{};
+    }
+  }
+  
+  /// Get known words for a specific language
+  Set<String> getKnownWordsForLanguage(String language) {
+    final allProgress = getPerLanguageProgress();
+    final languageProgress = allProgress[language];
+    if (languageProgress == null) return <String>{};
+    
+    try {
+      final knownWords = languageProgress['known_words'] as List<dynamic>?;
+      return knownWords?.cast<String>().toSet() ?? <String>{};
+    } catch (e) {
+      return <String>{};
+    }
+  }
+  
+  /// Mark word as difficult for specific language
+  Future<bool> markWordAsDifficultForLanguage(String wordId, String language) async {
+    final allProgress = getPerLanguageProgress();
+    final languageProgress = allProgress[language] ?? {};
+    
+    final difficultWords = (languageProgress['difficult_words'] as List<dynamic>?)?.cast<String>().toSet() ?? <String>{};
+    final knownWords = (languageProgress['known_words'] as List<dynamic>?)?.cast<String>().toSet() ?? <String>{};
+    
+    // Add to difficult, remove from known
+    difficultWords.add(wordId);
+    knownWords.remove(wordId);
+    
+    languageProgress['difficult_words'] = difficultWords.toList();
+    languageProgress['known_words'] = knownWords.toList();
+    allProgress[language] = languageProgress;
+    
+    return _prefs.setString(_keyPerLanguageProgress, jsonEncode(allProgress));
+  }
+  
+  /// Mark word as known for specific language
+  Future<bool> markWordAsKnownForLanguage(String wordId, String language) async {
+    final allProgress = getPerLanguageProgress();
+    final languageProgress = allProgress[language] ?? {};
+    
+    final difficultWords = (languageProgress['difficult_words'] as List<dynamic>?)?.cast<String>().toSet() ?? <String>{};
+    final knownWords = (languageProgress['known_words'] as List<dynamic>?)?.cast<String>().toSet() ?? <String>{};
+    
+    // Add to known, remove from difficult
+    knownWords.add(wordId);
+    difficultWords.remove(wordId);
+    
+    languageProgress['difficult_words'] = difficultWords.toList();
+    languageProgress['known_words'] = knownWords.toList();
+    allProgress[language] = languageProgress;
+    
+    return _prefs.setString(_keyPerLanguageProgress, jsonEncode(allProgress));
+  }
+  
+  /// Get learning stats for specific language
+  Map<String, int> getLearningStatsForLanguage(String language) {
+    final difficultWords = getDifficultWordsForLanguage(language);
+    final knownWords = getKnownWordsForLanguage(language);
+    
+    return {
+      'difficult_count': difficultWords.length,
+      'known_count': knownWords.length,
+      'total_studied': difficultWords.length + knownWords.length,
+    };
+  }
+  
+  /// Get learning stats for all studying languages
+  Map<String, Map<String, int>> getMultiLanguageStats() {
+    final studyingLanguages = getStudyingLanguages();
+    final stats = <String, Map<String, int>>{};
+    
+    for (final language in studyingLanguages) {
+      stats[language] = getLearningStatsForLanguage(language);
+    }
+    
+    return stats;
+  }
+
+  /// Migration helpers - update existing methods to use per-language storage
+  /// These maintain backward compatibility while migrating to new structure
+  
+  Set<String> getDifficultWords() {
+    // Use current language data or fallback to legacy
+    final currentLang = getSelectedLanguage();
+    if (currentLang != null) {
+      final perLangWords = getDifficultWordsForLanguage(currentLang);
+      if (perLangWords.isNotEmpty) return perLangWords;
+    }
+    
+    // Fallback to legacy global storage
+    final json = _prefs.getString(_keyDifficultWords);
+    if (json == null) return <String>{};
+    try {
+      final decoded = jsonDecode(json) as List<dynamic>;
+      return decoded.cast<String>().toSet();
+    } catch (e) {
+      return <String>{};
+    }
+  }
+  
+  Set<String> getKnownWords() {
+    // Use current language data or fallback to legacy
+    final currentLang = getSelectedLanguage();
+    if (currentLang != null) {
+      final perLangWords = getKnownWordsForLanguage(currentLang);
+      if (perLangWords.isNotEmpty) return perLangWords;
+    }
+    
+    // Fallback to legacy global storage
+    final json = _prefs.getString(_keyKnownWords);
+    if (json == null) return <String>{};
+    try {
+      final decoded = jsonDecode(json) as List<dynamic>;
+      return decoded.cast<String>().toSet();
+    } catch (e) {
+      return <String>{};
+    }
+  }
+  
+  Future<bool> markWordAsDifficult(String wordId) async {
+    final currentLang = getSelectedLanguage();
+    if (currentLang != null) {
+      // Use per-language storage
+      return markWordAsDifficultForLanguage(wordId, currentLang);
+    }
+    
+    // Fallback to legacy global storage
+    final difficultWords = getDifficultWords()..add(wordId);
+    final knownWords = getKnownWords()..remove(wordId);
+    await _prefs.setString(_keyKnownWords, jsonEncode(knownWords.toList()));
+    return _prefs.setString(_keyDifficultWords, jsonEncode(difficultWords.toList()));
+  }
+  
+  Future<bool> markWordAsKnown(String wordId) async {
+    final currentLang = getSelectedLanguage();
+    if (currentLang != null) {
+      // Use per-language storage
+      return markWordAsKnownForLanguage(wordId, currentLang);
+    }
+    
+    // Fallback to legacy global storage
+    final knownWords = getKnownWords()..add(wordId);
+    final difficultWords = getDifficultWords()..remove(wordId);
+    await _prefs.setString(_keyDifficultWords, jsonEncode(difficultWords.toList()));
+    return _prefs.setString(_keyKnownWords, jsonEncode(knownWords.toList()));
   }
 }
 

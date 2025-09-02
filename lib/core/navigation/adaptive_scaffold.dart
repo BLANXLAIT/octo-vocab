@@ -10,14 +10,15 @@ import 'package:flutter_saas_template/features/flashcards/flashcards_screen.dart
 import 'package:flutter_saas_template/features/progress/progress_screen.dart';
 import 'package:flutter_saas_template/features/quiz/quiz_screen.dart';
 import 'package:flutter_saas_template/features/review/review_screen.dart';
+import 'package:flutter_saas_template/features/settings/studying_languages_card.dart';
 
 /// Navigation destinations for the app
 enum AppDestination {
   learn(icon: Icons.style, selectedIcon: Icons.style, label: 'Learn'),
   quiz(icon: Icons.quiz_outlined, selectedIcon: Icons.quiz, label: 'Quiz'),
   review(
-    icon: Icons.refresh_outlined,
-    selectedIcon: Icons.refresh,
+    icon: Icons.psychology_outlined,
+    selectedIcon: Icons.psychology,
     label: 'Review',
   ),
   progress(
@@ -214,7 +215,7 @@ class SettingsScreen extends ConsumerWidget {
         automaticallyImplyLeading: false,
         actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -255,6 +256,11 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ),
             ),
+
+            const SizedBox(height: 16),
+
+            // Studying Languages Management
+            const StudyingLanguagesCard(),
 
             const SizedBox(height: 16),
 
