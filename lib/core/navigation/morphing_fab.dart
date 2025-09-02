@@ -306,13 +306,13 @@ class IntegratedFAB extends ConsumerWidget {
       scale: 1.0,
       duration: const Duration(milliseconds: 300),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        child: FloatingActionButton.extended(
+        margin: const EdgeInsets.only(bottom: 12),
+        child: FloatingActionButton.small(
           onPressed: () => _handleFABAction(context, ref, destination, currentIndex),
-          backgroundColor: colorScheme.primaryContainer,
-          foregroundColor: colorScheme.onPrimaryContainer,
-          elevation: 2,
-          icon: AnimatedSwitcher(
+          backgroundColor: colorScheme.secondaryContainer,
+          foregroundColor: colorScheme.onSecondaryContainer,
+          elevation: 1,
+          child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
             transitionBuilder: (child, animation) {
               return RotationTransition(
@@ -323,20 +323,7 @@ class IntegratedFAB extends ConsumerWidget {
             child: Icon(
               _getIconForDestination(destination),
               key: ValueKey(destination),
-            ),
-          ),
-          label: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            transitionBuilder: (child, animation) {
-              return SizeTransition(
-                sizeFactor: animation,
-                child: FadeTransition(opacity: animation, child: child),
-              );
-            },
-            child: Text(
-              _getLabelForDestination(destination),
-              key: ValueKey(destination),
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              size: 20,
             ),
           ),
         ),
@@ -359,20 +346,6 @@ class IntegratedFAB extends ConsumerWidget {
     }
   }
 
-  String _getLabelForDestination(AppDestination destination) {
-    switch (destination) {
-      case AppDestination.learn:
-        return 'Shuffle Cards';
-      case AppDestination.quiz:
-        return 'Reset Quiz';
-      case AppDestination.review:
-        return 'Start Study';
-      case AppDestination.progress:
-        return 'View Stats';
-      case AppDestination.settings:
-        return 'Export Data';
-    }
-  }
 
   void _handleFABAction(
     BuildContext context,

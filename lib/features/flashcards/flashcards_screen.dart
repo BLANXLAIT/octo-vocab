@@ -1,13 +1,13 @@
 // ignore_for_file: public_member_api_docs
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flutter_saas_template/core/language/language.dart';
 import 'package:flutter_saas_template/core/language/vocabulary_selector.dart';
 import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
 import 'package:flutter_saas_template/core/models/word.dart';
-import 'package:flutter_saas_template/features/flashcards/animated_flashcard.dart';
 
 /// Loads vocabulary based on current language and level selection
 final vocabSetProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
@@ -30,11 +30,14 @@ final vocabSetProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
   return Word.listFromJsonString(jsonStr);
 });
 
-/// Current index in the flashcard session.
-final flashcardIndexProvider = StateProvider.autoDispose<int>((ref) => 0);
+/// Card controller for programmatic control
+final cardControllerProvider = Provider.autoDispose<CardSwiperController>((ref) => CardSwiperController());
 
-/// Whether the back (English) is showing.
-final showBackProvider = StateProvider.autoDispose<bool>((ref) => false);
+/// Current flashcard index
+final currentCardIndexProvider = StateProvider.autoDispose<int>((ref) => 0);
+
+/// Whether the current card is flipped to show back
+final isCardFlippedProvider = StateProvider.autoDispose<bool>((ref) => false);
 
 class FlashcardsScreen extends ConsumerWidget {
   const FlashcardsScreen({super.key});
@@ -42,8 +45,8 @@ class FlashcardsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cardsAsync = ref.watch(vocabSetProvider);
-    final index = ref.watch(flashcardIndexProvider);
-    final showBack = ref.watch(showBackProvider);
+    final currentIndex = ref.watch(currentCardIndexProvider);
+    final controller = ref.watch(cardControllerProvider);
 
     return cardsAsync.when(
       loading: () => Scaffold(
@@ -73,8 +76,6 @@ class FlashcardsScreen extends ConsumerWidget {
             body: const Center(child: Text('No vocabulary found')),
           );
         }
-        final i = index % words.length;
-        final word = words[i];
 
         return Scaffold(
           appBar: AppBar(
@@ -85,88 +86,316 @@ class FlashcardsScreen extends ConsumerWidget {
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Center(child: Text('${i + 1}/${words.length}')),
+                child: Center(child: Text('${currentIndex + 1}/${words.length}')),
               ),
             ],
           ),
           body: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                const SizedBox(height: 32),
-                Expanded(
-                  child: Center(
-                    child: AnimatedFlashcard(
-                      word: word,
-                      showBack: showBack,
-                      onFlip: () =>
-                          ref.read(showBackProvider.notifier).state = !showBack,
-                      onKnown: () {
-                        ref.read(showBackProvider.notifier).state = false;
-                        ref.read(flashcardIndexProvider.notifier).state =
-                            index + 1;
-                      },
-                      onUnknown: () {
-                        ref.read(showBackProvider.notifier).state = false;
-                        ref.read(flashcardIndexProvider.notifier).state =
-                            index + 1;
-                      },
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                // Enhanced action buttons with better styling
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    FilledButton.tonal(
-                      onPressed: () =>
-                          ref.read(showBackProvider.notifier).state = !showBack,
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 16,
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.flip_to_back, size: 20),
-                          SizedBox(width: 8),
-                          Text('Flip Card'),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    FilledButton(
-                      onPressed: () {
-                        ref.read(showBackProvider.notifier).state = false;
-                        ref.read(flashcardIndexProvider.notifier).state =
-                            index + 1;
-                      },
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 16,
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.navigate_next, size: 20),
-                          SizedBox(width: 8),
-                          Text('Next Card'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-              ],
+            child: CardSwiper(
+              controller: controller,
+              cardsCount: words.length,
+              onSwipe: (previousIndex, currentIndex, direction) {
+                // Handle swipe logic
+                HapticFeedback.lightImpact();
+                
+                // Reset flip state for next card
+                ref.read(isCardFlippedProvider.notifier).state = false;
+                
+                // Update current index
+                if (currentIndex != null) {
+                  ref.read(currentCardIndexProvider.notifier).state = currentIndex;
+                }
+                
+                // Handle swipe direction for learning logic
+                if (direction == CardSwiperDirection.right) {
+                  // Known - could track this for future features
+                  _showFeedbackSnackBar(context, 'Known! ✅', Colors.green);
+                } else if (direction == CardSwiperDirection.left) {
+                  // Unknown - could track this for future features  
+                  _showFeedbackSnackBar(context, 'Keep studying! 📚', Colors.orange);
+                }
+                
+                return true;
+              },
+              cardBuilder: (context, index, horizontalThresholdPercentage, verticalThresholdPercentage) {
+                final word = words[index];
+                return FlashcardWidget(
+                  word: word,
+                  onTap: () {
+                    ref.read(isCardFlippedProvider.notifier).state = !ref.read(isCardFlippedProvider);
+                  },
+                );
+              },
             ),
           ),
         );
       },
     );
+  }
+
+  void _showFeedbackSnackBar(BuildContext context, String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(milliseconds: 800),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: color,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    );
+  }
+}
+
+/// A simplified flashcard widget for use with CardSwiper
+class FlashcardWidget extends ConsumerWidget {
+  const FlashcardWidget({
+    required this.word,
+    required this.onTap,
+    super.key,
+  });
+
+  final Word word;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isFlipped = ref.watch(isCardFlippedProvider);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 600),
+        transitionBuilder: (child, animation) {
+          final rotateAnimation = Tween<double>(
+            begin: 0,
+            end: 1,
+          ).animate(animation);
+          
+          return AnimatedBuilder(
+            animation: rotateAnimation,
+            child: child,
+            builder: (context, child) {
+              final isShowingFront = rotateAnimation.value < 0.5;
+              if (isShowingFront) {
+                return Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, 0.001)
+                    ..rotateY(rotateAnimation.value * 3.14159),
+                  child: child,
+                );
+              } else {
+                return Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, 0.001)
+                    ..rotateY((1 - rotateAnimation.value) * 3.14159),
+                  child: child,
+                );
+              }
+            },
+          );
+        },
+        child: Card(
+          key: ValueKey(isFlipped ? 'back' : 'front'),
+          elevation: 8,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  colorScheme.surface,
+                  colorScheme.surfaceContainerLow,
+                ],
+              ),
+              border: Border.all(
+                color: colorScheme.outline.withValues(alpha: 0.2),
+                width: 1,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (!isFlipped) ..._buildFrontContent(theme) else ..._buildBackContent(theme),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildFrontContent(ThemeData theme) {
+    return [
+      Icon(
+        Icons.translate,
+        size: 48,
+        color: theme.colorScheme.primary.withValues(alpha: 0.7),
+      ),
+      const SizedBox(height: 24),
+      Text(
+        word.latin,
+        style: theme.textTheme.displayMedium?.copyWith(
+          color: theme.colorScheme.onSurface,
+          fontWeight: FontWeight.w500,
+        ),
+        textAlign: TextAlign.center,
+      ),
+      const SizedBox(height: 16),
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          'Tap to reveal meaning',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onPrimaryContainer,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      ),
+      const Spacer(),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Column(
+            children: [
+              Icon(
+                Icons.swipe_left,
+                color: Colors.red.withValues(alpha: 0.6),
+                size: 32,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Unknown',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.red.withValues(alpha: 0.6),
+                ),
+              ),
+            ],
+          ),
+          Column(
+            children: [
+              Icon(
+                Icons.swipe_right,
+                color: Colors.green.withValues(alpha: 0.6),
+                size: 32,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Known',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.green.withValues(alpha: 0.6),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ];
+  }
+
+  List<Widget> _buildBackContent(ThemeData theme) {
+    return [
+      Icon(
+        Icons.lightbulb,
+        size: 48,
+        color: theme.colorScheme.secondary.withValues(alpha: 0.7),
+      ),
+      const SizedBox(height: 24),
+      Text(
+        word.english,
+        style: theme.textTheme.displayMedium?.copyWith(
+          color: theme.colorScheme.onSurface,
+          fontWeight: FontWeight.w500,
+        ),
+        textAlign: TextAlign.center,
+      ),
+      if (word.exampleLatin != null || word.exampleEnglish != null) ...[
+        const SizedBox(height: 24),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              if (word.exampleLatin != null)
+                Text(
+                  '"${word.exampleLatin}"',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.onSecondaryContainer,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              if (word.exampleLatin != null && word.exampleEnglish != null)
+                const SizedBox(height: 8),
+              if (word.exampleEnglish != null)
+                Text(
+                  '— ${word.exampleEnglish}',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSecondaryContainer.withValues(alpha: 0.8),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+            ],
+          ),
+        ),
+      ],
+      const Spacer(),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Column(
+            children: [
+              Icon(
+                Icons.swipe_left,
+                color: Colors.red.withValues(alpha: 0.6),
+                size: 32,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Unknown',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.red.withValues(alpha: 0.6),
+                ),
+              ),
+            ],
+          ),
+          Column(
+            children: [
+              Icon(
+                Icons.swipe_right,
+                color: Colors.green.withValues(alpha: 0.6),
+                size: 32,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Known',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.green.withValues(alpha: 0.6),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ];
   }
 }
