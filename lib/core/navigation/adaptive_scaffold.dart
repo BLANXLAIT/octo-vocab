@@ -262,11 +262,83 @@ class SettingsScreen extends ConsumerWidget {
             const SizedBox(height: 16),
 
             // About Section
-            const Card(
-              child: ListTile(
-                leading: Icon(Icons.info_outline),
-                title: Text('About Octo Vocab'),
-                subtitle: Text('Privacy-first vocabulary learning'),
+            Card(
+              child: ExpansionTile(
+                leading: const Icon(Icons.info_outline),
+                title: const Text('About Octo Vocab'),
+                subtitle: const Text('Privacy-first vocabulary learning'),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Octo Vocab is a privacy-first offline vocabulary learning app designed for students in grades 7-12 learning foreign languages.',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildInfoRow(Icons.shield, 'Privacy', 'No data collection, fully offline'),
+                        _buildInfoRow(Icons.school, 'Education', 'Designed for grades 7-12'),
+                        _buildInfoRow(Icons.language, 'Languages', 'Latin & Spanish (more coming)'),
+                        _buildInfoRow(Icons.code, 'Version', '1.0.0'),
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.code, size: 16, color: Colors.grey[600]),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Source Code:',
+                                    style: TextStyle(fontWeight: FontWeight.w500),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              const SelectableText(
+                                'github.com/BLANXLAIT/octo-vocab',
+                                style: TextStyle(
+                                  fontFamily: 'monospace',
+                                  fontSize: 12,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Icon(Icons.bug_report, size: 16, color: Colors.grey[600]),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Report Issues:',
+                                    style: TextStyle(fontWeight: FontWeight.w500),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              const SelectableText(
+                                'github.com/BLANXLAIT/octo-vocab/issues',
+                                style: TextStyle(
+                                  fontFamily: 'monospace',
+                                  fontSize: 12,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
 
@@ -300,6 +372,30 @@ class SettingsScreen extends ConsumerWidget {
       ),
     );
   }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: Colors.grey[600]),
+          const SizedBox(width: 8),
+          Text(
+            '$label:',
+            style: const TextStyle(fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(color: Colors.grey[700]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 }
 
 /// Animated theme selector card with color preview

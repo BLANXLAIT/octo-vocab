@@ -87,13 +87,6 @@ void main() {
             children: [
               Text('Language Learning Settings'),
               Text('2 active'),
-              Text('Currently studying: Spanish'),
-              Row(
-                children: [
-                  Icon(Icons.star),
-                  Text('ACTIVE'),
-                ],
-              ),
               Container(
                 child: Text('Intermediate level'),
               ),
@@ -104,9 +97,6 @@ void main() {
 
       expect(find.text('Language Learning Settings'), findsOneWidget);
       expect(find.text('2 active'), findsOneWidget);
-      expect(find.text('Currently studying: Spanish'), findsOneWidget);
-      expect(find.byIcon(Icons.star), findsOneWidget);
-      expect(find.text('ACTIVE'), findsOneWidget);
       expect(find.text('Intermediate level'), findsOneWidget);
     });
 

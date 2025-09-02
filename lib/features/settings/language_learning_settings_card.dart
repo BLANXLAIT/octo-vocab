@@ -95,37 +95,6 @@ class LanguageLearningSettingsCard extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
 
-            // Current active language indicator
-            if (enabledCount > 1) ...[
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.star,
-                      size: 18,
-                      color: theme.colorScheme.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Currently studying: ${configSet.currentLanguage.label}',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
 
             // Language configurations
             ...AppLanguage.values.map((language) {
@@ -217,27 +186,6 @@ class LanguageLearningSettingsCard extends ConsumerWidget {
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          if (isCurrentLanguage) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primary,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                'ACTIVE',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.onPrimary,
-                                ),
-                              ),
-                            ),
-                          ],
                         ],
                       ),
                       if (config.isEnabled)
