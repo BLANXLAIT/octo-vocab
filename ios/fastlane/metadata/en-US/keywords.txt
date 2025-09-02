@@ -1,0 +1,1 @@
+vocabulary,latin,spanish,education,student,offline,privacy,flashcards,study,school

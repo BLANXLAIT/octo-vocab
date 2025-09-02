@@ -190,8 +190,18 @@ platform :ios do
     # Build the app
     build
     
-    # Upload to App Store
+    # Configure App Store Connect API for release
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_filepath: ENV["APP_STORE_CONNECT_API_KEY_PATH"],
+      duration: 1200, # 20 minutes
+      in_house: false
+    )
+    
+    # Upload to App Store with metadata from fastlane/metadata/en-US/
     upload_to_app_store(
+      api_key: api_key,
       app_identifier: "com.blanxlait.octo-vocab",
       force: true,
       reject_if_possible: true,
@@ -218,6 +228,33 @@ platform :ios do
     )
     
     UI.success "🎉 App uploaded to App Store! Go to App Store Connect to submit for review."
+  end
+
+  desc "Update App Store metadata and screenshots"
+  lane :update_metadata do
+    UI.message "📝 Updating App Store Connect metadata..."
+    
+    # Configure App Store Connect API for metadata upload
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_filepath: ENV["APP_STORE_CONNECT_API_KEY_PATH"],
+      duration: 1200, # 20 minutes
+      in_house: false
+    )
+    
+    # Upload metadata to App Store Connect
+    deliver(
+      api_key: api_key,
+      app_identifier: "com.blanxlait.octo-vocab",
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      force: true,
+      # Metadata will be read from fastlane/metadata/en-US/ files
+      overwrite_screenshots: false
+    )
+    
+    UI.success "✅ App Store metadata updated successfully!"
   end
 
   desc "Setup: Create app and sync certificates (run once)"

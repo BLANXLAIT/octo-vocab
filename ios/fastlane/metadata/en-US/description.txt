@@ -1,0 +1,34 @@
+Octo Vocab is a privacy-first vocabulary learning app designed specifically for students in grades 7-12 studying Latin and Spanish. Built with education and privacy as core principles.
+
+🔒 COMPLETELY PRIVATE
+• Zero data collection - no accounts, analytics, or tracking
+• Works completely offline - no internet required
+• Your progress stays on your device
+• COPPA & FERPA compliant for educational use
+
+📚 EDUCATIONAL FOCUS
+• ACTFL-aligned leveling system
+• Designed for classroom and homework use
+• Perfect for individual study or group learning
+• Grade-appropriate vocabulary sets
+
+🌍 MULTI-LANGUAGE SUPPORT
+• Latin vocabulary with English translations
+• Spanish vocabulary with English translations
+• Plans for additional languages in future updates
+
+🎯 LEARNING FEATURES
+• Flashcard study mode
+• Interactive vocabulary quizzes
+• Progress tracking (stored locally)
+• Adaptive difficulty levels
+
+📱 STUDENT-FRIENDLY DESIGN
+• Clean, distraction-free interface
+• Optimized for both phone and tablet
+• Accessibility features included
+• No ads or in-app purchases
+
+Perfect for homeschool families, classroom teachers, and independent learners who value privacy and effective vocabulary study.
+
+Open source and built by educators, for education.
