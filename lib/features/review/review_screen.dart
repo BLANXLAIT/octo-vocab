@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_saas_template/core/language/language.dart';
 import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
 import 'package:flutter_saas_template/core/models/word.dart';
+import 'package:flutter_saas_template/core/navigation/adaptive_scaffold.dart';
 import 'package:flutter_saas_template/core/providers/study_config_providers.dart';
 import 'package:flutter_saas_template/core/services/local_data_service.dart';
 
@@ -102,7 +103,7 @@ class ReviewScreen extends ConsumerWidget {
               automaticallyImplyLeading: false,
               actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
             ),
-            body: _buildEmptyState(context),
+            body: _buildEmptyState(context, ref),
           );
         }
 
@@ -186,7 +187,7 @@ class ReviewScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildEmptyState(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     return Center(
       child: Padding(
@@ -224,8 +225,7 @@ class ReviewScreen extends ConsumerWidget {
             const SizedBox(height: 32),
             FilledButton.icon(
               onPressed: () {
-                // Navigate to Learn tab
-                // This will be handled by the navigation system
+                ref.read(navigationIndexProvider.notifier).state = 0;
               },
               icon: const Icon(Icons.school),
               label: const Text('Start Learning'),

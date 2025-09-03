@@ -229,40 +229,6 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  void _showPrivacyInfo(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Privacy & Compliance'),
-        content: const SingleChildScrollView(
-          child: Text(
-            '🔒 PRIVACY-FIRST DESIGN\n'
-            '• No user accounts or registration\n'
-            '• No data collection or tracking\n'
-            '• All progress stored only on your device\n'
-            '• No internet connection required\n\n'
-            '👨‍⚖️ COMPLIANCE\n'
-            '• COPPA compliant (safe for students under 13)\n'
-            '• FERPA compliant (educational privacy)\n'
-            '• GDPR compliant (EU privacy rights)\n\n'
-            '🛡️ YOUR DATA RIGHTS\n'
-            '• You control all your data\n'
-            '• Delete everything with one tap\n'
-            '• No hidden data collection\n'
-            '• No third-party tracking\n\n'
-            'Octo Vocab respects student privacy and gives you '
-            'complete control over your learning data.',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Got it'),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -308,16 +274,61 @@ class SettingsScreen extends ConsumerWidget {
 
             Card(
               key: const Key('privacy_info_card'),
-              child: Semantics(
-                label: 'Privacy information - COPPA and FERPA compliant with no data collection',
-                child: ListTile(
-                  leading: const Icon(Icons.privacy_tip, color: Colors.green),
-                  title: const Text('Privacy Protection'),
-                  subtitle: const Text(
-                    'COPPA/FERPA compliant • No data collection',
+              child: ExpansionTile(
+                leading: const Icon(Icons.privacy_tip, color: Colors.green),
+                title: const Text('Privacy Protection'),
+                subtitle: const Text('COPPA/FERPA compliant • No data collection'),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Octo Vocab is designed with privacy as the foundation, ensuring complete compliance with educational privacy standards.',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildInfoRow(Icons.shield, 'Privacy', 'No data collection, fully offline'),
+                        _buildInfoRow(Icons.school, 'COPPA', 'Safe for students under 13'),
+                        _buildInfoRow(Icons.gavel, 'FERPA', 'Educational privacy compliant'),
+                        _buildInfoRow(Icons.public_off, 'GDPR', 'EU privacy rights respected'),
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            border: Border.all(color: Colors.green.shade200),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.security, size: 16, color: Colors.green),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Your Data Rights:',
+                                    style: TextStyle(fontWeight: FontWeight.w500),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                '• You control all your data\n'
+                                '• Delete everything with one tap\n'
+                                '• No hidden data collection\n'
+                                '• No third-party tracking',
+                                style: TextStyle(fontSize: 12, color: Colors.green),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  onTap: () => _showPrivacyInfo(context),
-                ),
+                ],
               ),
             ),
 
