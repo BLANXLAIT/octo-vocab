@@ -143,7 +143,7 @@ jobs:
         echo "FASTLANE_ITC_TEAM_ID=$FASTLANE_ITC_TEAM_ID" >> $GITHUB_ENV
         echo "FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD=$FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD" >> $GITHUB_ENV
         echo "MATCH_CERTS_PAT=$MATCH_CERTS_PAT" >> $GITHUB_ENV
-        echo "MATCH_READONLY=true" >> $GITHUB_ENV
+        echo "MATCH_READONLY=false" >> $GITHUB_ENV
 
     # Validate secrets are available
     - name: 🔍 Validate secrets

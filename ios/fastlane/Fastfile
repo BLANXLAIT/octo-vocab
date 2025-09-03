@@ -95,13 +95,14 @@ platform :ios do
       UI.message "⚠️  No PAT found - using basic Git URL (may fail for private repos)"
     end
     
-    # Use match for certificate and provisioning profile management in readonly mode
+    # Use match for certificate and provisioning profile management
+    # Allow creation of new profiles if MATCH_READONLY is not set to "true"
     match(
       type: "appstore",
       app_identifier: "com.blanxlait.octo-vocab",
       git_url: git_url,
       git_branch: ENV["MATCH_GIT_BRANCH"] || "main",
-      readonly: true,  # Don't create new certificates, just download existing ones
+      readonly: ENV["MATCH_READONLY"] == "true",  # Respect MATCH_READONLY environment variable
       force_for_new_devices: true
     )
     
