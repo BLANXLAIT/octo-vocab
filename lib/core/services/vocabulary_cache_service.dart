@@ -1,8 +1,9 @@
-// ignore_for_file: public_member_api_docs
+// ignore_for_file: public_member_api_docs, directives_ordering
 
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meta/meta.dart';
 
 import 'package:flutter_saas_template/core/language/language.dart';
 import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
@@ -114,7 +115,7 @@ class VocabularyCacheService {
       PerformanceMonitor.instance.recordLoadTime(stopwatch.elapsed);
 
       // Ultimate fallback using error recovery service
-      return await ErrorRecoveryService.instance.recoverVocabularyLoad(
+      return ErrorRecoveryService.instance.recoverVocabularyLoad(
         language: language,
         level: level,
         setName: setName,
@@ -224,7 +225,7 @@ class VocabularyCacheService {
     if (_isPreloading) return;
 
     // Preload adjacent difficulty levels
-    final levels = VocabularyLevel.values;
+    const levels = VocabularyLevel.values;
     final currentIndex = levels.indexOf(level);
 
     // Add adjacent levels to preload queue
@@ -243,7 +244,7 @@ class VocabularyCacheService {
   }
 
   /// Start background preloading
-  void _startPreloading() async {
+  Future<void> _startPreloading() async {
     if (_isPreloading || _preloadQueue.isEmpty) return;
 
     _isPreloading = true;
@@ -278,7 +279,7 @@ class VocabularyCacheService {
       }
 
       // Small delay to prevent blocking UI
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
     }
 
     _isPreloading = false;
@@ -398,6 +399,7 @@ final cachedVocabularyProvider =
     });
 
 /// Request parameters for vocabulary loading
+@immutable
 class VocabularyRequest {
   const VocabularyRequest({
     required this.language,

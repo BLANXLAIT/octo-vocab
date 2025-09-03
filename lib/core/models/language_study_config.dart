@@ -1,4 +1,4 @@
-// ignore_for_file: public_member_api_docs
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/foundation.dart';
 import 'package:flutter_saas_template/core/language/language.dart';
 import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
@@ -11,6 +11,21 @@ class LanguageStudyConfig {
     required this.level,
     required this.isEnabled,
   });
+
+  /// Creates from JSON storage
+  factory LanguageStudyConfig.fromJson(Map<String, dynamic> json) {
+    return LanguageStudyConfig(
+      language: AppLanguage.values.firstWhere(
+        (lang) => lang.name == json['language'],
+        orElse: () => AppLanguage.latin,
+      ),
+      level: VocabularyLevel.values.firstWhere(
+        (level) => level.code == json['level'],
+        orElse: () => VocabularyLevel.beginner,
+      ),
+      isEnabled: json['isEnabled'] as bool? ?? false,
+    );
+  }
 
   final AppLanguage language;
   final VocabularyLevel level;
@@ -36,21 +51,6 @@ class LanguageStudyConfig {
       'level': level.code,
       'isEnabled': isEnabled,
     };
-  }
-
-  /// Creates from JSON storage
-  factory LanguageStudyConfig.fromJson(Map<String, dynamic> json) {
-    return LanguageStudyConfig(
-      language: AppLanguage.values.firstWhere(
-        (lang) => lang.name == json['language'],
-        orElse: () => AppLanguage.latin,
-      ),
-      level: VocabularyLevel.values.firstWhere(
-        (level) => level.code == json['level'],
-        orElse: () => VocabularyLevel.beginner,
-      ),
-      isEnabled: json['isEnabled'] as bool? ?? false,
-    );
   }
 
   @override

@@ -122,7 +122,7 @@ class ErrorRecoveryService {
 
     // Exponential backoff: 100ms, 200ms, 400ms
     final delayMs = 100 * (1 << errorCount);
-    await Future.delayed(Duration(milliseconds: delayMs));
+    await Future<void>.delayed(Duration(milliseconds: delayMs));
 
     try {
       _logError(error, 'Retrying (attempt ${errorCount + 1})');
@@ -279,7 +279,7 @@ mixin ErrorRecoveryMixin {
     try {
       return await function();
     } catch (error) {
-      return await errorRecovery.handleError<T>(
+      return errorRecovery.handleError<T>(
         errorType,
         'Failed to execute $operation',
         error,

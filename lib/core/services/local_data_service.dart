@@ -1,4 +1,4 @@
-// ignore_for_file: public_member_api_docs
+// ignore_for_file: public_member_api_docs, directives_ordering
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
