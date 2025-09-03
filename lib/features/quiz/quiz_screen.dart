@@ -7,14 +7,48 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flutter_saas_template/core/animations/celebration_overlay.dart';
 import 'package:flutter_saas_template/core/language/language.dart';
+import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
 import 'package:flutter_saas_template/core/models/word.dart';
+import 'package:flutter_saas_template/core/providers/study_config_providers.dart';
 import 'package:flutter_saas_template/features/quiz/animated_quiz_option.dart';
 
 final quizVocabProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
   final lang = ref.watch(appLanguageProvider);
-  final path = vocabAssetPath(lang, 'grade8_set1.json');
-  final jsonStr = await rootBundle.loadString(path);
-  return Word.listFromJsonString(jsonStr);
+  final level = ref.watch(currentLevelProvider);
+  
+  // Load all vocabulary sets for the current language and level
+  final allWords = <Word>[];
+  final vocabularySets = VocabularySets.getSetsForLevel(level);
+  
+  if (vocabularySets.isEmpty) {
+    // Fallback to grade8_set1 if no sets are defined for this level
+    try {
+      final path = vocabAssetPath(lang, 'grade8_set1.json');
+      final jsonStr = await rootBundle.loadString(path);
+      allWords.addAll(Word.listFromJsonString(jsonStr));
+    } catch (e) {
+      // If grade8_set1 doesn't exist, return empty list
+      return <Word>[];
+    }
+  } else {
+    // Load all vocabulary sets for this level
+    for (final vocabSet in vocabularySets) {
+      try {
+        final path = vocabAssetPath(lang, '${level.code}/${vocabSet.filename}');
+        final jsonStr = await rootBundle.loadString(path);
+        allWords.addAll(Word.listFromJsonString(jsonStr));
+      } catch (e) {
+        // Skip sets that don't exist for this language
+        continue;
+      }
+    }
+  }
+  
+  // Shuffle the words to provide variety in quiz order
+  final rng = Random();
+  allWords.shuffle(rng);
+  
+  return allWords;
 });
 
 final quizIndexProvider = StateProvider.autoDispose<int>((ref) => 0);
@@ -70,7 +104,8 @@ class QuizScreen extends ConsumerWidget {
         final current = words[i];
 
         // Build 4 options: correct English + 3 distractors.
-        final rng = Random(i); // stable order per index
+        // Use a combination of word index and current time for better randomization
+        final rng = Random(i + DateTime.now().millisecondsSinceEpoch);
         final pool = [...words]
           ..removeAt(i)
           ..shuffle(rng);

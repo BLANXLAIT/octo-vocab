@@ -123,38 +123,52 @@ class VocabularyCacheService {
     VocabularyLevel level,
     String setName,
   ) async {
-    // Try language root path first (for grade8_set1.json files)
-    String assetPath = 'assets/vocab/${language.name}/$setName.json';
+    String assetPath;
+    
+    // Handle legacy grade8_set1 format
+    if (setName == 'grade8_set1') {
+      // Try language root path first (for grade8_set1.json files)
+      assetPath = 'assets/vocab/${language.name}/$setName.json';
+      
+      try {
+        final jsonStr = await rootBundle.loadString(assetPath);
+        return Word.listFromJsonString(jsonStr);
+      } catch (e) {
+        // Handle level-specific fallbacks for grade8_set1
+        switch (level) {
+          case VocabularyLevel.beginner:
+            // Use set1_essentials for beginner
+            assetPath = 'assets/vocab/${language.name}/${level.code}/set1_essentials.json';
+            try {
+              final jsonStr = await rootBundle.loadString(assetPath);
+              return Word.listFromJsonString(jsonStr);
+            } catch (e2) {
+              // If level-specific file doesn't exist, return empty list
+              return [];
+            }
+          case VocabularyLevel.intermediate:
+          case VocabularyLevel.advanced:
+            // These levels don't have content yet, return empty list instead of failing
+            return [];
+        }
+      }
+    }
+    
+    // Handle modern leveled vocabulary sets
+    // First try: assume setName is already a filename (with or without .json)
+    final fileName = setName.endsWith('.json') ? setName : '$setName.json';
+    assetPath = 'assets/vocab/${language.name}/${level.code}/$fileName';
     
     try {
       final jsonStr = await rootBundle.loadString(assetPath);
       return Word.listFromJsonString(jsonStr);
     } catch (e) {
-      // Try level-specific path as fallback
-      assetPath = 'assets/vocab/${language.name}/${level.code}/$setName.json';
+      // Second try: legacy root path
+      assetPath = 'assets/vocab/${language.name}/$fileName';
       try {
         final jsonStr = await rootBundle.loadString(assetPath);
         return Word.listFromJsonString(jsonStr);
       } catch (e2) {
-        // Handle level-specific fallbacks for grade8_set1
-        if (setName == 'grade8_set1') {
-          switch (level) {
-            case VocabularyLevel.beginner:
-              // Use set1_essentials for beginner
-              assetPath = 'assets/vocab/${language.name}/${level.code}/set1_essentials.json';
-              try {
-                final jsonStr = await rootBundle.loadString(assetPath);
-                return Word.listFromJsonString(jsonStr);
-              } catch (e3) {
-                // If level-specific file doesn't exist, return empty list for intermediate/advanced
-                return [];
-              }
-            case VocabularyLevel.intermediate:
-            case VocabularyLevel.advanced:
-              // These levels don't have content yet, return empty list instead of failing
-              return [];
-          }
-        }
         rethrow;
       }
     }

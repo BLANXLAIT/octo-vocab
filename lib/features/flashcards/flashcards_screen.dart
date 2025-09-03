@@ -22,20 +22,35 @@ final vocabSetProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
   final lang = currentConfig.language;
   final level = currentConfig.level;
 
-  // For now, use the first available set for the selected level
-  final sets = VocabularySets.getSetsForLevel(level);
-  if (sets.isEmpty) {
+  // Load ALL vocabulary sets for the selected level
+  final allWords = <Word>[];
+  final vocabularySets = VocabularySets.getSetsForLevel(level);
+  
+  if (vocabularySets.isEmpty) {
     // Fallback to legacy format if no leveled sets available
-    final path = vocabAssetPath(lang, 'grade8_set1.json');
-    final jsonStr = await rootBundle.loadString(path);
-    return Word.listFromJsonString(jsonStr);
+    try {
+      final path = vocabAssetPath(lang, 'grade8_set1.json');
+      final jsonStr = await rootBundle.loadString(path);
+      allWords.addAll(Word.listFromJsonString(jsonStr));
+    } catch (e) {
+      // If grade8_set1 doesn't exist, return empty list
+      return <Word>[];
+    }
+  } else {
+    // Load all vocabulary sets for this level
+    for (final vocabSet in vocabularySets) {
+      try {
+        final path = vocabularySetAssetPath(lang, vocabSet);
+        final jsonStr = await rootBundle.loadString(path);
+        allWords.addAll(Word.listFromJsonString(jsonStr));
+      } catch (e) {
+        // Skip sets that don't exist for this language
+        continue;
+      }
+    }
   }
-
-  // Load the first set for the level
-  final set = sets.first;
-  final path = vocabularySetAssetPath(lang, set);
-  final jsonStr = await rootBundle.loadString(path);
-  return Word.listFromJsonString(jsonStr);
+  
+  return allWords;
 });
 
 /// Card controller for programmatic control

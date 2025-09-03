@@ -61,14 +61,17 @@ class LanguageLearningSettingsCard extends ConsumerWidget {
               children: [
                 const Icon(Icons.school),
                 const SizedBox(width: 12),
-                const Text(
-                  'Language Learning Settings',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                const Expanded(
+                  child: Text(
+                    'Language Learning Settings',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 8), // Small gap instead of Spacer
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(

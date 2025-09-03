@@ -11,6 +11,47 @@ import 'package:flutter_saas_template/core/providers/study_config_providers.dart
 import 'package:flutter_saas_template/core/services/local_data_service.dart';
 import 'package:flutter_saas_template/core/services/vocabulary_cache_service.dart';
 
+/// Helper function to load all vocabulary sets for a given language and level
+Future<List<Word>> _loadAllVocabularyForLevel(
+  VocabularyCacheService cacheService,
+  AppLanguage language,
+  VocabularyLevel level,
+) async {
+  final allWords = <Word>[];
+  final vocabularySets = VocabularySets.getSetsForLevel(level);
+  
+  if (vocabularySets.isEmpty) {
+    // Fallback to grade8_set1 if no sets are defined for this level
+    try {
+      final fallbackWords = await cacheService.loadVocabulary(
+        language: language,
+        level: level,
+        setName: 'grade8_set1',
+      );
+      allWords.addAll(fallbackWords);
+    } catch (e) {
+      // If no vocabulary exists, return empty list
+    }
+  } else {
+    // Load all vocabulary sets for this level using the cache service
+    for (final vocabSet in vocabularySets) {
+      try {
+        final setWords = await cacheService.loadVocabulary(
+          language: language,
+          level: level,
+          setName: vocabSet.filename, // Pass filename directly to cache service
+        );
+        allWords.addAll(setWords);
+      } catch (e) {
+        // Skip sets that don't exist for this language
+        continue;
+      }
+    }
+  }
+  
+  return allWords;
+}
+
 /// Optimized multi-language progress data provider with caching
 final multiLanguageProgressProvider = FutureProvider<MultiLanguageProgressData>((ref) async {
   final dataService = await ref.read(localDataServiceProvider.future);
@@ -26,14 +67,11 @@ final multiLanguageProgressProvider = FutureProvider<MultiLanguageProgressData>(
     final language = config.language.name;
     final level = config.level;
     
-    // Start async vocabulary loading
-    final sets = VocabularySets.getSetsForLevel(level);
-    final setName = sets.isEmpty ? 'grade8_set1' : 'grade8_set1'; // Simplified for now
-    
-    vocabularyFutures[language] = cacheService.loadVocabulary(
-      language: config.language,
-      level: level,
-      setName: setName,
+    // Load ALL vocabulary sets for this language/level combination
+    vocabularyFutures[language] = _loadAllVocabularyForLevel(
+      cacheService,
+      config.language,
+      level,
     );
   }
   
