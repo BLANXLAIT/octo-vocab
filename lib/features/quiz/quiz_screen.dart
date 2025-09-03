@@ -104,8 +104,8 @@ class QuizScreen extends ConsumerWidget {
         final current = words[i];
 
         // Build 4 options: correct English + 3 distractors.
-        // Use a combination of word index and current time for better randomization
-        final rng = Random(i + DateTime.now().millisecondsSinceEpoch);
+        // Use stable seed based on word ID for consistent question options
+        final rng = Random(current.id.hashCode);
         final pool = [...words]
           ..removeAt(i)
           ..shuffle(rng);
@@ -282,8 +282,9 @@ class QuizScreen extends ConsumerWidget {
                                                 )
                                                 .state =
                                             true;
+                                        // Auto-hide celebration after 1.5 seconds for faster interaction
                                         Future.delayed(
-                                          const Duration(seconds: 2),
+                                          const Duration(milliseconds: 1500),
                                           () {
                                             if (ref.context.mounted) {
                                               ref

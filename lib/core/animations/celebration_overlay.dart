@@ -107,22 +107,24 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
       children: [
         if (widget.child != null) widget.child!,
         if (widget.isVisible)
-          AnimatedBuilder(
-            animation: _fadeController,
-            builder: (context, child) {
-              return Opacity(opacity: _fadeController.value, child: child);
-            },
+          IgnorePointer(  // Ensure celebration doesn't block touch events
             child: AnimatedBuilder(
-              animation: _confettiController,
+              animation: _fadeController,
               builder: (context, child) {
-                return CustomPaint(
-                  size: Size.infinite,
-                  painter: ConfettiPainter(
-                    particles: _particles,
-                    progress: _confettiController.value,
-                  ),
-                );
+                return Opacity(opacity: _fadeController.value, child: child);
               },
+              child: AnimatedBuilder(
+                animation: _confettiController,
+                builder: (context, child) {
+                  return CustomPaint(
+                    size: Size.infinite,
+                    painter: ConfettiPainter(
+                      particles: _particles,
+                      progress: _confettiController.value,
+                    ),
+                  );
+                },
+              ),
             ),
           ),
       ],
