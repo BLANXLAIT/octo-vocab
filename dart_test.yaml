@@ -17,6 +17,10 @@ file_sets:
     - test/widget/**_test.dart
   integration:
     - test/integration/**_test.dart
+  privacy:
+    - test/unit/privacy_compliance_test.dart
+    - test/integration/privacy_integration_test.dart
+    - test/widget/privacy_ui_test.dart
 
 
 # Coverage configuration
@@ -33,6 +37,10 @@ tags:
   unit: {}
   widget: {}
   integration: {}
+  privacy: {}
+  coppa: {}
+  ferpa: {}
+  gdpr: {}
   slow: {}
   firebase: {}
 

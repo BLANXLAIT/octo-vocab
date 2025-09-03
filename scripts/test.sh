@@ -26,6 +26,7 @@ show_usage() {
     echo "  unit         Run unit tests only"
     echo "  widget       Run widget tests only"
     echo "  integration  Run integration tests only"
+    echo "  privacy      Run privacy compliance tests only"
     echo "  all          Run all tests (default)"
     echo ""
     echo "OPTIONS:"
@@ -36,6 +37,7 @@ show_usage() {
     echo ""
     echo "Examples:"
     echo "  $0 unit                    # Run unit tests"
+    echo "  $0 privacy                 # Run privacy compliance tests"
     echo "  $0 all --coverage          # Run all tests with coverage"
     echo "  $0 unit --coverage --html  # Run unit tests with HTML coverage"
 }
@@ -91,6 +93,12 @@ run_tests() {
             else
                 print_warning "No integration tests found"
             fi
+            ;;
+        "privacy")
+            print_info "Running privacy compliance tests (COPPA/FERPA/GDPR)..."
+            flutter test test/unit/privacy_compliance_test.dart $coverage_flag $verbose_flag
+            flutter test test/integration/privacy_integration_test.dart $coverage_flag $verbose_flag
+            flutter test test/widget/privacy_ui_test.dart $coverage_flag $verbose_flag
             ;;
         "all")
             flutter test $coverage_flag $verbose_flag
@@ -182,7 +190,7 @@ while [[ $# -gt 0 ]]; do
             show_usage
             exit 0
             ;;
-        unit|widget|integration|all)
+        unit|widget|integration|privacy|all)
             TEST_TYPE="$1"
             shift
             ;;
