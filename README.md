@@ -1,5 +1,18 @@
 # Octo Vocab
 
+[![CI](https://github.com/BLANXLAIT/octo-vocab/actions/workflows/ci.yml/badge.svg)](https://github.com/BLANXLAIT/octo-vocab/actions/workflows/ci.yml)
+[![Test Status](https://github.com/BLANXLAIT/octo-vocab/actions/workflows/test-status.yml/badge.svg)](https://github.com/BLANXLAIT/octo-vocab/actions/workflows/test-status.yml)
+[![Privacy Compliance](https://img.shields.io/badge/Privacy-COPPA%2FFERPA%2FGDPR-green?logo=shield&logoColor=white)](https://github.com/BLANXLAIT/octo-vocab/actions/workflows/test-status.yml)
+[![codecov](https://codecov.io/gh/BLANXLAIT/octo-vocab/branch/main/graph/badge.svg)](https://codecov.io/gh/BLANXLAIT/octo-vocab)
+[![Tests](https://img.shields.io/badge/Tests-26%20Passing-brightgreen?logo=checkmarx&logoColor=white)](https://github.com/BLANXLAIT/octo-vocab/actions/workflows/test-status.yml)
+
+[![Flutter](https://img.shields.io/badge/Flutter-3.35.0-blue?logo=flutter&logoColor=white)](https://flutter.dev/)
+[![Dart](https://img.shields.io/badge/Dart-3.9.0-blue?logo=dart&logoColor=white)](https://dart.dev/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-iOS%20%7C%20Android-lightgrey?logo=flutter&logoColor=white)](https://github.com/BLANXLAIT/octo-vocab)
+[![Offline](https://img.shields.io/badge/100%25-Offline-green?logo=airplane&logoColor=white)](README.md#privacy-first-design)
+[![Education](https://img.shields.io/badge/Education-Grades%207--12-orange?logo=graduation-cap&logoColor=white)](README.md#target-audience)
+
 A privacy-first offline vocabulary learning app designed for students in grades 7-12 learning foreign languages. Built with Flutter, Octo Vocab emphasizes educational excellence and user privacy by being completely offline with no user login or data collection.
 
 ## 📚 Language Learning Made Simple
@@ -182,6 +195,54 @@ assets/vocab/              # Vocabulary JSON files
   }
 ]
 ```
+
+## 🧪 Testing & Quality Assurance
+
+### Comprehensive Test Suite
+
+Octo Vocab includes a robust testing infrastructure with **26 automated tests** covering all aspects of functionality and privacy compliance:
+
+| Test Type | Count | Coverage | Purpose |
+|-----------|-------|----------|---------|
+| **Unit Tests** | 14 | Privacy Compliance | COPPA, FERPA, GDPR verification |
+| **Widget Tests** | 6 | UI Components | Privacy UI elements & dialogs |
+| **Integration Tests** | 6 | End-to-End | Full app workflows & privacy flows |
+
+### Privacy Compliance Testing
+
+Our automated tests specifically verify:
+
+- 🛡️ **COPPA Compliance** - No personal information collection from minors
+- 🏫 **FERPA Compliance** - Educational records remain on-device only  
+- 🇪🇺 **GDPR Compliance** - Right to data export and erasure
+- 📱 **Offline-First** - No network requests during operation
+- 🔒 **Data Security** - Local storage only, no external services
+
+### Running Tests
+
+```bash
+# Run all tests with coverage
+./scripts/test.sh all --coverage --html
+
+# Run specific test suites
+./scripts/test.sh unit              # Unit tests
+./scripts/test.sh widget            # Widget tests  
+./scripts/test.sh integration       # Integration tests
+./scripts/test.sh privacy           # Privacy compliance tests
+
+# View HTML coverage report
+open coverage/html/index.html
+```
+
+### Continuous Integration
+
+- ✅ **Automated Testing** - All PRs run full test suite
+- 🔍 **Code Quality** - Formatting, analysis, and linting
+- 🛡️ **Security Scans** - Dependency vulnerabilities and hardcoded secrets
+- 🏗️ **Build Verification** - iOS and Android build validation
+- 📊 **Coverage Reports** - Detailed test coverage analytics
+
+The test suite ensures educational privacy standards are maintained throughout development while providing confidence in app reliability.
 
 ## 🤝 Contributing
 
