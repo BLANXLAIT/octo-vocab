@@ -31,6 +31,12 @@ dart run build_runner watch --delete-conflicting-outputs
 ### Testing
 The project includes comprehensive testing infrastructure with automated scripts:
 
+**Pre-commit Testing (ALWAYS RUN BEFORE COMMITTING):**
+```bash
+# Run all pre-commit checks (formatting, linting, tests, build)
+./scripts/pre-commit.sh
+```
+
 **Test Scripts:**
 ```bash
 # Full test suite with coverage and HTML reports

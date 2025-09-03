@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: Test Suite
@@ -14,6 +18,17 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Cache Flutter dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.pub-cache
+          ${{ runner.tool_cache }}/flutter
+        key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}-${{ hashFiles('**/pubspec.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}-
+          ${{ runner.os }}-flutter-
 
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
@@ -69,6 +84,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Cache Flutter dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.pub-cache
+          ${{ runner.tool_cache }}/flutter
+        key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}-${{ hashFiles('**/pubspec.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}-
+          ${{ runner.os }}-flutter-
+
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
@@ -102,6 +128,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Cache Flutter dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.pub-cache
+          ${{ runner.tool_cache }}/flutter
+        key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}-${{ hashFiles('**/pubspec.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}-
+          ${{ runner.os }}-flutter-
+
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
@@ -122,6 +159,17 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Cache Flutter dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.pub-cache
+          ${{ runner.tool_cache }}/flutter
+        key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}-${{ hashFiles('**/pubspec.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}-
+          ${{ runner.os }}-flutter-
 
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
@@ -154,6 +202,17 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Cache Flutter dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.pub-cache
+          ${{ runner.tool_cache }}/flutter
+        key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}-${{ hashFiles('**/pubspec.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}-
+          ${{ runner.os }}-flutter-
 
     - name: Setup Flutter
       uses: subosito/flutter-action@v2

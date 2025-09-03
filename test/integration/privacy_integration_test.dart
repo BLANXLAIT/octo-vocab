@@ -121,7 +121,10 @@ void main() {
       expect(find.textContaining('COPPA'), findsAtLeastNWidgets(1));
       expect(find.textContaining('FERPA'), findsAtLeastNWidgets(1));
       expect(find.textContaining('GDPR'), findsAtLeastNWidgets(1));
-      expect(find.textContaining('No data collection'), findsAtLeastNWidgets(1));
+      expect(
+        find.textContaining('No data collection'),
+        findsAtLeastNWidgets(1),
+      );
       expect(find.textContaining('fully offline'), findsAtLeastNWidgets(1));
     });
 
