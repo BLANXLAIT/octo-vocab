@@ -46,8 +46,11 @@ void main() {
       // Navigate through all main screens - check for both NavigationBar and NavigationRail
       final hasNavBar = find.byType(NavigationBar).evaluate().isNotEmpty;
       final hasNavRail = find.byType(NavigationRail).evaluate().isNotEmpty;
-      expect(hasNavBar || hasNavRail, isTrue, 
-        reason: 'Should have either NavigationBar or NavigationRail');
+      expect(
+        hasNavBar || hasNavRail,
+        isTrue,
+        reason: 'Should have either NavigationBar or NavigationRail',
+      );
 
       // Use Learn tab (default)
       await tester.pump(const Duration(milliseconds: 500));
