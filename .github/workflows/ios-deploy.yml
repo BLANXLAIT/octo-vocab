@@ -147,10 +147,48 @@ jobs:
         echo "MATCH_CERTS_PAT=$MATCH_CERTS_PAT" >> $GITHUB_ENV
         echo "MATCH_READONLY=true" >> $GITHUB_ENV
 
+    # Validate secrets are available
+    - name: 🔍 Validate secrets
+      run: |
+        echo "Checking required secrets availability..."
+        if [ -z "${{ secrets.MATCH_PASSWORD }}" ]; then
+          echo "❌ MATCH_PASSWORD secret is missing"
+          exit 1
+        else
+          echo "✅ MATCH_PASSWORD is available"
+        fi
+        
+        if [ -z "${{ secrets.MATCH_GIT_URL }}" ]; then
+          echo "❌ MATCH_GIT_URL secret is missing"
+          exit 1
+        else
+          echo "✅ MATCH_GIT_URL is available"
+        fi
+        
+        if [ -z "${{ secrets.MATCH_CERTS_PAT }}" ]; then
+          echo "❌ MATCH_CERTS_PAT secret is missing"
+          exit 1
+        else
+          echo "✅ MATCH_CERTS_PAT is available"
+        fi
+        
+        if [ -z "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
+          echo "❌ APP_STORE_CONNECT_API_KEY_ID secret is missing"
+          exit 1
+        else
+          echo "✅ APP_STORE_CONNECT_API_KEY_ID is available"
+        fi
+        
+        echo "✅ All required secrets are available"
+
     # Sync certificates and provisioning profiles using Match
     - name: 🔐 Sync certificates with Match
       working-directory: ios
       run: |
+        # Configure Git credentials for private repository access
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        
         # Run fastlane match to download and install certificates and provisioning profiles
         fastlane sync_certificates
 
