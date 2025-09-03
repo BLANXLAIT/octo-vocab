@@ -85,12 +85,24 @@ platform :ios do
   lane :sync_certificates do
     UI.message "📱 Syncing certificates and provisioning profiles using match..."
     
+    # Configure Git authentication for private repository access
+    if ENV["MATCH_CERTS_PAT"]
+      # Use Personal Access Token for private repository authentication
+      git_url = ENV["MATCH_GIT_URL"].gsub('https://github.com/', "https://#{ENV["MATCH_CERTS_PAT"]}@github.com/")
+      UI.message "🔐 Using Personal Access Token for private repository access"
+    else
+      git_url = ENV["MATCH_GIT_URL"]
+      UI.message "⚠️  No PAT found - using basic Git URL (may fail for private repos)"
+    end
+    
     # Use match for certificate and provisioning profile management in readonly mode
     match(
       type: "appstore",
       app_identifier: "com.blanxlait.octo-vocab",
-      git_url: "https://github.com/BLANXLAIT/blanxlait-ci-shared",
-      readonly: true  # Skip verification with Apple Developer Portal
+      git_url: git_url,
+      git_branch: ENV["MATCH_GIT_BRANCH"] || "main",
+      readonly: true,  # Don't create new certificates, just download existing ones
+      force_for_new_devices: true
     )
     
     UI.success "✅ Certificates and provisioning profiles synced successfully!"
@@ -109,10 +121,6 @@ platform :ios do
       xcodeproj: "Runner.xcodeproj"
     )
     
-    # Skip match for now since we have the certificate installed
-    # and use the manual provisioning profile
-    UI.message "📱 Using existing certificates and manual provisioning profile..."
-    
     # Build the app using match-managed certificates
     UI.message "📱 Building with match-managed certificates..."
     
@@ -127,14 +135,10 @@ platform :ios do
       # Flutter specific
       archive_path: "./build/Runner.xcarchive",
       output_directory: "./build",
-      # Use manual signing with specific certificate and profile
+      # Let match handle the signing automatically
       export_options: {
         method: "app-store",
-        teamID: ENV["FASTLANE_TEAM_ID"],
-        signingCertificate: "Apple Distribution: BLANXLAIT, LLC (GCRLV5UC4Q)",
-        provisioningProfiles: {
-          "com.blanxlait.octo-vocab" => "7ccd7f5c-8fba-49bc-a4c4-b2b7ff4fa6e2"
-        }
+        teamID: ENV["FASTLANE_TEAM_ID"]
       }
     )
     

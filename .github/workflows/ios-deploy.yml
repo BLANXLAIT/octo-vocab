@@ -30,6 +30,8 @@ jobs:
   ios_deploy:
     runs-on: macos-15  # Use latest macOS with Xcode 16+
     timeout-minutes: 60
+    # Allow access to organization secrets
+    secrets: inherit
     
     steps:
     # Checkout code
@@ -128,9 +130,12 @@ jobs:
         MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
         MATCH_GIT_BRANCH: ${{ secrets.MATCH_GIT_BRANCH }}
-        FASTLANE_TEAM_ID: ${{ secrets.FASTLANE_TEAM_ID }}
-        FASTLANE_ITC_TEAM_ID: ${{ secrets.FASTLANE_ITC_TEAM_ID }}
+        # Hardcode team IDs since they're fixed for this Apple Developer account
+        FASTLANE_TEAM_ID: "GCRLV5UC4Q"
+        FASTLANE_ITC_TEAM_ID: "GCRLV5UC4Q"  # Usually same as team ID for individual/LLC accounts
         FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
+        # Personal Access Token for accessing the match certificates repo
+        MATCH_CERTS_PAT: ${{ secrets.MATCH_CERTS_PAT }}
       run: |
         # Export all environment variables
         echo "MATCH_PASSWORD=$MATCH_PASSWORD" >> $GITHUB_ENV
@@ -139,7 +144,15 @@ jobs:
         echo "FASTLANE_TEAM_ID=$FASTLANE_TEAM_ID" >> $GITHUB_ENV
         echo "FASTLANE_ITC_TEAM_ID=$FASTLANE_ITC_TEAM_ID" >> $GITHUB_ENV
         echo "FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD=$FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD" >> $GITHUB_ENV
+        echo "MATCH_CERTS_PAT=$MATCH_CERTS_PAT" >> $GITHUB_ENV
         echo "MATCH_READONLY=true" >> $GITHUB_ENV
+
+    # Sync certificates and provisioning profiles using Match
+    - name: 🔐 Sync certificates with Match
+      working-directory: ios
+      run: |
+        # Run fastlane match to download and install certificates and provisioning profiles
+        fastlane sync_certificates
 
     # Deploy to TestFlight (Beta)
     - name: 🧪 Deploy to TestFlight
