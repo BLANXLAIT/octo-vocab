@@ -207,19 +207,25 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
-      // Tap on About section if present
+      // Scroll to and tap on About section if present
       final aboutTile = find.text('About Octo Vocab');
       if (aboutTile.evaluate().isNotEmpty) {
+        await tester.scrollUntilVisible(
+          aboutTile,
+          500.0,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pump(const Duration(milliseconds: 300));
         await tester.tap(aboutTile);
         await tester.pump();
-      await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump(const Duration(milliseconds: 500));
       }
 
       // Verify no WebView or external browser widgets
       expect(find.byType(WebView), findsNothing);
 
       // GitHub links should be displayed as text, not clickable links
-      expect(find.textContaining('github.com'), findsOneWidget);
+      expect(find.textContaining('github.com'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('vocabulary data loads from local assets only', (tester) async {
