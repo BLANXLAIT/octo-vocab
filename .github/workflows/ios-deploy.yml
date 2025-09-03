@@ -28,7 +28,7 @@ env:
 
 jobs:
   ios_deploy:
-    runs-on: macos-14
+    runs-on: macos-15  # Use latest macOS with Xcode 16+
     timeout-minutes: 60
     
     steps:
@@ -51,13 +51,24 @@ jobs:
         gem install fastlane
         fastlane --version
 
+    # Cache Flutter dependencies
+    - name: 💾 Cache Flutter dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.pub-cache
+          ${{ runner.tool_cache }}/flutter
+        key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}-${{ hashFiles('**/pubspec.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}-
+          ${{ runner.os }}-flutter-
+
     # Setup Flutter
     - name: 🐦 Setup Flutter
       uses: subosito/flutter-action@v2
       with:
         flutter-version: ${{ env.FLUTTER_VERSION }}
         channel: ${{ env.FLUTTER_CHANNEL }}
-        cache: true
 
     # Verify Flutter installation
     - name: 🔍 Flutter Doctor
@@ -67,10 +78,31 @@ jobs:
     - name: 📦 Get Flutter dependencies
       run: flutter pub get
 
-    # Run tests (unless skipped)
-    - name: 🧪 Run Flutter tests
+    # Check if CI already passed for this commit
+    - name: 🔍 Check CI status
+      id: ci_check
       if: ${{ !inputs.skip_tests }}
-      run: flutter test
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "Checking CI status for commit ${{ github.sha }}"
+        STATUS=$(gh run list --commit ${{ github.sha }} --workflow ci.yml --json conclusion -q '.[0].conclusion' --limit 1)
+        echo "CI status: $STATUS"
+        if [[ "$STATUS" == "success" ]]; then
+          echo "ci_passed=true" >> $GITHUB_OUTPUT
+          echo "✅ CI already passed - skipping redundant tests"
+        else
+          echo "ci_passed=false" >> $GITHUB_OUTPUT
+          echo "⚠️ CI not successful - will run tests"
+        fi
+
+    # Run comprehensive tests (only if CI didn't pass)
+    - name: 🧪 Run comprehensive tests
+      if: ${{ !inputs.skip_tests && steps.ci_check.outputs.ci_passed != 'true' }}
+      run: |
+        # Use same comprehensive test script as CI
+        chmod +x ./scripts/test.sh
+        ./scripts/test.sh all
 
     # Configure App Store Connect API
     - name: 🔐 Configure App Store Connect API

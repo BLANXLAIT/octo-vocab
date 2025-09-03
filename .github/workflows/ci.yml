@@ -75,8 +75,37 @@ jobs:
         name: coverage-report
         path: coverage/html/
 
+  ios-validation:
+    name: iOS Build Check
+    runs-on: macos-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
 
+    - name: Cache Flutter dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.pub-cache
+          ${{ runner.tool_cache }}/flutter
+        key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}-${{ hashFiles('**/pubspec.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}-
+          ${{ runner.os }}-flutter-
 
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.35.0'
+        channel: 'stable'
+
+    - name: Get dependencies
+      run: flutter pub get
+
+    - name: Validate iOS build configuration
+      run: flutter build ios --config-only --no-codesign
 
   privacy-audit:
     name: Privacy Audit
