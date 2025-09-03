@@ -1,6 +1,6 @@
 # Certificate and provisioning profile management
-git_url("https://github.com/BLANXLAIT/blanxlait-ci-shared")
-git_branch("main")
+git_url(ENV["MATCH_GIT_URL"] || "https://github.com/BLANXLAIT/blanxlait-ci-shared")
+git_branch(ENV["MATCH_GIT_BRANCH"] || "main")
 
 storage_mode("git")
 type("appstore") # Can be: appstore, adhoc, development, enterprise
