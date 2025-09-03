@@ -13,7 +13,7 @@ import 'package:flutter_saas_template/core/services/local_data_service.dart';
 /// Loads vocabulary based on current study configuration
 final vocabSetProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
   final currentConfig = ref.watch(currentLanguageConfigProvider);
-  
+
   // If no configuration is available, return empty list
   if (currentConfig == null || !currentConfig.isEnabled) {
     return <Word>[];
@@ -25,7 +25,7 @@ final vocabSetProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
   // Load ALL vocabulary sets for the selected level
   final allWords = <Word>[];
   final vocabularySets = VocabularySets.getSetsForLevel(level);
-  
+
   if (vocabularySets.isEmpty) {
     // Fallback to legacy format if no leveled sets available
     try {
@@ -49,12 +49,14 @@ final vocabSetProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
       }
     }
   }
-  
+
   return allWords;
 });
 
 /// Card controller for programmatic control
-final cardControllerProvider = Provider.autoDispose<CardSwiperController>((ref) => CardSwiperController());
+final cardControllerProvider = Provider.autoDispose<CardSwiperController>(
+  (ref) => CardSwiperController(),
+);
 
 /// Current flashcard index
 final currentCardIndexProvider = StateProvider.autoDispose<int>((ref) => 0);
@@ -109,7 +111,9 @@ class FlashcardsScreen extends ConsumerWidget {
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Center(child: Text('${currentIndex + 1}/${words.length}')),
+                child: Center(
+                  child: Text('${currentIndex + 1}/${words.length}'),
+                ),
               ),
             ],
           ),
@@ -122,32 +126,40 @@ class FlashcardsScreen extends ConsumerWidget {
               onSwipe: (previousIndex, currentIndex, direction) {
                 // Handle swipe logic
                 HapticFeedback.lightImpact();
-                
+
                 // Get the word that was just swiped
                 final swipedWord = words[previousIndex];
-                
+
                 // Track word difficulty based on swipe direction (async but don't block UI)
                 _trackWordDifficulty(context, ref, swipedWord, direction);
-                
+
                 // Reset flip state for next card
                 ref.read(isCardFlippedProvider.notifier).state = false;
-                
+
                 // Update current index
                 if (currentIndex != null) {
-                  ref.read(currentCardIndexProvider.notifier).state = currentIndex;
+                  ref.read(currentCardIndexProvider.notifier).state =
+                      currentIndex;
                 }
-                
+
                 return true;
               },
-              cardBuilder: (context, index, horizontalThresholdPercentage, verticalThresholdPercentage) {
-                final word = words[index];
-                return FlashcardWidget(
-                  word: word,
-                  onTap: () {
-                    ref.read(isCardFlippedProvider.notifier).state = !ref.read(isCardFlippedProvider);
+              cardBuilder:
+                  (
+                    context,
+                    index,
+                    horizontalThresholdPercentage,
+                    verticalThresholdPercentage,
+                  ) {
+                    final word = words[index];
+                    return FlashcardWidget(
+                      word: word,
+                      onTap: () {
+                        ref.read(isCardFlippedProvider.notifier).state = !ref
+                            .read(isCardFlippedProvider);
+                      },
+                    );
                   },
-                );
-              },
             ),
           ),
         );
@@ -155,7 +167,11 @@ class FlashcardsScreen extends ConsumerWidget {
     );
   }
 
-  void _showFeedbackSnackBar(BuildContext context, String message, Color color) {
+  void _showFeedbackSnackBar(
+    BuildContext context,
+    String message,
+    Color color,
+  ) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -176,11 +192,11 @@ class FlashcardsScreen extends ConsumerWidget {
     try {
       final dataService = await ref.read(localDataServiceProvider.future);
       final currentConfig = ref.read(currentLanguageConfigProvider);
-      
+
       if (!context.mounted || currentConfig == null) return;
-      
+
       final languageName = currentConfig.language.name;
-      
+
       if (direction == CardSwiperDirection.right) {
         // Known - mark as known for current language
         await dataService.markWordAsKnownForLanguage(word.id, languageName);
@@ -195,7 +211,7 @@ class FlashcardsScreen extends ConsumerWidget {
     } catch (e) {
       // Silent fail - don't break the learning experience
       if (!context.mounted) return;
-      
+
       if (direction == CardSwiperDirection.right) {
         _showFeedbackSnackBar(context, 'Known! ✅', Colors.green);
       } else if (direction == CardSwiperDirection.left) {
@@ -207,11 +223,7 @@ class FlashcardsScreen extends ConsumerWidget {
 
 /// A simplified flashcard widget for use with CardSwiper
 class FlashcardWidget extends ConsumerWidget {
-  const FlashcardWidget({
-    required this.word,
-    required this.onTap,
-    super.key,
-  });
+  const FlashcardWidget({required this.word, required this.onTap, super.key});
 
   final Word word;
   final VoidCallback onTap;
@@ -234,7 +246,7 @@ class FlashcardWidget extends ConsumerWidget {
             begin: 0,
             end: 1,
           ).animate(animation);
-          
+
           return AnimatedBuilder(
             animation: rotateAnimation,
             child: child,
@@ -263,17 +275,16 @@ class FlashcardWidget extends ConsumerWidget {
         child: Card(
           key: ValueKey(isFlipped ? 'back' : 'front'),
           elevation: 8,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  colorScheme.surface,
-                  colorScheme.surfaceContainerLow,
-                ],
+                colors: [colorScheme.surface, colorScheme.surfaceContainerLow],
               ),
               border: Border.all(
                 color: colorScheme.outline.withValues(alpha: 0.2),
@@ -285,7 +296,10 @@ class FlashcardWidget extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (!isFlipped) ..._buildFrontContent(theme) else ..._buildBackContent(theme),
+                  if (!isFlipped)
+                    ..._buildFrontContent(theme)
+                  else
+                    ..._buildBackContent(theme),
                 ],
               ),
             ),
@@ -408,7 +422,9 @@ class FlashcardWidget extends ConsumerWidget {
                 Text(
                   '— ${word.exampleEnglish}',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSecondaryContainer.withValues(alpha: 0.8),
+                    color: theme.colorScheme.onSecondaryContainer.withValues(
+                      alpha: 0.8,
+                    ),
                   ),
                   textAlign: TextAlign.center,
                 ),

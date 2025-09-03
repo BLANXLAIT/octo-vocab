@@ -13,39 +13,39 @@ import 'package:flutter_saas_template/features/settings/language_learning_settin
 /// Navigation destinations for the app
 enum AppDestination {
   learn(
-    icon: Icons.style, 
-    selectedIcon: Icons.style, 
+    icon: Icons.style,
+    selectedIcon: Icons.style,
     label: 'Learn',
     semanticLabel: 'Learn with flashcards',
-    accessibilityKey: 'learn_tab'
+    accessibilityKey: 'learn_tab',
   ),
   quiz(
-    icon: Icons.quiz_outlined, 
-    selectedIcon: Icons.quiz, 
+    icon: Icons.quiz_outlined,
+    selectedIcon: Icons.quiz,
     label: 'Quiz',
     semanticLabel: 'Take vocabulary quiz',
-    accessibilityKey: 'quiz_tab'
+    accessibilityKey: 'quiz_tab',
   ),
   review(
     icon: Icons.psychology_outlined,
     selectedIcon: Icons.psychology,
     label: 'Review',
     semanticLabel: 'Review vocabulary words',
-    accessibilityKey: 'review_tab'
+    accessibilityKey: 'review_tab',
   ),
   progress(
     icon: Icons.insights_outlined,
     selectedIcon: Icons.insights,
     label: 'Progress',
     semanticLabel: 'View learning progress',
-    accessibilityKey: 'progress_tab'
+    accessibilityKey: 'progress_tab',
   ),
   settings(
     icon: Icons.settings_outlined,
     selectedIcon: Icons.settings,
     label: 'Settings',
     semanticLabel: 'App settings and preferences',
-    accessibilityKey: 'settings_tab'
+    accessibilityKey: 'settings_tab',
   );
 
   const AppDestination({
@@ -103,35 +103,28 @@ class AdaptiveScaffold extends ConsumerWidget {
                 ref.read(navigationIndexProvider.notifier).state = index;
               },
               labelType: NavigationRailLabelType.all,
-              destinations: AppDestination.values
-                  .asMap()
-                  .entries
-                  .map(
-                    (entry) {
-                      final index = entry.key;
-                      final dest = entry.value;
-                      return NavigationRailDestination(
-                        icon: Semantics(
-                          identifier: dest.accessibilityKey,
-                          label: dest.semanticLabel,
-                          tooltip: dest.semanticLabel,
-                          child: Icon(dest.icon),
-                        ),
-                        selectedIcon: Semantics(
-                          identifier: dest.accessibilityKey,
-                          label: dest.semanticLabel,
-                          tooltip: dest.semanticLabel,
-                          child: Icon(dest.selectedIcon),
-                        ),
-                        label: Semantics(
-                          identifier: '${dest.accessibilityKey}_label',
-                          label: '${dest.label} navigation tab',
-                          child: Text(dest.label),
-                        ),
-                      );
-                    },
-                  )
-                  .toList(),
+              destinations: AppDestination.values.asMap().entries.map((entry) {
+                final dest = entry.value;
+                return NavigationRailDestination(
+                  icon: Semantics(
+                    identifier: dest.accessibilityKey,
+                    label: dest.semanticLabel,
+                    tooltip: dest.semanticLabel,
+                    child: Icon(dest.icon),
+                  ),
+                  selectedIcon: Semantics(
+                    identifier: dest.accessibilityKey,
+                    label: dest.semanticLabel,
+                    tooltip: dest.semanticLabel,
+                    child: Icon(dest.selectedIcon),
+                  ),
+                  label: Semantics(
+                    identifier: '${dest.accessibilityKey}_label',
+                    label: '${dest.label} navigation tab',
+                    child: Text(dest.label),
+                  ),
+                );
+              }).toList(),
             ),
             const VerticalDivider(thickness: 1, width: 1),
             Expanded(child: _buildBody(currentIndex)),
@@ -150,32 +143,25 @@ class AdaptiveScaffold extends ConsumerWidget {
             onDestinationSelected: (index) {
               ref.read(navigationIndexProvider.notifier).state = index;
             },
-            destinations: AppDestination.values
-                .asMap()
-                .entries
-                .map(
-                  (entry) {
-                    final index = entry.key;
-                    final dest = entry.value;
-                    return NavigationDestination(
-                      icon: Semantics(
-                        identifier: dest.accessibilityKey,
-                        label: dest.semanticLabel,
-                        tooltip: dest.semanticLabel,
-                        child: Icon(dest.icon),
-                      ),
-                      selectedIcon: Semantics(
-                        identifier: dest.accessibilityKey,
-                        label: dest.semanticLabel,
-                        tooltip: dest.semanticLabel,
-                        child: Icon(dest.selectedIcon),
-                      ),
-                      label: dest.label,
-                      tooltip: dest.semanticLabel,
-                    );
-                  },
-                )
-                .toList(),
+            destinations: AppDestination.values.asMap().entries.map((entry) {
+              final dest = entry.value;
+              return NavigationDestination(
+                icon: Semantics(
+                  identifier: dest.accessibilityKey,
+                  label: dest.semanticLabel,
+                  tooltip: dest.semanticLabel,
+                  child: Icon(dest.icon),
+                ),
+                selectedIcon: Semantics(
+                  identifier: dest.accessibilityKey,
+                  label: dest.semanticLabel,
+                  tooltip: dest.semanticLabel,
+                  child: Icon(dest.selectedIcon),
+                ),
+                label: dest.label,
+                tooltip: dest.semanticLabel,
+              );
+            }).toList(),
           ),
         ),
       );
@@ -229,7 +215,6 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
@@ -239,7 +224,7 @@ class SettingsScreen extends ConsumerWidget {
         actions: [
           Semantics(
             label: 'Switch learning language',
-            child: LanguageSwitcherAction(),
+            child: const LanguageSwitcherAction(),
           ),
           const SizedBox(width: 8),
         ],
@@ -277,7 +262,9 @@ class SettingsScreen extends ConsumerWidget {
               child: ExpansionTile(
                 leading: const Icon(Icons.privacy_tip, color: Colors.green),
                 title: const Text('Privacy Protection'),
-                subtitle: const Text('COPPA/FERPA compliant • No data collection'),
+                subtitle: const Text(
+                  'COPPA/FERPA compliant • No data collection',
+                ),
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(16),
@@ -289,10 +276,26 @@ class SettingsScreen extends ConsumerWidget {
                           style: TextStyle(fontSize: 14),
                         ),
                         const SizedBox(height: 16),
-                        _buildInfoRow(Icons.shield, 'Privacy', 'No data collection, fully offline'),
-                        _buildInfoRow(Icons.school, 'COPPA', 'Safe for students under 13'),
-                        _buildInfoRow(Icons.gavel, 'FERPA', 'Educational privacy compliant'),
-                        _buildInfoRow(Icons.public_off, 'GDPR', 'EU privacy rights respected'),
+                        _buildInfoRow(
+                          Icons.shield,
+                          'Privacy',
+                          'No data collection, fully offline',
+                        ),
+                        _buildInfoRow(
+                          Icons.school,
+                          'COPPA',
+                          'Safe for students under 13',
+                        ),
+                        _buildInfoRow(
+                          Icons.gavel,
+                          'FERPA',
+                          'Educational privacy compliant',
+                        ),
+                        _buildInfoRow(
+                          Icons.public_off,
+                          'GDPR',
+                          'EU privacy rights respected',
+                        ),
                         const SizedBox(height: 16),
                         Container(
                           padding: const EdgeInsets.all(12),
@@ -306,11 +309,17 @@ class SettingsScreen extends ConsumerWidget {
                             children: [
                               Row(
                                 children: [
-                                  Icon(Icons.security, size: 16, color: Colors.green),
+                                  Icon(
+                                    Icons.security,
+                                    size: 16,
+                                    color: Colors.green,
+                                  ),
                                   SizedBox(width: 8),
                                   Text(
                                     'Your Data Rights:',
-                                    style: TextStyle(fontWeight: FontWeight.w500),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -320,7 +329,10 @@ class SettingsScreen extends ConsumerWidget {
                                 '• Delete everything with one tap\n'
                                 '• No hidden data collection\n'
                                 '• No third-party tracking',
-                                style: TextStyle(fontSize: 12, color: Colors.green),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.green,
+                                ),
                               ),
                             ],
                           ),
@@ -337,7 +349,8 @@ class SettingsScreen extends ConsumerWidget {
             Card(
               key: const Key('reset_data_card'),
               child: Semantics(
-                label: 'Reset all learning data and preferences - this action cannot be undone',
+                label:
+                    'Reset all learning data and preferences - this action cannot be undone',
                 child: ListTile(
                   leading: const Icon(Icons.delete_forever, color: Colors.red),
                   title: const Text('Reset My Data'),
@@ -366,9 +379,21 @@ class SettingsScreen extends ConsumerWidget {
                           style: TextStyle(fontSize: 14),
                         ),
                         const SizedBox(height: 16),
-                        _buildInfoRow(Icons.shield, 'Privacy', 'No data collection, fully offline'),
-                        _buildInfoRow(Icons.school, 'Education', 'Designed for grades 7-12'),
-                        _buildInfoRow(Icons.language, 'Languages', 'Latin & Spanish (more coming)'),
+                        _buildInfoRow(
+                          Icons.shield,
+                          'Privacy',
+                          'No data collection, fully offline',
+                        ),
+                        _buildInfoRow(
+                          Icons.school,
+                          'Education',
+                          'Designed for grades 7-12',
+                        ),
+                        _buildInfoRow(
+                          Icons.language,
+                          'Languages',
+                          'Latin & Spanish (more coming)',
+                        ),
                         _buildInfoRow(Icons.code, 'Version', '1.0.0'),
                         const SizedBox(height: 16),
                         Container(
@@ -383,11 +408,17 @@ class SettingsScreen extends ConsumerWidget {
                             children: [
                               Row(
                                 children: [
-                                  Icon(Icons.code, size: 16, color: Colors.grey[600]),
+                                  Icon(
+                                    Icons.code,
+                                    size: 16,
+                                    color: Colors.grey[600],
+                                  ),
                                   const SizedBox(width: 8),
                                   const Text(
                                     'Source Code:',
-                                    style: TextStyle(fontWeight: FontWeight.w500),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -403,11 +434,17 @@ class SettingsScreen extends ConsumerWidget {
                               const SizedBox(height: 12),
                               Row(
                                 children: [
-                                  Icon(Icons.bug_report, size: 16, color: Colors.grey[600]),
+                                  Icon(
+                                    Icons.bug_report,
+                                    size: 16,
+                                    color: Colors.grey[600],
+                                  ),
                                   const SizedBox(width: 8),
                                   const Text(
                                     'Report Issues:',
-                                    style: TextStyle(fontWeight: FontWeight.w500),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -468,22 +505,15 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           Icon(icon, size: 16, color: Colors.grey[600]),
           const SizedBox(width: 8),
-          Text(
-            '$label:',
-            style: const TextStyle(fontWeight: FontWeight.w500),
-          ),
+          Text('$label:', style: const TextStyle(fontWeight: FontWeight.w500)),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              value,
-              style: TextStyle(color: Colors.grey[700]),
-            ),
+            child: Text(value, style: TextStyle(color: Colors.grey[700])),
           ),
         ],
       ),
     );
   }
-
 }
 
 /// Animated theme selector card with color preview

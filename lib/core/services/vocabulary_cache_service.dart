@@ -1,7 +1,6 @@
 // ignore_for_file: public_member_api_docs
 
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -39,26 +38,30 @@ class VocabularyCacheService {
   final Map<String, CachedVocabulary> _cache = {};
   final List<String> _accessOrder = []; // For LRU eviction
   static const int _maxCacheSize = 10; // Max vocabulary sets in memory
-  
+
   // Preloading queue for background loading
   final Set<String> _preloadQueue = {};
   bool _isPreloading = false;
 
   /// Generate cache key for vocabulary set
-  String _generateCacheKey(AppLanguage language, VocabularyLevel level, String setName) {
+  String _generateCacheKey(
+    AppLanguage language,
+    VocabularyLevel level,
+    String setName,
+  ) {
     return '${language.name}_${level.code}_$setName';
   }
 
   /// Load vocabulary with smart caching and error recovery
   Future<List<Word>> loadVocabulary({
     required AppLanguage language,
-    required VocabularyLevel level, 
+    required VocabularyLevel level,
     required String setName,
     bool preload = false,
   }) async {
     final stopwatch = Stopwatch()..start();
     final cacheKey = _generateCacheKey(language, level, setName);
-    
+
     try {
       // Check cache first
       final cached = _getCached(cacheKey);
@@ -71,42 +74,45 @@ class VocabularyCacheService {
       }
 
       PerformanceMonitor.instance.recordCacheMiss();
-      
+
       // Load from assets with smart fallback handling
       List<Word> words;
       try {
         words = await _loadFromAssets(language, level, setName);
       } catch (e) {
         // Only use error recovery for genuine unexpected errors
-        words = await ErrorRecoveryService.instance.handleError<List<Word>>(
-          ErrorType.vocabularyLoadFailure,
-          'Failed to load vocabulary: ${language.name} ${level.code} $setName',
-          e,
-          context: {
-            'language': language.name,
-            'level': level.code,
-            'setName': setName,
-            'cacheKey': cacheKey,
-          },
-          retryFunction: () => _loadFromAssets(language, level, setName),
-          fallbackFunction: () => _getFallbackVocabulary(language, level, setName),
-        ) ?? [];
+        words =
+            await ErrorRecoveryService.instance.handleError<List<Word>>(
+              ErrorType.vocabularyLoadFailure,
+              'Failed to load vocabulary: ${language.name} ${level.code} $setName',
+              e,
+              context: {
+                'language': language.name,
+                'level': level.code,
+                'setName': setName,
+                'cacheKey': cacheKey,
+              },
+              retryFunction: () => _loadFromAssets(language, level, setName),
+              fallbackFunction: () =>
+                  _getFallbackVocabulary(language, level, setName),
+            ) ??
+            [];
       }
 
       _cacheVocabulary(cacheKey, words);
-      
+
       // Start preloading related sets in background
       if (!preload && words.isNotEmpty) {
         _schedulePreloading(language, level);
       }
-      
+
       stopwatch.stop();
       PerformanceMonitor.instance.recordLoadTime(stopwatch.elapsed);
       return words;
     } catch (e) {
       stopwatch.stop();
       PerformanceMonitor.instance.recordLoadTime(stopwatch.elapsed);
-      
+
       // Ultimate fallback using error recovery service
       return await ErrorRecoveryService.instance.recoverVocabularyLoad(
         language: language,
@@ -124,12 +130,12 @@ class VocabularyCacheService {
     String setName,
   ) async {
     String assetPath;
-    
+
     // Handle legacy grade8_set1 format
     if (setName == 'grade8_set1') {
       // Try language root path first (for grade8_set1.json files)
       assetPath = 'assets/vocab/${language.name}/$setName.json';
-      
+
       try {
         final jsonStr = await rootBundle.loadString(assetPath);
         return Word.listFromJsonString(jsonStr);
@@ -138,7 +144,8 @@ class VocabularyCacheService {
         switch (level) {
           case VocabularyLevel.beginner:
             // Use set1_essentials for beginner
-            assetPath = 'assets/vocab/${language.name}/${level.code}/set1_essentials.json';
+            assetPath =
+                'assets/vocab/${language.name}/${level.code}/set1_essentials.json';
             try {
               final jsonStr = await rootBundle.loadString(assetPath);
               return Word.listFromJsonString(jsonStr);
@@ -153,12 +160,12 @@ class VocabularyCacheService {
         }
       }
     }
-    
+
     // Handle modern leveled vocabulary sets
     // First try: assume setName is already a filename (with or without .json)
     final fileName = setName.endsWith('.json') ? setName : '$setName.json';
     assetPath = 'assets/vocab/${language.name}/${level.code}/$fileName';
-    
+
     try {
       final jsonStr = await rootBundle.loadString(assetPath);
       return Word.listFromJsonString(jsonStr);
@@ -219,7 +226,7 @@ class VocabularyCacheService {
     // Preload adjacent difficulty levels
     final levels = VocabularyLevel.values;
     final currentIndex = levels.indexOf(level);
-    
+
     // Add adjacent levels to preload queue
     if (currentIndex > 0) {
       final lowerLevel = levels[currentIndex - 1];
@@ -227,7 +234,9 @@ class VocabularyCacheService {
     }
     if (currentIndex < levels.length - 1) {
       final higherLevel = levels[currentIndex + 1];
-      _preloadQueue.add(_generateCacheKey(language, higherLevel, 'grade8_set1'));
+      _preloadQueue.add(
+        _generateCacheKey(language, higherLevel, 'grade8_set1'),
+      );
     }
 
     _startPreloading();
@@ -236,13 +245,13 @@ class VocabularyCacheService {
   /// Start background preloading
   void _startPreloading() async {
     if (_isPreloading || _preloadQueue.isEmpty) return;
-    
+
     _isPreloading = true;
-    
+
     while (_preloadQueue.isNotEmpty) {
       final cacheKey = _preloadQueue.first;
       _preloadQueue.remove(cacheKey);
-      
+
       // Parse cache key to extract parameters
       final parts = cacheKey.split('_');
       if (parts.length >= 3) {
@@ -255,7 +264,7 @@ class VocabularyCacheService {
           orElse: () => VocabularyLevel.beginner,
         );
         final setName = parts.sublist(2).join('_');
-        
+
         try {
           await loadVocabulary(
             language: language,
@@ -267,16 +276,20 @@ class VocabularyCacheService {
           // Ignore preload failures
         }
       }
-      
+
       // Small delay to prevent blocking UI
       await Future.delayed(const Duration(milliseconds: 100));
     }
-    
+
     _isPreloading = false;
   }
 
   /// Get fallback vocabulary when primary loading fails
-  List<Word> _getFallbackVocabulary(AppLanguage language, VocabularyLevel level, String setName) {
+  List<Word> _getFallbackVocabulary(
+    AppLanguage language,
+    VocabularyLevel level,
+    String setName,
+  ) {
     // Try to get from cache first (even if stale)
     final cacheKey = _generateCacheKey(language, level, setName);
     final staleCache = _cache[cacheKey];
@@ -298,7 +311,7 @@ class VocabularyCacheService {
             tags: ['fallback', level.code],
           ),
           Word(
-            id: 'fallback_latin_2', 
+            id: 'fallback_latin_2',
             latin: 'est',
             english: 'is/he is/she is',
             pos: 'verb',
@@ -307,7 +320,7 @@ class VocabularyCacheService {
             tags: ['fallback', level.code],
           ),
         ];
-      
+
       case AppLanguage.spanish:
         return [
           Word(
@@ -374,14 +387,15 @@ final vocabularyCacheServiceProvider = Provider<VocabularyCacheService>((ref) {
 });
 
 /// Provider for loading vocabulary with caching
-final cachedVocabularyProvider = FutureProvider.family<List<Word>, VocabularyRequest>((ref, request) async {
-  final cacheService = ref.watch(vocabularyCacheServiceProvider);
-  return cacheService.loadVocabulary(
-    language: request.language,
-    level: request.level,
-    setName: request.setName,
-  );
-});
+final cachedVocabularyProvider =
+    FutureProvider.family<List<Word>, VocabularyRequest>((ref, request) async {
+      final cacheService = ref.watch(vocabularyCacheServiceProvider);
+      return cacheService.loadVocabulary(
+        language: request.language,
+        level: request.level,
+        setName: request.setName,
+      );
+    });
 
 /// Request parameters for vocabulary loading
 class VocabularyRequest {

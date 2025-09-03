@@ -9,91 +9,101 @@ import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
 // These test the visual components and basic behavior
 void main() {
   group('LanguageLearningSettingsCard Component Tests', () {
-    
     testWidgets('language icons render correctly', (tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-          body: Column(
-            children: [
-              Text('🏛️', style: TextStyle(fontSize: 18)), // Latin icon
-              Text('🇪🇸', style: TextStyle(fontSize: 18)), // Spanish icon
-            ],
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                Text('🏛️', style: TextStyle(fontSize: 18)), // Latin icon
+                Text('🇪🇸', style: TextStyle(fontSize: 18)), // Spanish icon
+              ],
+            ),
           ),
         ),
-      ));
+      );
 
       expect(find.text('🏛️'), findsOneWidget);
       expect(find.text('🇪🇸'), findsOneWidget);
     });
 
     testWidgets('difficulty level chips render correctly', (tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-          body: Column(
-            children: VocabularyLevel.values.map((level) => 
-              FilterChip(
-                label: Text(level.label),
-                selected: level == VocabularyLevel.beginner,
-                onSelected: (_) {},
-              )
-            ).toList(),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: VocabularyLevel.values
+                  .map(
+                    (level) => FilterChip(
+                      label: Text(level.label),
+                      selected: level == VocabularyLevel.beginner,
+                      onSelected: (_) {},
+                    ),
+                  )
+                  .toList(),
+            ),
           ),
         ),
-      ));
+      );
 
       // All level labels should be present
       for (final level in VocabularyLevel.values) {
         expect(find.text(level.label), findsOneWidget);
       }
-      
+
       // Should have correct number of chips
-      expect(find.byType(FilterChip), findsNWidgets(VocabularyLevel.values.length));
+      expect(
+        find.byType(FilterChip),
+        findsNWidgets(VocabularyLevel.values.length),
+      );
     });
 
     testWidgets('switch components render correctly', (tester) async {
       bool switchValue = false;
-      
-      await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-          body: StatefulBuilder(
-            builder: (context, setState) {
-              return Switch(
-                value: switchValue,
-                onChanged: (value) {
-                  setState(() {
-                    switchValue = value;
-                  });
-                },
-              );
-            },
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                return Switch(
+                  value: switchValue,
+                  onChanged: (value) {
+                    setState(() {
+                      switchValue = value;
+                    });
+                  },
+                );
+              },
+            ),
           ),
         ),
-      ));
+      );
 
       expect(find.byType(Switch), findsOneWidget);
-      
+
       // Test switch interaction
       await tester.tap(find.byType(Switch));
       await tester.pump();
-      
+
       final switchWidget = tester.widget<Switch>(find.byType(Switch));
       expect(switchWidget.value, true);
     });
 
     testWidgets('language configuration display components', (tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-          body: Column(
-            children: [
-              Text('Language Learning Settings'),
-              Text('2 active'),
-              Container(
-                child: Text('Intermediate level'),
-              ),
-            ],
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                Text('Language Learning Settings'),
+                Text('2 active'),
+                Container(child: Text('Intermediate level')),
+              ],
+            ),
           ),
         ),
-      ));
+      );
 
       expect(find.text('Language Learning Settings'), findsOneWidget);
       expect(find.text('2 active'), findsOneWidget);
@@ -101,20 +111,19 @@ void main() {
     });
 
     testWidgets('accessibility elements are present', (tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-          body: Column(
-            children: [
-              Icon(Icons.school, semanticLabel: 'Settings icon'),
-              Icon(Icons.info, semanticLabel: 'Information icon'),
-              Switch(
-                value: false,
-                onChanged: (_) {},
-              ),
-            ],
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                Icon(Icons.school, semanticLabel: 'Settings icon'),
+                Icon(Icons.info, semanticLabel: 'Information icon'),
+                Switch(value: false, onChanged: (_) {}),
+              ],
+            ),
           ),
         ),
-      ));
+      );
 
       expect(find.byIcon(Icons.school), findsOneWidget);
       expect(find.byIcon(Icons.info), findsOneWidget);
@@ -125,7 +134,7 @@ void main() {
   group('StudyConfigurationSet Model Tests', () {
     test('creates default configuration correctly', () {
       final config = StudyConfigurationSet.createDefault();
-      
+
       expect(config.currentLanguage, AppLanguage.latin);
       expect(config.enabledConfigurations.length, 1);
       expect(config.enabledConfigurations.first.language, AppLanguage.latin);
@@ -140,8 +149,13 @@ void main() {
         isEnabled: true,
       );
 
-      final updated = config.updateLanguageConfig(AppLanguage.spanish, spanishConfig);
-      final retrievedSpanish = updated.getConfigForLanguage(AppLanguage.spanish);
+      final updated = config.updateLanguageConfig(
+        AppLanguage.spanish,
+        spanishConfig,
+      );
+      final retrievedSpanish = updated.getConfigForLanguage(
+        AppLanguage.spanish,
+      );
 
       expect(retrievedSpanish, isNotNull);
       expect(retrievedSpanish!.level, VocabularyLevel.advanced);

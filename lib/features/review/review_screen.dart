@@ -13,9 +13,11 @@ import 'package:flutter_saas_template/core/providers/study_config_providers.dart
 import 'package:flutter_saas_template/core/services/local_data_service.dart';
 
 /// Loads only words marked as difficult for focused review
-final difficultWordsProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
+final difficultWordsProvider = FutureProvider.autoDispose<List<Word>>((
+  ref,
+) async {
   final currentConfig = ref.watch(currentLanguageConfigProvider);
-  
+
   // If no configuration is available, return empty list
   if (currentConfig == null || !currentConfig.isEnabled) {
     return <Word>[];
@@ -23,11 +25,11 @@ final difficultWordsProvider = FutureProvider.autoDispose<List<Word>>((ref) asyn
 
   final lang = currentConfig.language;
   final level = currentConfig.level;
-  
+
   // Load ALL vocabulary sets for the level
   final allWords = <Word>[];
   final vocabularySets = VocabularySets.getSetsForLevel(level);
-  
+
   if (vocabularySets.isEmpty) {
     // Fallback to legacy format if no leveled sets available
     try {
@@ -51,23 +53,27 @@ final difficultWordsProvider = FutureProvider.autoDispose<List<Word>>((ref) asyn
       }
     }
   }
-  
+
   // Get difficult word IDs from local storage for the current language
   final dataService = await ref.read(localDataServiceProvider.future);
   final difficultWordIds = dataService.getDifficultWordsForLanguage(lang.name);
-  
+
   // Filter to only include difficult words
   return allWords.where((word) => difficultWordIds.contains(word.id)).toList();
 });
 
 /// Card controller for review section
-final reviewCardControllerProvider = Provider.autoDispose<CardSwiperController>((ref) => CardSwiperController());
+final reviewCardControllerProvider = Provider.autoDispose<CardSwiperController>(
+  (ref) => CardSwiperController(),
+);
 
 /// Current review card index
 final currentReviewIndexProvider = StateProvider.autoDispose<int>((ref) => 0);
 
 /// Whether the current review card is flipped
-final isReviewCardFlippedProvider = StateProvider.autoDispose<bool>((ref) => false);
+final isReviewCardFlippedProvider = StateProvider.autoDispose<bool>(
+  (ref) => false,
+);
 
 class ReviewScreen extends ConsumerWidget {
   const ReviewScreen({super.key});
@@ -116,7 +122,9 @@ class ReviewScreen extends ConsumerWidget {
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Center(child: Text('${currentIndex + 1}/${difficultWords.length}')),
+                child: Center(
+                  child: Text('${currentIndex + 1}/${difficultWords.length}'),
+                ),
               ),
             ],
           ),
@@ -129,7 +137,11 @@ class ReviewScreen extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Row(
                     children: [
-                      const Icon(Icons.psychology, size: 18, color: Colors.orange),
+                      const Icon(
+                        Icons.psychology,
+                        size: 18,
+                        color: Colors.orange,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         'Difficult Words • ${difficultWords.length} to review',
@@ -142,42 +154,65 @@ class ReviewScreen extends ConsumerWidget {
                   ),
                 ),
                 Expanded(
-                  child: difficultWords.isNotEmpty ? CardSwiper(
-                    controller: controller,
-                    cardsCount: difficultWords.length,
-                    numberOfCardsDisplayed: 1,
-                    onSwipe: (previousIndex, currentIndex, direction) {
-                      // Handle swipe logic for difficult words
-                      HapticFeedback.lightImpact();
-                      
-                      // Get the word that was just swiped
-                      final swipedWord = difficultWords[previousIndex];
-                      
-                      // Track word mastery (async but don't block UI)
-                      _trackWordMastery(context, ref, swipedWord, direction);
-                      
-                      // Reset flip state for next card
-                      ref.read(isReviewCardFlippedProvider.notifier).state = false;
-                      
-                      // Update current index
-                      if (currentIndex != null) {
-                        ref.read(currentReviewIndexProvider.notifier).state = currentIndex;
-                      }
-                      
-                      return true;
-                    },
-                    cardBuilder: (context, index, horizontalThresholdPercentage, verticalThresholdPercentage) {
-                      final word = difficultWords[index];
-                      return ReviewFlashcardWidget(
-                        word: word,
-                        onTap: () {
-                          ref.read(isReviewCardFlippedProvider.notifier).state = !ref.read(isReviewCardFlippedProvider);
-                        },
-                      );
-                    },
-                  ) : const Center(
-                    child: Text('No cards to review'),
-                  ),
+                  child: difficultWords.isNotEmpty
+                      ? CardSwiper(
+                          controller: controller,
+                          cardsCount: difficultWords.length,
+                          numberOfCardsDisplayed: 1,
+                          onSwipe: (previousIndex, currentIndex, direction) {
+                            // Handle swipe logic for difficult words
+                            HapticFeedback.lightImpact();
+
+                            // Get the word that was just swiped
+                            final swipedWord = difficultWords[previousIndex];
+
+                            // Track word mastery (async but don't block UI)
+                            _trackWordMastery(
+                              context,
+                              ref,
+                              swipedWord,
+                              direction,
+                            );
+
+                            // Reset flip state for next card
+                            ref
+                                    .read(isReviewCardFlippedProvider.notifier)
+                                    .state =
+                                false;
+
+                            // Update current index
+                            if (currentIndex != null) {
+                              ref
+                                      .read(currentReviewIndexProvider.notifier)
+                                      .state =
+                                  currentIndex;
+                            }
+
+                            return true;
+                          },
+                          cardBuilder:
+                              (
+                                context,
+                                index,
+                                horizontalThresholdPercentage,
+                                verticalThresholdPercentage,
+                              ) {
+                                final word = difficultWords[index];
+                                return ReviewFlashcardWidget(
+                                  word: word,
+                                  onTap: () {
+                                    ref
+                                        .read(
+                                          isReviewCardFlippedProvider.notifier,
+                                        )
+                                        .state = !ref.read(
+                                      isReviewCardFlippedProvider,
+                                    );
+                                  },
+                                );
+                              },
+                        )
+                      : const Center(child: Text('No cards to review')),
                 ),
               ],
             ),
@@ -195,11 +230,7 @@ class ReviewScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.celebration,
-              size: 64,
-              color: Colors.green.shade400,
-            ),
+            Icon(Icons.celebration, size: 64, color: Colors.green.shade400),
             const SizedBox(height: 24),
             Text(
               'No Difficult Words!',
@@ -236,7 +267,11 @@ class ReviewScreen extends ConsumerWidget {
     );
   }
 
-  void _showFeedbackSnackBar(BuildContext context, String message, Color color) {
+  void _showFeedbackSnackBar(
+    BuildContext context,
+    String message,
+    Color color,
+  ) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -257,11 +292,11 @@ class ReviewScreen extends ConsumerWidget {
     try {
       final dataService = await ref.read(localDataServiceProvider.future);
       final currentConfig = ref.read(currentLanguageConfigProvider);
-      
+
       if (!context.mounted || currentConfig == null) return;
-      
+
       final languageName = currentConfig.language.name;
-      
+
       if (direction == CardSwiperDirection.right) {
         // Mastered - remove from difficult words for current language
         await dataService.markWordAsKnownForLanguage(word.id, languageName);
@@ -276,7 +311,7 @@ class ReviewScreen extends ConsumerWidget {
     } catch (e) {
       // Silent fail - don't break the learning experience
       if (!context.mounted) return;
-      
+
       if (direction == CardSwiperDirection.right) {
         _showFeedbackSnackBar(context, 'Mastered! ✨', Colors.green);
       } else if (direction == CardSwiperDirection.left) {
@@ -315,7 +350,7 @@ class ReviewFlashcardWidget extends ConsumerWidget {
             begin: 0,
             end: 1,
           ).animate(animation);
-          
+
           return AnimatedBuilder(
             animation: rotateAnimation,
             child: child,
@@ -344,7 +379,9 @@ class ReviewFlashcardWidget extends ConsumerWidget {
         child: Card(
           key: ValueKey(isFlipped ? 'back' : 'front'),
           elevation: 8,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
@@ -368,7 +405,10 @@ class ReviewFlashcardWidget extends ConsumerWidget {
                 children: [
                   // Difficulty indicator
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.orange.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
@@ -393,7 +433,10 @@ class ReviewFlashcardWidget extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  if (!isFlipped) ..._buildFrontContent(theme) else ..._buildBackContent(theme),
+                  if (!isFlipped)
+                    ..._buildFrontContent(theme)
+                  else
+                    ..._buildBackContent(theme),
                 ],
               ),
             ),
@@ -405,11 +448,7 @@ class ReviewFlashcardWidget extends ConsumerWidget {
 
   List<Widget> _buildFrontContent(ThemeData theme) {
     return [
-      Icon(
-        Icons.translate,
-        size: 48,
-        color: Colors.orange.shade700,
-      ),
+      Icon(Icons.translate, size: 48, color: Colors.orange.shade700),
       const SizedBox(height: 24),
       Text(
         word.latin,
@@ -477,11 +516,7 @@ class ReviewFlashcardWidget extends ConsumerWidget {
 
   List<Widget> _buildBackContent(ThemeData theme) {
     return [
-      Icon(
-        Icons.lightbulb,
-        size: 48,
-        color: Colors.orange.shade700,
-      ),
+      Icon(Icons.lightbulb, size: 48, color: Colors.orange.shade700),
       const SizedBox(height: 24),
       Text(
         word.english,

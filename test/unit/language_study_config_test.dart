@@ -111,7 +111,7 @@ void main() {
 
       expect(configSet.currentLanguage, AppLanguage.latin);
       expect(configSet.configurations, hasLength(AppLanguage.values.length));
-      
+
       // Only Latin should be enabled by default
       final enabledConfigs = configSet.enabledConfigurations;
       expect(enabledConfigs, hasLength(1));
@@ -130,7 +130,7 @@ void main() {
 
     test('gets configuration for specific language', () {
       final configSet = StudyConfigurationSet.createDefault();
-      
+
       final latinConfig = configSet.getConfigForLanguage(AppLanguage.latin);
       final spanishConfig = configSet.getConfigForLanguage(AppLanguage.spanish);
 
@@ -145,14 +145,17 @@ void main() {
 
     test('updates language configuration correctly', () {
       final original = StudyConfigurationSet.createDefault();
-      
+
       const newSpanishConfig = LanguageStudyConfig(
         language: AppLanguage.spanish,
         level: VocabularyLevel.advanced,
         isEnabled: true,
       );
 
-      final updated = original.updateLanguageConfig(AppLanguage.spanish, newSpanishConfig);
+      final updated = original.updateLanguageConfig(
+        AppLanguage.spanish,
+        newSpanishConfig,
+      );
 
       final spanishConfig = updated.getConfigForLanguage(AppLanguage.spanish);
       expect(spanishConfig, isNotNull);
@@ -160,7 +163,9 @@ void main() {
       expect(spanishConfig.isEnabled, true);
 
       // Original should be unchanged
-      final originalSpanish = original.getConfigForLanguage(AppLanguage.spanish);
+      final originalSpanish = original.getConfigForLanguage(
+        AppLanguage.spanish,
+      );
       expect(originalSpanish!.isEnabled, false);
     });
 
@@ -174,30 +179,39 @@ void main() {
 
     test('filters enabled configurations correctly', () {
       var configSet = StudyConfigurationSet.createDefault();
-      
+
       // Enable Spanish
       const spanishConfig = LanguageStudyConfig(
         language: AppLanguage.spanish,
         level: VocabularyLevel.intermediate,
         isEnabled: true,
       );
-      configSet = configSet.updateLanguageConfig(AppLanguage.spanish, spanishConfig);
+      configSet = configSet.updateLanguageConfig(
+        AppLanguage.spanish,
+        spanishConfig,
+      );
 
       final enabled = configSet.enabledConfigurations;
       expect(enabled, hasLength(2));
-      expect(enabled.map((c) => c.language), containsAll([AppLanguage.latin, AppLanguage.spanish]));
+      expect(
+        enabled.map((c) => c.language),
+        containsAll([AppLanguage.latin, AppLanguage.spanish]),
+      );
     });
 
     test('JSON serialization works for full configuration set', () {
       var configSet = StudyConfigurationSet.createDefault();
-      
+
       // Enable Spanish with different level
       const spanishConfig = LanguageStudyConfig(
         language: AppLanguage.spanish,
         level: VocabularyLevel.advanced,
         isEnabled: true,
       );
-      configSet = configSet.updateLanguageConfig(AppLanguage.spanish, spanishConfig);
+      configSet = configSet.updateLanguageConfig(
+        AppLanguage.spanish,
+        spanishConfig,
+      );
       configSet = configSet.withCurrentLanguage(AppLanguage.spanish);
 
       final json = configSet.toJson();
@@ -205,8 +219,10 @@ void main() {
 
       expect(restored.currentLanguage, AppLanguage.spanish);
       expect(restored.enabledConfigurations, hasLength(2));
-      
-      final restoredSpanish = restored.getConfigForLanguage(AppLanguage.spanish);
+
+      final restoredSpanish = restored.getConfigForLanguage(
+        AppLanguage.spanish,
+      );
       expect(restoredSpanish!.level, VocabularyLevel.advanced);
       expect(restoredSpanish.isEnabled, true);
     });
@@ -214,7 +230,7 @@ void main() {
     test('equality works correctly', () {
       final config1 = StudyConfigurationSet.createDefault();
       final config2 = StudyConfigurationSet.createDefault();
-      
+
       expect(config1, equals(config2));
 
       final config3 = config1.withCurrentLanguage(AppLanguage.spanish);

@@ -107,7 +107,8 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
       children: [
         if (widget.child != null) widget.child!,
         if (widget.isVisible)
-          IgnorePointer(  // Ensure celebration doesn't block touch events
+          IgnorePointer(
+            // Ensure celebration doesn't block touch events
             child: AnimatedBuilder(
               animation: _fadeController,
               builder: (context, child) {

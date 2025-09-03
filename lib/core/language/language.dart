@@ -71,15 +71,17 @@ class LanguageSwitcherAction extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final lang = ref.watch(currentLanguageProvider);
     final enabledConfigs = ref.watch(enabledLanguageConfigsProvider);
-    
+
     // Only show languages that are enabled for study
-    final availableLanguages = enabledConfigs.map((config) => config.language).toList();
-    
+    final availableLanguages = enabledConfigs
+        .map((config) => config.language)
+        .toList();
+
     if (availableLanguages.isEmpty || availableLanguages.length == 1) {
       // If no enabled languages or only one, just show current language as icon
       return Icon(lang.icon);
     }
-    
+
     return PopupMenuButton<AppLanguage>(
       tooltip: 'Switch Active Language',
       icon: Icon(lang.icon),

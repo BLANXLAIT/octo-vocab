@@ -21,22 +21,22 @@ class StudyingLanguagesCard extends ConsumerWidget {
             ),
           );
         }
-        
+
         final dataService = snapshot.data!;
         final studyingLanguages = dataService.getStudyingLanguages();
         final theme = Theme.of(context);
-        
+
         return Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                const Row(
                   children: [
-                    const Icon(Icons.school),
-                    const SizedBox(width: 12),
-                    const Text(
+                    Icon(Icons.school),
+                    SizedBox(width: 12),
+                    Text(
                       'Studying Languages',
                       style: TextStyle(
                         fontSize: 16,
@@ -53,13 +53,15 @@ class StudyingLanguagesCard extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Language selection chips
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: AppLanguage.values.map((language) {
-                    final isSelected = studyingLanguages.contains(language.name);
+                    final isSelected = studyingLanguages.contains(
+                      language.name,
+                    );
                     return FilterChip(
                       selected: isSelected,
                       label: Row(
@@ -76,13 +78,17 @@ class StudyingLanguagesCard extends ConsumerWidget {
                         } else {
                           // Don't allow removing all languages
                           if (studyingLanguages.length > 1) {
-                            await dataService.removeStudyingLanguage(language.name);
+                            await dataService.removeStudyingLanguage(
+                              language.name,
+                            );
                           } else {
                             // Show warning
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('You must be studying at least one language'),
+                                  content: Text(
+                                    'You must be studying at least one language',
+                                  ),
                                   backgroundColor: Colors.orange,
                                 ),
                               );
@@ -95,9 +101,9 @@ class StudyingLanguagesCard extends ConsumerWidget {
                     );
                   }).toList(),
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 // Info about separate progress tracking
                 Container(
                   padding: const EdgeInsets.all(12),

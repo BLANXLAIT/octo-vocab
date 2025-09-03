@@ -1,7 +1,6 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flutter_saas_template/core/language/language.dart';
@@ -19,7 +18,7 @@ Future<List<Word>> _loadAllVocabularyForLevel(
 ) async {
   final allWords = <Word>[];
   final vocabularySets = VocabularySets.getSetsForLevel(level);
-  
+
   if (vocabularySets.isEmpty) {
     // Fallback to grade8_set1 if no sets are defined for this level
     try {
@@ -48,82 +47,93 @@ Future<List<Word>> _loadAllVocabularyForLevel(
       }
     }
   }
-  
+
   return allWords;
 }
 
 /// Optimized multi-language progress data provider with caching
-final multiLanguageProgressProvider = FutureProvider<MultiLanguageProgressData>((ref) async {
-  final dataService = await ref.read(localDataServiceProvider.future);
-  final enabledConfigs = ref.watch(enabledLanguageConfigsProvider);
-  final cacheService = ref.read(vocabularyCacheServiceProvider);
-  
-  final languageProgressMap = <String, LanguageProgressData>{};
-  
-  // Load vocabulary concurrently for better performance
-  final vocabularyFutures = <String, Future<List<Word>>>{};
-  
-  for (final config in enabledConfigs) {
-    final language = config.language.name;
-    final level = config.level;
-    
-    // Load ALL vocabulary sets for this language/level combination
-    vocabularyFutures[language] = _loadAllVocabularyForLevel(
-      cacheService,
-      config.language,
-      level,
-    );
-  }
-  
-  // Wait for all vocabulary to load and build progress data
-  for (final config in enabledConfigs) {
-    final language = config.language.name;
-    
-    try {
-      final allWords = await vocabularyFutures[language]!;
-      
-      // Get statistics for this language
-      final stats = dataService.getLearningStatsForLanguage(language);
-      final difficultWords = dataService.getDifficultWordsForLanguage(language);
-      final knownWords = dataService.getKnownWordsForLanguage(language);
-      
-      languageProgressMap[language] = LanguageProgressData(
-        language: language,
-        totalWords: allWords.length,
-        masteredCount: stats['known_count'] ?? 0,
-        learningCount: stats['difficult_count'] ?? 0,
-        unstudiedCount: allWords.length - (stats['total_studied'] ?? 0),
-        difficultWordIds: difficultWords,
-        knownWordIds: knownWords,
-      );
-    } catch (e) {
-      // Graceful fallback for failed vocabulary loading
-      languageProgressMap[language] = LanguageProgressData(
-        language: language,
-        totalWords: 0,
-        masteredCount: 0,
-        learningCount: 0,
-        unstudiedCount: 0,
-        difficultWordIds: const {},
-        knownWordIds: const {},
+final multiLanguageProgressProvider = FutureProvider<MultiLanguageProgressData>(
+  (ref) async {
+    final dataService = await ref.read(localDataServiceProvider.future);
+    final enabledConfigs = ref.watch(enabledLanguageConfigsProvider);
+    final cacheService = ref.read(vocabularyCacheServiceProvider);
+
+    final languageProgressMap = <String, LanguageProgressData>{};
+
+    // Load vocabulary concurrently for better performance
+    final vocabularyFutures = <String, Future<List<Word>>>{};
+
+    for (final config in enabledConfigs) {
+      final language = config.language.name;
+      final level = config.level;
+
+      // Load ALL vocabulary sets for this language/level combination
+      vocabularyFutures[language] = _loadAllVocabularyForLevel(
+        cacheService,
+        config.language,
+        level,
       );
     }
-  }
-  
-  // Create set of studying languages from enabled configs
-  final studyingLanguages = enabledConfigs.map((config) => config.language.name).toSet();
-  
-  return MultiLanguageProgressData(
-    languages: languageProgressMap,
-    studyingLanguages: studyingLanguages,
-  );
-}, dependencies: [localDataServiceProvider, enabledLanguageConfigsProvider]);
+
+    // Wait for all vocabulary to load and build progress data
+    for (final config in enabledConfigs) {
+      final language = config.language.name;
+
+      try {
+        final allWords = await vocabularyFutures[language]!;
+
+        // Get statistics for this language
+        final stats = dataService.getLearningStatsForLanguage(language);
+        final difficultWords = dataService.getDifficultWordsForLanguage(
+          language,
+        );
+        final knownWords = dataService.getKnownWordsForLanguage(language);
+
+        languageProgressMap[language] = LanguageProgressData(
+          language: language,
+          totalWords: allWords.length,
+          masteredCount: stats['known_count'] ?? 0,
+          learningCount: stats['difficult_count'] ?? 0,
+          unstudiedCount: allWords.length - (stats['total_studied'] ?? 0),
+          difficultWordIds: difficultWords,
+          knownWordIds: knownWords,
+        );
+      } catch (e) {
+        // Graceful fallback for failed vocabulary loading
+        languageProgressMap[language] = LanguageProgressData(
+          language: language,
+          totalWords: 0,
+          masteredCount: 0,
+          learningCount: 0,
+          unstudiedCount: 0,
+          difficultWordIds: const {},
+          knownWordIds: const {},
+        );
+      }
+    }
+
+    // Create set of studying languages from enabled configs
+    final studyingLanguages = enabledConfigs
+        .map((config) => config.language.name)
+        .toSet();
+
+    return MultiLanguageProgressData(
+      languages: languageProgressMap,
+      studyingLanguages: studyingLanguages,
+    );
+  },
+  dependencies: [localDataServiceProvider, enabledLanguageConfigsProvider],
+);
 
 /// Combined progress data including vocabulary and learning statistics (backward compatibility)
-final progressDataProvider = FutureProvider.autoDispose<ProgressData>((ref) async {
-  final multiLangProgress = await ref.watch(multiLanguageProgressProvider.future);
+final progressDataProvider = FutureProvider.autoDispose<ProgressData>((
+  ref,
+) async {
+  final multiLangProgress = await ref.watch(
+    multiLanguageProgressProvider.future,
+  );
   final currentLang = ref.watch(currentLanguageProvider);
-  
+
   // Return current language progress or combined if no specific language data
   final langProgress = multiLangProgress.languages[currentLang.name];
   if (langProgress != null) {
@@ -136,20 +146,36 @@ final progressDataProvider = FutureProvider.autoDispose<ProgressData>((ref) asyn
       knownWordIds: langProgress.knownWordIds,
     );
   }
-  
+
   // Fallback to combined stats
-  final totalWords = multiLangProgress.languages.values.fold(0, (sum, lang) => sum + lang.totalWords);
-  final masteredCount = multiLangProgress.languages.values.fold(0, (sum, lang) => sum + lang.masteredCount);
-  final learningCount = multiLangProgress.languages.values.fold(0, (sum, lang) => sum + lang.learningCount);
-  final unstudiedCount = multiLangProgress.languages.values.fold(0, (sum, lang) => sum + lang.unstudiedCount);
-  
+  final totalWords = multiLangProgress.languages.values.fold(
+    0,
+    (sum, lang) => sum + lang.totalWords,
+  );
+  final masteredCount = multiLangProgress.languages.values.fold(
+    0,
+    (sum, lang) => sum + lang.masteredCount,
+  );
+  final learningCount = multiLangProgress.languages.values.fold(
+    0,
+    (sum, lang) => sum + lang.learningCount,
+  );
+  final unstudiedCount = multiLangProgress.languages.values.fold(
+    0,
+    (sum, lang) => sum + lang.unstudiedCount,
+  );
+
   return ProgressData(
     totalWords: totalWords,
     masteredCount: masteredCount,
     learningCount: learningCount,
     unstudiedCount: unstudiedCount,
-    difficultWordIds: multiLangProgress.languages.values.expand((lang) => lang.difficultWordIds).toSet(),
-    knownWordIds: multiLangProgress.languages.values.expand((lang) => lang.knownWordIds).toSet(),
+    difficultWordIds: multiLangProgress.languages.values
+        .expand((lang) => lang.difficultWordIds)
+        .toSet(),
+    knownWordIds: multiLangProgress.languages.values
+        .expand((lang) => lang.knownWordIds)
+        .toSet(),
   );
 });
 
@@ -170,9 +196,12 @@ class ProgressData {
   final int unstudiedCount;
   final Set<String> difficultWordIds;
   final Set<String> knownWordIds;
-  
-  double get masteryPercentage => totalWords > 0 ? (masteredCount / totalWords) * 100 : 0.0;
-  double get studiedPercentage => totalWords > 0 ? ((masteredCount + learningCount) / totalWords) * 100 : 0.0;
+
+  double get masteryPercentage =>
+      totalWords > 0 ? (masteredCount / totalWords) * 100 : 0.0;
+  double get studiedPercentage => totalWords > 0
+      ? ((masteredCount + learningCount) / totalWords) * 100
+      : 0.0;
 }
 
 /// Data class for individual language progress
@@ -194,10 +223,13 @@ class LanguageProgressData {
   final int unstudiedCount;
   final Set<String> difficultWordIds;
   final Set<String> knownWordIds;
-  
-  double get masteryPercentage => totalWords > 0 ? (masteredCount / totalWords) * 100 : 0.0;
-  double get studiedPercentage => totalWords > 0 ? ((masteredCount + learningCount) / totalWords) * 100 : 0.0;
-  
+
+  double get masteryPercentage =>
+      totalWords > 0 ? (masteredCount / totalWords) * 100 : 0.0;
+  double get studiedPercentage => totalWords > 0
+      ? ((masteredCount + learningCount) / totalWords) * 100
+      : 0.0;
+
   String get displayName {
     switch (language) {
       case 'latin':
@@ -219,21 +251,37 @@ class MultiLanguageProgressData {
 
   final Map<String, LanguageProgressData> languages;
   final Set<String> studyingLanguages;
-  
+
   /// Get combined statistics across all languages
   ProgressData get combinedProgress {
-    final totalWords = languages.values.fold(0, (sum, lang) => sum + lang.totalWords);
-    final masteredCount = languages.values.fold(0, (sum, lang) => sum + lang.masteredCount);
-    final learningCount = languages.values.fold(0, (sum, lang) => sum + lang.learningCount);
-    final unstudiedCount = languages.values.fold(0, (sum, lang) => sum + lang.unstudiedCount);
-    
+    final totalWords = languages.values.fold(
+      0,
+      (sum, lang) => sum + lang.totalWords,
+    );
+    final masteredCount = languages.values.fold(
+      0,
+      (sum, lang) => sum + lang.masteredCount,
+    );
+    final learningCount = languages.values.fold(
+      0,
+      (sum, lang) => sum + lang.learningCount,
+    );
+    final unstudiedCount = languages.values.fold(
+      0,
+      (sum, lang) => sum + lang.unstudiedCount,
+    );
+
     return ProgressData(
       totalWords: totalWords,
       masteredCount: masteredCount,
       learningCount: learningCount,
       unstudiedCount: unstudiedCount,
-      difficultWordIds: languages.values.expand((lang) => lang.difficultWordIds).toSet(),
-      knownWordIds: languages.values.expand((lang) => lang.knownWordIds).toSet(),
+      difficultWordIds: languages.values
+          .expand((lang) => lang.difficultWordIds)
+          .toSet(),
+      knownWordIds: languages.values
+          .expand((lang) => lang.knownWordIds)
+          .toSet(),
     );
   }
 }
@@ -256,9 +304,9 @@ class ProgressScreen extends ConsumerWidget {
           children: [
             // Language-specific Progress
             _buildLanguageProgressSection(context, ref),
-            
+
             const SizedBox(height: 16),
-            
+
             // Privacy notice
             _buildPrivacyNotice(context),
           ],
@@ -266,7 +314,6 @@ class ProgressScreen extends ConsumerWidget {
       ),
     );
   }
-
 
   Widget _buildPrivacyNotice(BuildContext context) {
     return Container(
@@ -294,7 +341,7 @@ class ProgressScreen extends ConsumerWidget {
 
   Widget _buildLanguageProgressSection(BuildContext context, WidgetRef ref) {
     final multiLangAsync = ref.watch(multiLanguageProgressProvider);
-    
+
     return multiLangAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, st) => Card(
@@ -315,13 +362,15 @@ class ProgressScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              multiLangData.languages.length > 1 ? 'Progress by Language' : 'Your Progress',
+              multiLangData.languages.length > 1
+                  ? 'Progress by Language'
+                  : 'Your Progress',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 12),
-            
+
             // Language progress cards
             ...multiLangData.languages.values.map((langProgress) {
               return Padding(
@@ -353,19 +402,21 @@ class ProgressScreen extends ConsumerWidget {
                             ),
                           ],
                         ),
-                        
+
                         const SizedBox(height: 12),
-                        
+
                         // Progress bar
                         LinearProgressIndicator(
                           value: langProgress.masteryPercentage / 100,
                           backgroundColor: Colors.green.withValues(alpha: 0.2),
-                          valueColor: const AlwaysStoppedAnimation(Colors.green),
+                          valueColor: const AlwaysStoppedAnimation(
+                            Colors.green,
+                          ),
                           minHeight: 6,
                         ),
-                        
+
                         const SizedBox(height: 12),
-                        
+
                         // Stats row
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -424,10 +475,7 @@ class ProgressScreen extends ConsumerWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        Text(
-          label,
-          style: theme.textTheme.bodySmall,
-        ),
+        Text(label, style: theme.textTheme.bodySmall),
       ],
     );
   }
@@ -435,7 +483,10 @@ class ProgressScreen extends ConsumerWidget {
   Widget _getLanguageFlag(String language) {
     switch (language) {
       case 'latin':
-        return const Text('🏛️', style: TextStyle(fontSize: 24)); // Classical building for Latin
+        return const Text(
+          '🏛️',
+          style: TextStyle(fontSize: 24),
+        ); // Classical building for Latin
       case 'spanish':
         return const Text('🇪🇸', style: TextStyle(fontSize: 24));
       default:

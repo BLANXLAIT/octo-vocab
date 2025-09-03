@@ -31,7 +31,8 @@ class LanguageLearningSettingsCard extends ConsumerWidget {
               Text('Error loading settings: $error'),
               const SizedBox(height: 8),
               ElevatedButton(
-                onPressed: () => ref.read(studyConfigurationProvider.notifier).refresh(),
+                onPressed: () =>
+                    ref.read(studyConfigurationProvider.notifier).refresh(),
                 child: const Text('Retry'),
               ),
             ],
@@ -64,16 +65,16 @@ class LanguageLearningSettingsCard extends ConsumerWidget {
                 const Expanded(
                   child: Text(
                     'Language Learning Settings',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 const SizedBox(width: 8), // Small gap instead of Spacer
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.primaryContainer,
                     borderRadius: BorderRadius.circular(12),
@@ -98,22 +99,17 @@ class LanguageLearningSettingsCard extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
 
-
             // Language configurations
             ...AppLanguage.values.map((language) {
-              final config = configSet.getConfigForLanguage(language) ??
+              final config =
+                  configSet.getConfigForLanguage(language) ??
                   LanguageStudyConfig(
                     language: language,
                     level: VocabularyLevel.beginner,
                     isEnabled: false,
                   );
 
-              return _buildLanguageSettingTile(
-                context,
-                ref,
-                config,
-                configSet,
-              );
+              return _buildLanguageSettingTile(context, ref, config, configSet);
             }),
 
             const SizedBox(height: 12),
@@ -153,7 +149,6 @@ class LanguageLearningSettingsCard extends ConsumerWidget {
     StudyConfigurationSet configSet,
   ) {
     final theme = Theme.of(context);
-    final isCurrentLanguage = config.language == configSet.currentLanguage;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -206,11 +201,14 @@ class LanguageLearningSettingsCard extends ConsumerWidget {
                   onChanged: (enabled) {
                     if (!enabled) {
                       // Don't allow disabling all languages
-                      final enabledCount = configSet.enabledConfigurations.length;
+                      final enabledCount =
+                          configSet.enabledConfigurations.length;
                       if (enabledCount <= 1) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('You must have at least one language enabled'),
+                            content: Text(
+                              'You must have at least one language enabled',
+                            ),
                             backgroundColor: Colors.orange,
                           ),
                         );
@@ -220,12 +218,14 @@ class LanguageLearningSettingsCard extends ConsumerWidget {
 
                     // Update the configuration
                     final newConfig = config.copyWith(isEnabled: enabled);
-                    ref.read(studyConfigurationProvider.notifier)
+                    ref
+                        .read(studyConfigurationProvider.notifier)
                         .updateLanguageConfig(config.language, newConfig);
 
                     // If enabling and no current language is set, make this current
                     if (enabled && configSet.enabledConfigurations.isEmpty) {
-                      ref.read(studyConfigurationProvider.notifier)
+                      ref
+                          .read(studyConfigurationProvider.notifier)
                           .setCurrentLanguage(config.language);
                     }
                   },
@@ -284,7 +284,8 @@ class LanguageLearningSettingsCard extends ConsumerWidget {
                           onSelected: (selected) {
                             if (selected) {
                               final newConfig = config.copyWith(level: level);
-                              ref.read(studyConfigurationProvider.notifier)
+                              ref
+                                  .read(studyConfigurationProvider.notifier)
                                   .updateLanguageConfig(
                                     config.language,
                                     newConfig,

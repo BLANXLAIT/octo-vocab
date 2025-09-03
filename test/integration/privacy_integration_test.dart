@@ -18,19 +18,17 @@ void main() {
       SharedPreferences.setMockInitialValues({});
     });
 
-    testWidgets('app launches without requiring authentication', (tester) async {
+    testWidgets('app launches without requiring authentication', (
+      tester,
+    ) async {
       // COPPA compliance: App should work without user accounts
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: OctoVocabApp(),
-        ),
-      );
+      await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
       await tester.pumpAndSettle();
 
       // Verify app launches directly to main content
       expect(find.byType(AdaptiveScaffold), findsOneWidget);
       expect(find.byType(FlashcardsScreen), findsOneWidget);
-      
+
       // Verify no authentication screens exist
       expect(find.text('Sign In'), findsNothing);
       expect(find.text('Create Account'), findsNothing);
@@ -40,11 +38,7 @@ void main() {
 
     testWidgets('full app usage creates only educational data', (tester) async {
       // Test complete user journey to verify only educational data is stored
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: OctoVocabApp(),
-        ),
-      );
+      await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
       await tester.pumpAndSettle();
 
       // Navigate through all main screens
@@ -53,7 +47,7 @@ void main() {
 
       // Use Learn tab (default)
       await tester.pumpAndSettle();
-      
+
       // Navigate to Quiz tab
       await tester.tap(find.text('Quiz'));
       await tester.pumpAndSettle();
@@ -70,29 +64,25 @@ void main() {
 
       for (final key in keys) {
         // All keys should be educational or system-related
-        final isValidKey = key.contains('language') ||
-                          key.contains('level') ||
-                          key.contains('progress') ||
-                          key.contains('difficult') ||
-                          key.contains('word_') ||
-                          key.contains('study_') ||
-                          key.contains('quiz_') ||
-                          key.contains('app_settings') ||
-                          key.contains('config') ||
-                          key.startsWith('flutter.'); // Flutter system keys
-        
-        expect(isValidKey, isTrue, 
-          reason: 'Unexpected data key found: $key');
+        final isValidKey =
+            key.contains('language') ||
+            key.contains('level') ||
+            key.contains('progress') ||
+            key.contains('difficult') ||
+            key.contains('word_') ||
+            key.contains('study_') ||
+            key.contains('quiz_') ||
+            key.contains('app_settings') ||
+            key.contains('config') ||
+            key.startsWith('flutter.'); // Flutter system keys
+
+        expect(isValidKey, isTrue, reason: 'Unexpected data key found: $key');
       }
     });
 
     testWidgets('privacy protection information is accessible', (tester) async {
       // GDPR compliance: Users must be informed about data processing
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: OctoVocabApp(),
-        ),
-      );
+      await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
       await tester.pumpAndSettle();
 
       // Navigate to Settings
@@ -117,11 +107,7 @@ void main() {
 
     testWidgets('data reset functionality works end-to-end', (tester) async {
       // GDPR Article 17: Right to erasure
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: OctoVocabApp(),
-        ),
-      );
+      await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
       await tester.pumpAndSettle();
 
       // Create some data by using the app
@@ -159,13 +145,11 @@ void main() {
       expect(keys, isEmpty, reason: 'All user data should be deleted');
     });
 
-    testWidgets('app works without network connectivity simulation', (tester) async {
+    testWidgets('app works without network connectivity simulation', (
+      tester,
+    ) async {
       // COPPA/FERPA compliance: App should work completely offline
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: OctoVocabApp(),
-        ),
-      );
+      await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
       await tester.pumpAndSettle();
 
       // Test all main features work
@@ -180,7 +164,7 @@ void main() {
       await tester.tap(find.text('Progress'));
       await tester.pumpAndSettle();
 
-      // Navigate to Review  
+      // Navigate to Review
       await tester.tap(find.text('Review'));
       await tester.pumpAndSettle();
 
@@ -195,11 +179,7 @@ void main() {
 
     testWidgets('no external web views or browsers opened', (tester) async {
       // Privacy safeguard: App should not open external content
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: OctoVocabApp(),
-        ),
-      );
+      await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
       await tester.pumpAndSettle();
 
       // Navigate through all screens
@@ -215,18 +195,14 @@ void main() {
 
       // Verify no WebView or external browser widgets
       expect(find.byType(WebView), findsNothing);
-      
+
       // GitHub links should be displayed as text, not clickable links
       expect(find.textContaining('github.com'), findsOneWidget);
     });
 
     testWidgets('vocabulary data loads from local assets only', (tester) async {
       // FERPA compliance: Educational content should be local
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: OctoVocabApp(),
-        ),
-      );
+      await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
       await tester.pumpAndSettle();
 
       // Wait for vocabulary to load
@@ -238,21 +214,24 @@ void main() {
 
       // Vocabulary should load without network requests
       // If quiz shows content, vocabulary loaded successfully from assets
-      final hasQuizContent = find.textContaining('What is the English translation?').evaluate().isNotEmpty ||
-                            find.text('Loading...').evaluate().isNotEmpty ||
-                            find.textContaining('Quiz').evaluate().isNotEmpty;
+      final hasQuizContent =
+          find
+              .textContaining('What is the English translation?')
+              .evaluate()
+              .isNotEmpty ||
+          find.text('Loading...').evaluate().isNotEmpty ||
+          find.textContaining('Quiz').evaluate().isNotEmpty;
 
-      expect(hasQuizContent, isTrue, 
-        reason: 'Vocabulary should load from local assets');
+      expect(
+        hasQuizContent,
+        isTrue,
+        reason: 'Vocabulary should load from local assets',
+      );
     });
 
     testWidgets('settings changes persist locally only', (tester) async {
       // Test that user preferences are stored locally, not remotely
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: OctoVocabApp(),
-        ),
-      );
+      await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
       await tester.pumpAndSettle();
 
       // Navigate to Settings
@@ -263,7 +242,7 @@ void main() {
 
       // Verify preferences are stored in SharedPreferences (local storage)
       final prefs = await SharedPreferences.getInstance();
-      
+
       // After using settings, some configuration should be stored locally
       // We don't test specific keys as they may change, but verify storage is local
       expect(prefs, isNotNull, reason: 'Preferences should use local storage');
@@ -273,11 +252,7 @@ void main() {
   group('Educational Context Compliance', () {
     testWidgets('app is suitable for classroom use', (tester) async {
       // FERPA compliance: Educational apps should be classroom-appropriate
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: OctoVocabApp(),
-        ),
-      );
+      await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
       await tester.pumpAndSettle();
 
       // Verify educational content is appropriate
@@ -295,11 +270,7 @@ void main() {
 
     testWidgets('privacy notice is clear and accessible', (tester) async {
       // GDPR compliance: Clear privacy information
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: OctoVocabApp(),
-        ),
-      );
+      await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
       await tester.pumpAndSettle();
 
       // Navigate to Settings

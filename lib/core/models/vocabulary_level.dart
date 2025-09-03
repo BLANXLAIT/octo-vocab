@@ -120,7 +120,8 @@ class VocabularySets {
     VocabularySet(
       id: 'literature_rhetoric',
       name: 'Literature & Rhetoric',
-      description: 'Advanced vocabulary for classical literature and philosophy',
+      description:
+          'Advanced vocabulary for classical literature and philosophy',
       filename: 'set1_literature_rhetoric.json',
       level: VocabularyLevel.advanced,
       estimatedWords: 25,

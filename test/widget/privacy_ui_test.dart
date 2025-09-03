@@ -15,7 +15,9 @@ void main() {
               child: ListTile(
                 leading: const Icon(Icons.privacy_tip, color: Colors.green),
                 title: const Text('Privacy Protection'),
-                subtitle: const Text('COPPA/FERPA compliant • No data collection'),
+                subtitle: const Text(
+                  'COPPA/FERPA compliant • No data collection',
+                ),
               ),
             ),
           ),
@@ -73,7 +75,9 @@ void main() {
       expect(shieldIcon.size, equals(20));
     });
 
-    testWidgets('Data reset dialog displays appropriate warnings', (tester) async {
+    testWidgets('Data reset dialog displays appropriate warnings', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Builder(
@@ -102,7 +106,10 @@ void main() {
       final deleteButton = tester.widget<FilledButton>(
         find.widgetWithText(FilledButton, 'Delete All Data'),
       );
-      expect(deleteButton.style?.backgroundColor?.resolve({}), equals(Colors.red));
+      expect(
+        deleteButton.style?.backgroundColor?.resolve({}),
+        equals(Colors.red),
+      );
 
       // Test cancellation
       await tester.tap(find.text('Cancel'));
@@ -118,7 +125,9 @@ void main() {
               child: ExpansionTile(
                 leading: const Icon(Icons.privacy_tip, color: Colors.green),
                 title: const Text('Privacy Protection'),
-                subtitle: const Text('COPPA/FERPA compliant • No data collection'),
+                subtitle: const Text(
+                  'COPPA/FERPA compliant • No data collection',
+                ),
                 children: const [
                   Padding(
                     padding: EdgeInsets.all(16),
@@ -133,7 +142,10 @@ void main() {
 
       // Verify collapsed state
       expect(find.text('Privacy Protection'), findsOneWidget);
-      expect(find.text('COPPA/FERPA compliant • No data collection'), findsOneWidget);
+      expect(
+        find.text('COPPA/FERPA compliant • No data collection'),
+        findsOneWidget,
+      );
       expect(find.byIcon(Icons.privacy_tip), findsOneWidget);
       expect(find.text('Privacy details would go here'), findsNothing);
 
@@ -152,7 +164,7 @@ void main() {
             body: Column(
               children: [
                 const Text('Learn'),
-                const Text('Quiz'), 
+                const Text('Quiz'),
                 const Text('Review'),
                 const Text('Progress'),
                 const Text('Privacy-first vocabulary learning'),
@@ -176,7 +188,11 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: _buildInfoRow(Icons.shield, 'Privacy', 'No data collection, fully offline'),
+            body: _buildInfoRow(
+              Icons.shield,
+              'Privacy',
+              'No data collection, fully offline',
+            ),
           ),
         ),
       );
@@ -197,16 +213,10 @@ Widget _buildInfoRow(IconData icon, String label, String value) {
       children: [
         Icon(icon, size: 16, color: Colors.grey[600]),
         const SizedBox(width: 8),
-        Text(
-          '$label:',
-          style: const TextStyle(fontWeight: FontWeight.w500),
-        ),
+        Text('$label:', style: const TextStyle(fontWeight: FontWeight.w500)),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(
-            value,
-            style: TextStyle(color: Colors.grey[700]),
-          ),
+          child: Text(value, style: TextStyle(color: Colors.grey[700])),
         ),
       ],
     ),

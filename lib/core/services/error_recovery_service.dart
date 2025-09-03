@@ -17,12 +17,7 @@ enum ErrorType {
 }
 
 /// Error recovery strategy
-enum RecoveryStrategy {
-  retry,
-  fallback,
-  ignore,
-  resetToDefault,
-}
+enum RecoveryStrategy { retry, fallback, ignore, resetToDefault }
 
 /// Detailed error information for recovery
 class RecoverableError {
@@ -77,14 +72,14 @@ class ErrorRecoveryService {
     switch (recoverableError.suggestedStrategy) {
       case RecoveryStrategy.retry:
         return _attemptRetry(recoverableError, retryFunction);
-      
+
       case RecoveryStrategy.fallback:
         return _attemptFallback(recoverableError, fallbackFunction);
-      
+
       case RecoveryStrategy.ignore:
         _logError(recoverableError, 'Ignoring error as per strategy');
         return null;
-      
+
       case RecoveryStrategy.resetToDefault:
         return _resetToDefault<T>(recoverableError);
     }
@@ -98,17 +93,18 @@ class ErrorRecoveryService {
     required Object originalError,
   }) async {
     return await handleError<List<Word>>(
-      ErrorType.vocabularyLoadFailure,
-      'Failed to load vocabulary for ${language.name} ${level.code} $setName',
-      originalError,
-      context: {
-        'language': language.name,
-        'level': level.code,
-        'setName': setName,
-      },
-      retryFunction: null, // Will be handled by the cache service
-      fallbackFunction: () => _getFallbackVocabulary(language),
-    ) ?? [];
+          ErrorType.vocabularyLoadFailure,
+          'Failed to load vocabulary for ${language.name} ${level.code} $setName',
+          originalError,
+          context: {
+            'language': language.name,
+            'level': level.code,
+            'setName': setName,
+          },
+          retryFunction: null, // Will be handled by the cache service
+          fallbackFunction: () => _getFallbackVocabulary(language),
+        ) ??
+        [];
   }
 
   /// Attempt retry with exponential backoff
@@ -167,16 +163,16 @@ class ErrorRecoveryService {
     switch (errorType) {
       case ErrorType.vocabularyLoadFailure:
         return RecoveryStrategy.fallback;
-      
+
       case ErrorType.storageFailure:
         return RecoveryStrategy.retry;
-      
+
       case ErrorType.configurationCorruption:
         return RecoveryStrategy.resetToDefault;
-      
+
       case ErrorType.assetMissing:
         return RecoveryStrategy.fallback;
-      
+
       case ErrorType.networkUnavailable:
         return RecoveryStrategy.ignore; // App is offline-first
     }
@@ -198,7 +194,7 @@ class ErrorRecoveryService {
             tags: const ['emergency', 'fallback'],
           ),
         ];
-      
+
       case AppLanguage.spanish:
         return [
           Word(
@@ -217,7 +213,7 @@ class ErrorRecoveryService {
   /// Record error for tracking
   void _recordError(RecoverableError error) {
     _recentErrors.add(error);
-    
+
     // Keep only recent errors
     if (_recentErrors.length > _maxRecentErrors) {
       _recentErrors.removeAt(0);
@@ -237,7 +233,7 @@ class ErrorRecoveryService {
   /// Log error with context
   void _logError(RecoverableError error, String action) {
     if (!kDebugMode) return;
-    
+
     debugPrint('🚨 Error Recovery: $action');
     debugPrint('   Type: ${error.type}');
     debugPrint('   Message: ${error.message}');

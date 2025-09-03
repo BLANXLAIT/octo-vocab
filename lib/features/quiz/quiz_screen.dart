@@ -15,11 +15,11 @@ import 'package:flutter_saas_template/features/quiz/animated_quiz_option.dart';
 final quizVocabProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
   final lang = ref.watch(appLanguageProvider);
   final level = ref.watch(currentLevelProvider);
-  
+
   // Load all vocabulary sets for the current language and level
   final allWords = <Word>[];
   final vocabularySets = VocabularySets.getSetsForLevel(level);
-  
+
   if (vocabularySets.isEmpty) {
     // Fallback to grade8_set1 if no sets are defined for this level
     try {
@@ -43,11 +43,11 @@ final quizVocabProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
       }
     }
   }
-  
+
   // Shuffle the words to provide variety in quiz order
   final rng = Random();
   allWords.shuffle(rng);
-  
+
   return allWords;
 });
 
@@ -253,52 +253,52 @@ class QuizScreen extends ConsumerWidget {
                           onPressed: selected == null && !showResult
                               ? null
                               : showResult
-                                  ? () {
-                                      // Next question
-                                      ref.read(quizIndexProvider.notifier).state =
-                                          index + 1;
-                                      ref
-                                              .read(selectedAnswerProvider.notifier)
-                                              .state =
-                                          null;
-                                      ref.read(showResultProvider.notifier).state =
-                                          false;
-                                      ref
-                                              .read(
-                                                showCelebrationProvider.notifier,
-                                              )
-                                              .state =
-                                          false;
-                                    }
-                                  : () {
-                                      // Check answer
-                                      ref.read(showResultProvider.notifier).state =
-                                          true;
-                                      // Show celebration if correct
-                                      if (isCorrect) {
-                                        ref
-                                                .read(
-                                                  showCelebrationProvider.notifier,
-                                                )
-                                                .state =
-                                            true;
-                                        // Auto-hide celebration after 1.5 seconds for faster interaction
-                                        Future.delayed(
-                                          const Duration(milliseconds: 1500),
-                                          () {
-                                            if (ref.context.mounted) {
-                                              ref
-                                                      .read(
-                                                        showCelebrationProvider
-                                                            .notifier,
-                                                      )
-                                                      .state =
-                                                  false;
-                                            }
-                                          },
-                                        );
-                                      }
-                                    },
+                              ? () {
+                                  // Next question
+                                  ref.read(quizIndexProvider.notifier).state =
+                                      index + 1;
+                                  ref
+                                          .read(selectedAnswerProvider.notifier)
+                                          .state =
+                                      null;
+                                  ref.read(showResultProvider.notifier).state =
+                                      false;
+                                  ref
+                                          .read(
+                                            showCelebrationProvider.notifier,
+                                          )
+                                          .state =
+                                      false;
+                                }
+                              : () {
+                                  // Check answer
+                                  ref.read(showResultProvider.notifier).state =
+                                      true;
+                                  // Show celebration if correct
+                                  if (isCorrect) {
+                                    ref
+                                            .read(
+                                              showCelebrationProvider.notifier,
+                                            )
+                                            .state =
+                                        true;
+                                    // Auto-hide celebration after 1.5 seconds for faster interaction
+                                    Future.delayed(
+                                      const Duration(milliseconds: 1500),
+                                      () {
+                                        if (ref.context.mounted) {
+                                          ref
+                                                  .read(
+                                                    showCelebrationProvider
+                                                        .notifier,
+                                                  )
+                                                  .state =
+                                              false;
+                                        }
+                                      },
+                                    );
+                                  }
+                                },
                           style: FilledButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),

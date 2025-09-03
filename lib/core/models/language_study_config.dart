@@ -102,9 +102,11 @@ class StudyConfigurationSet {
     AppLanguage language,
     LanguageStudyConfig config,
   ) {
-    final updatedConfigs = Map<String, LanguageStudyConfig>.from(configurations);
+    final updatedConfigs = Map<String, LanguageStudyConfig>.from(
+      configurations,
+    );
     updatedConfigs[language.name] = config;
-    
+
     return StudyConfigurationSet(
       configurations: updatedConfigs,
       currentLanguage: currentLanguage,
@@ -134,11 +136,13 @@ class StudyConfigurationSet {
     try {
       final configsJson = json['configurations'] as Map<String, dynamic>? ?? {};
       final configurations = <String, LanguageStudyConfig>{};
-      
+
       for (final entry in configsJson.entries) {
         try {
           if (entry.value is Map<String, dynamic>) {
-            configurations[entry.key] = LanguageStudyConfig.fromJson(entry.value as Map<String, dynamic>);
+            configurations[entry.key] = LanguageStudyConfig.fromJson(
+              entry.value as Map<String, dynamic>,
+            );
           }
         } catch (e) {
           // Skip invalid configuration entries
@@ -150,7 +154,7 @@ class StudyConfigurationSet {
       if (configurations.isEmpty && configsJson.isNotEmpty) {
         return StudyConfigurationSet.createDefault();
       }
-      
+
       // If configurations is completely empty (no configs key), return default
       if (configurations.isEmpty && !json.containsKey('configurations')) {
         return StudyConfigurationSet.createDefault();
@@ -172,13 +176,14 @@ class StudyConfigurationSet {
   /// Creates default configuration with Latin enabled at Beginner level
   factory StudyConfigurationSet.createDefault() {
     final configurations = <String, LanguageStudyConfig>{};
-    
+
     // Create configuration for each available language
     for (final language in AppLanguage.values) {
       configurations[language.name] = LanguageStudyConfig(
         language: language,
         level: VocabularyLevel.beginner,
-        isEnabled: language == AppLanguage.latin, // Only Latin enabled by default
+        isEnabled:
+            language == AppLanguage.latin, // Only Latin enabled by default
       );
     }
 
