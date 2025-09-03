@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, omit_local_variable_types, avoid_unnecessary_containers, directives_ordering
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -1,6 +1,7 @@
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, directives_ordering
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:flutter_saas_template/core/services/local_data_service.dart';
 import 'package:flutter_saas_template/features/progress/progress_screen.dart';
 
