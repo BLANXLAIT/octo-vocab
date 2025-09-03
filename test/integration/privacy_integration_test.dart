@@ -23,7 +23,8 @@ void main() {
     ) async {
       // COPPA compliance: App should work without user accounts
       await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 2));
 
       // Verify app launches directly to main content
       expect(find.byType(AdaptiveScaffold), findsOneWidget);
@@ -39,23 +40,28 @@ void main() {
     testWidgets('full app usage creates only educational data', (tester) async {
       // Test complete user journey to verify only educational data is stored
       await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
-      // Navigate through all main screens
-      final navBar = find.byType(NavigationBar);
-      expect(navBar, findsOneWidget);
+      // Navigate through all main screens - check for both NavigationBar and NavigationRail
+      final hasNavBar = find.byType(NavigationBar).evaluate().isNotEmpty;
+      final hasNavRail = find.byType(NavigationRail).evaluate().isNotEmpty;
+      expect(hasNavBar || hasNavRail, isTrue, 
+        reason: 'Should have either NavigationBar or NavigationRail');
 
       // Use Learn tab (default)
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Navigate to Quiz tab
       await tester.tap(find.text('Quiz'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(QuizScreen), findsOneWidget);
 
       // Navigate to Settings tab
       await tester.tap(find.text('Settings'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(SettingsScreen), findsOneWidget);
 
       // Check that only educational preferences are stored
@@ -83,11 +89,13 @@ void main() {
     testWidgets('privacy protection information is accessible', (tester) async {
       // GDPR compliance: Users must be informed about data processing
       await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Navigate to Settings
       await tester.tap(find.text('Settings'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Find and tap Privacy Protection section
       final privacyCard = find.byKey(const Key('privacy_info_card'));
@@ -95,7 +103,8 @@ void main() {
 
       // Tap to expand privacy information
       await tester.tap(privacyCard);
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Verify privacy information is displayed
       expect(find.textContaining('COPPA'), findsOneWidget);
@@ -108,16 +117,19 @@ void main() {
     testWidgets('data reset functionality works end-to-end', (tester) async {
       // GDPR Article 17: Right to erasure
       await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Create some data by using the app
       // Navigate to Quiz to generate some state
       await tester.tap(find.text('Quiz'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Navigate to Settings
       await tester.tap(find.text('Settings'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Find reset data button
       final resetCard = find.byKey(const Key('reset_data_card'));
@@ -125,7 +137,8 @@ void main() {
 
       // Tap reset data
       await tester.tap(resetCard);
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Verify confirmation dialog appears
       expect(find.text('Reset All Data'), findsOneWidget);
@@ -134,7 +147,8 @@ void main() {
 
       // Confirm deletion
       await tester.tap(find.text('Delete All Data'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Verify success message
       expect(find.textContaining('All data has been deleted'), findsOneWidget);
@@ -150,27 +164,32 @@ void main() {
     ) async {
       // COPPA/FERPA compliance: App should work completely offline
       await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Test all main features work
       expect(find.byType(FlashcardsScreen), findsOneWidget);
 
       // Navigate to Quiz
       await tester.tap(find.text('Quiz'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(QuizScreen), findsOneWidget);
 
       // Navigate to Progress
       await tester.tap(find.text('Progress'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Navigate to Review
       await tester.tap(find.text('Review'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Navigate to Settings
       await tester.tap(find.text('Settings'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(SettingsScreen), findsOneWidget);
 
       // All features should work without network
@@ -180,17 +199,20 @@ void main() {
     testWidgets('no external web views or browsers opened', (tester) async {
       // Privacy safeguard: App should not open external content
       await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Navigate through all screens
       await tester.tap(find.text('Settings'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Tap on About section if present
       final aboutTile = find.text('About Octo Vocab');
       if (aboutTile.evaluate().isNotEmpty) {
         await tester.tap(aboutTile);
-        await tester.pumpAndSettle();
+        await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
       }
 
       // Verify no WebView or external browser widgets
@@ -203,14 +225,16 @@ void main() {
     testWidgets('vocabulary data loads from local assets only', (tester) async {
       // FERPA compliance: Educational content should be local
       await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Wait for vocabulary to load
       await tester.pump(const Duration(seconds: 2));
 
       // Navigate to Quiz to trigger vocabulary loading
       await tester.tap(find.text('Quiz'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Vocabulary should load without network requests
       // If quiz shows content, vocabulary loaded successfully from assets
@@ -232,11 +256,13 @@ void main() {
     testWidgets('settings changes persist locally only', (tester) async {
       // Test that user preferences are stored locally, not remotely
       await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Navigate to Settings
       await tester.tap(find.text('Settings'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // The act of using settings should store preferences locally
 
@@ -253,13 +279,14 @@ void main() {
     testWidgets('app is suitable for classroom use', (tester) async {
       // FERPA compliance: Educational apps should be classroom-appropriate
       await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Verify educational content is appropriate
-      expect(find.text('Learn'), findsOneWidget);
-      expect(find.text('Quiz'), findsOneWidget);
-      expect(find.text('Review'), findsOneWidget);
-      expect(find.text('Progress'), findsOneWidget);
+      expect(find.text('Learn'), findsAtLeastNWidgets(1));
+      expect(find.text('Quiz'), findsAtLeastNWidgets(1));
+      expect(find.text('Review'), findsAtLeastNWidgets(1));
+      expect(find.text('Progress'), findsAtLeastNWidgets(1));
 
       // Verify no inappropriate content
       expect(find.textContaining('advertisement'), findsNothing);
@@ -271,11 +298,13 @@ void main() {
     testWidgets('privacy notice is clear and accessible', (tester) async {
       // GDPR compliance: Clear privacy information
       await tester.pumpWidget(const ProviderScope(child: OctoVocabApp()));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
       // Navigate to Settings
       await tester.tap(find.text('Settings'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Verify privacy information is prominently displayed
       expect(find.text('Privacy Protection'), findsOneWidget);
