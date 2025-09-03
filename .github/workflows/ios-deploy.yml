@@ -30,8 +30,6 @@ jobs:
   ios_deploy:
     runs-on: macos-15  # Use latest macOS with Xcode 16+
     timeout-minutes: 60
-    # Allow access to organization secrets
-    secrets: inherit
     
     steps:
     # Checkout code
