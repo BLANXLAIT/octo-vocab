@@ -125,8 +125,25 @@ platform :ios do
     
     # Configure Flutter for release build  
     UI.message "🐦 Configuring Flutter for release..."
-    # Build iOS app using existing pub cache (no re-download)
-    sh("cd .. && flutter build ios --config-only --release --no-pub")
+    # Build iOS app using existing pub cache (no re-download) with timeout and retry logic
+    retry_count = 0
+    begin
+      Timeout::timeout(600) do # 10 minute timeout
+        sh("cd .. && flutter build ios --config-only --release --no-pub")
+      end
+    rescue Timeout::Error
+      UI.user_error!("Flutter build timed out after 10 minutes")
+    rescue => e
+      retry_count += 1
+      if retry_count < 3
+        UI.important("Flutter build failed, retrying (#{retry_count}/3)...")
+        UI.important("Error: #{e.message}")
+        sleep(5) # Brief pause before retry
+        retry
+      else
+        UI.user_error!("Flutter build failed after 3 attempts: #{e.message}")
+      end
+    end
     
     # Increment build number
     increment_build_number(
@@ -147,10 +164,17 @@ platform :ios do
       # Flutter specific
       archive_path: "./build/Runner.xcarchive",
       output_directory: "./build",
+      # Debugging and performance tracking
+      verbose: true,
+      build_timing_summary: true,
+      analyze_build_time: true,
       # Let match handle the signing automatically
       export_options: {
         method: "app-store",
-        teamID: ENV["FASTLANE_TEAM_ID"]
+        teamID: ENV["FASTLANE_TEAM_ID"],
+        provisioningProfiles: {
+          "com.blanxlait.octo-vocab" => "match AppStore com.blanxlait.octo-vocab"
+        }
       }
     )
     
