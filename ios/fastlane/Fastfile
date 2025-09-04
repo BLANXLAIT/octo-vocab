@@ -125,7 +125,7 @@ platform :ios do
     
     # Configure Flutter for release build
     UI.message "🐦 Configuring Flutter for release..."
-    sh("cd .. && flutter build ios --config-only --release")
+    sh("cd .. && flutter build ios --config-only --release --offline")
     
     # Increment build number
     increment_build_number(
