@@ -29,7 +29,7 @@ env:
 jobs:
   ios_deploy:
     runs-on: macos-15  # Use latest macOS with Xcode 16+
-    timeout-minutes: 60
+    timeout-minutes: 90  # Extended timeout for TestFlight uploads
     
     steps:
     # Checkout code
