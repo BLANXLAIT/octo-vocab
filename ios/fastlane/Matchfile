@@ -10,11 +10,7 @@ app_identifier(["com.blanxlait.octo-vocab"])
 # Let match handle the naming automatically
 username("") # Your Apple ID - will use App Store Connect API instead
 
-# App Store Connect API configuration
-# Use environment variables instead of file path to avoid JSON parsing issues
-api_key_id(ENV["APP_STORE_CONNECT_API_KEY_ID"]) if ENV["APP_STORE_CONNECT_API_KEY_ID"]
-api_issuer_id(ENV["APP_STORE_CONNECT_ISSUER_ID"]) if ENV["APP_STORE_CONNECT_ISSUER_ID"]
-api_key(ENV["APP_STORE_CONNECT_API_KEY_CONTENT"]) if ENV["APP_STORE_CONNECT_API_KEY_CONTENT"]
+# App Store Connect API configuration will be handled in the Fastfile
 
 # Team configuration
 team_id(ENV["FASTLANE_TEAM_ID"]) if ENV["FASTLANE_TEAM_ID"]

@@ -95,6 +95,15 @@ platform :ios do
       UI.message "⚠️  No PAT found - using basic Git URL (may fail for private repos)"
     end
     
+    # Configure App Store Connect API key for match
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
+      duration: 1200, # 20 minutes
+      in_house: false
+    )
+    
     # Use match for certificate and provisioning profile management
     # Allow creation of new profiles if MATCH_READONLY is not set to "true"
     match(
@@ -103,7 +112,8 @@ platform :ios do
       git_url: git_url,
       git_branch: ENV["MATCH_GIT_BRANCH"] || "main",
       readonly: ENV["MATCH_READONLY"] == "true",  # Respect MATCH_READONLY environment variable
-      force_for_new_devices: true
+      force_for_new_devices: true,
+      api_key: api_key
     )
     
     UI.success "✅ Certificates and provisioning profiles synced successfully!"
