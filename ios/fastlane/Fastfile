@@ -123,9 +123,12 @@ platform :ios do
   lane :build do |options|
     UI.message "🏗️ Building iOS app..."
     
-    # Configure Flutter for release build
+    # Configure Flutter for release build  
     UI.message "🐦 Configuring Flutter for release..."
-    sh("cd .. && flutter build ios --config-only --release --offline")
+    # Ensure clean build state and build the app
+    sh("cd .. && flutter clean")
+    sh("cd .. && flutter pub get") 
+    sh("cd .. && flutter build ios --release")
     
     # Increment build number
     increment_build_number(
