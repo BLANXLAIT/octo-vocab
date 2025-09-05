@@ -76,10 +76,12 @@ jobs:
 
     # Get Flutter dependencies with timeout
     - name: 📦 Get Flutter dependencies
+      timeout-minutes: 10
       run: |
-        timeout 300 flutter pub get || {
-          echo "⚠️ Flutter pub get timed out, retrying..."
-          timeout 300 flutter pub get
+        flutter pub get || {
+          echo "⚠️ Flutter pub get failed, retrying..."
+          sleep 5
+          flutter pub get
         }
 
     # Check if CI already passed for this commit
