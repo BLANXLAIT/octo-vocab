@@ -70,6 +70,24 @@ jobs:
         flutter-version: ${{ env.FLUTTER_VERSION }}
         channel: ${{ env.FLUTTER_CHANNEL }}
 
+    # Cache Flutter precache artifacts (engine binaries, tools)
+    - name: 💾 Cache Flutter precache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ runner.tool_cache }}/flutter/bin/cache/dart-sdk
+          ${{ runner.tool_cache }}/flutter/bin/cache/artifacts
+        key: ${{ runner.os }}-flutter-precache-${{ env.FLUTTER_VERSION }}-${{ env.FLUTTER_CHANNEL }}
+        restore-keys: |
+          ${{ runner.os }}-flutter-precache-${{ env.FLUTTER_VERSION }}-
+          ${{ runner.os }}-flutter-precache-
+
+    # Precache Flutter artifacts to speed up builds
+    - name: 🚀 Flutter Precache
+      run: |
+        flutter precache --ios --no-web --no-linux --no-windows --no-macos --no-android
+        echo "✅ Flutter precache completed"
+
     # Verify Flutter installation
     - name: 🔍 Flutter Doctor
       run: flutter doctor -v
@@ -83,6 +101,42 @@ jobs:
           sleep 5
           flutter pub get
         }
+
+    # Cache CocoaPods to avoid re-downloading and building pods
+    - name: 💾 Cache CocoaPods
+      uses: actions/cache@v4
+      with:
+        path: |
+          ios/Pods
+          ios/Podfile.lock
+        key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pods-
+
+    # Cache Xcode DerivedData for faster incremental builds
+    - name: 💾 Cache Xcode DerivedData
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/Library/Developer/Xcode/DerivedData
+        key: ${{ runner.os }}-xcode-deriveddata-${{ runner.arch }}-${{ hashFiles('ios/**/*.pbxproj', 'ios/**/*.plist', 'pubspec.yaml', 'pubspec.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-xcode-deriveddata-${{ runner.arch }}-
+          ${{ runner.os }}-xcode-deriveddata-
+
+    # Cache Flutter build state for incremental builds
+    - name: 💾 Cache Flutter build state
+      uses: actions/cache@v4
+      with:
+        path: |
+          .dart_tool
+          ios/.symlinks
+          ios/Flutter/Generated.xcconfig
+          ios/Flutter/flutter_export_environment.sh
+        key: ${{ runner.os }}-flutter-build-${{ hashFiles('pubspec.yaml', 'pubspec.lock') }}-${{ env.FLUTTER_VERSION }}
+        restore-keys: |
+          ${{ runner.os }}-flutter-build-${{ hashFiles('pubspec.yaml', 'pubspec.lock') }}-
+          ${{ runner.os }}-flutter-build-
 
     # Check if CI already passed for this commit
     - name: 🔍 Check CI status
@@ -196,6 +250,39 @@ jobs:
         
         echo "✅ All required secrets are available"
 
+    # Prebuild iOS release target to warm up build system and cache artifacts
+    - name: 🔨 Prebuild iOS Release Target
+      timeout-minutes: 15
+      run: |
+        echo "🔨 Starting iOS prebuild to warm up build system..."
+        
+        # Build iOS without code signing to prepare most build artifacts
+        flutter build ios \
+          --release \
+          --no-codesign \
+          --build-name=1.0.0 \
+          --build-number=1 \
+          --verbose || {
+            echo "⚠️ Prebuild failed, but this is not critical - continuing..."
+            echo "This may happen on first runs or cache misses"
+          }
+        
+        echo "✅ iOS prebuild completed - build system warmed up"
+
+    # Install CocoaPods dependencies if needed (utilizes cache)
+    - name: 🍫 Install CocoaPods Dependencies
+      working-directory: ios
+      run: |
+        echo "🍫 Installing CocoaPods dependencies..."
+        
+        # Check if Pods directory exists and Podfile.lock matches
+        if [ ! -d "Pods" ] || [ "Podfile" -nt "Podfile.lock" ]; then
+          echo "📦 Running pod install..."
+          pod install --repo-update
+        else
+          echo "✅ CocoaPods dependencies are up to date"
+        fi
+
     # Sync certificates and provisioning profiles using Match
     - name: 🔐 Sync certificates with Match
       working-directory: ios
@@ -235,7 +322,9 @@ jobs:
           ios/build/*.ipa
           ios/build/*.app.dSYM.zip
           ios/build/Runner.xcarchive
+          ios/build/**/*.xcarchive
         retention-days: 30
+        if-no-files-found: warn
 
     # Notify on completion
     - name: 📧 Deployment Summary
@@ -247,9 +336,17 @@ jobs:
         echo "- **Target**: ${{ inputs.deployment_target || 'beta' }}" >> $GITHUB_STEP_SUMMARY  
         echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
         echo "- **Flutter Version**: ${{ env.FLUTTER_VERSION }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Build Optimizations**: ✅ Enabled (precache, caching, prebuild)" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         if [ "${{ job.status }}" = "success" ]; then
           echo "✅ **Deployment completed successfully!**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Performance Optimizations Applied:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Flutter engine precaching for faster builds" >> $GITHUB_STEP_SUMMARY
+          echo "- CocoaPods dependency caching" >> $GITHUB_STEP_SUMMARY
+          echo "- Xcode DerivedData caching for incremental builds" >> $GITHUB_STEP_SUMMARY
+          echo "- Flutter build-state caching" >> $GITHUB_STEP_SUMMARY
+          echo "- iOS release target prebuild warming" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Next steps:" >> $GITHUB_STEP_SUMMARY
           echo "1. Check [App Store Connect](https://appstoreconnect.apple.com) for build processing" >> $GITHUB_STEP_SUMMARY
