@@ -28,7 +28,7 @@ env:
 
 jobs:
   ios_deploy:
-    runs-on: macos-14  # Use stable macOS (macos-15 has performance issues)
+    runs-on: macos-15  # Use latest macOS with Xcode 16+ (required for project compatibility)
     timeout-minutes: 45
     
     steps:
