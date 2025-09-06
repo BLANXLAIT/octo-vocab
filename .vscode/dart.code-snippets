@@ -1,0 +1,153 @@
+{
+  "Riverpod StateNotifierProvider": {
+    "prefix": "riverpod-provider",
+    "body": [
+      "@riverpod",
+      "class ${1:Name}Notifier extends _$${1:Name}Notifier {",
+      "  @override",
+      "  ${2:State} build() {",
+      "    ${3:// Initialize state}",
+      "    return ${4:initialState};",
+      "  }",
+      "",
+      "  ${5:// Add methods here}",
+      "}"
+    ],
+    "description": "Create a Riverpod StateNotifierProvider with code generation"
+  },
+  "Riverpod AsyncNotifierProvider": {
+    "prefix": "riverpod-async-provider",
+    "body": [
+      "@riverpod",
+      "class ${1:Name}Notifier extends _$${1:Name}Notifier {",
+      "  @override",
+      "  Future<${2:State}> build() async {",
+      "    ${3:// Initialize async state}",
+      "    return ${4:await someAsyncOperation()};",
+      "  }",
+      "",
+      "  ${5:// Add methods here}",
+      "}"
+    ],
+    "description": "Create a Riverpod AsyncNotifierProvider with code generation"
+  },
+  "Riverpod StreamProvider": {
+    "prefix": "riverpod-stream-provider",
+    "body": [
+      "@riverpod",
+      "Stream<${1:T}> ${2:streamName}(${2:StreamName}Ref ref) {",
+      "  ${3:// Return stream}",
+      "  return ${4:someStream};",
+      "}"
+    ],
+    "description": "Create a Riverpod StreamProvider"
+  },
+  "Consumer Widget": {
+    "prefix": "consumer-widget",
+    "body": [
+      "class ${1:WidgetName} extends ConsumerWidget {",
+      "  const ${1:WidgetName}({super.key});",
+      "",
+      "  @override",
+      "  Widget build(BuildContext context, WidgetRef ref) {",
+      "    ${2:// Watch providers}",
+      "    ${3:final state = ref.watch(someProvider);}",
+      "",
+      "    return ${4:Container()};",
+      "  }",
+      "}"
+    ],
+    "description": "Create a ConsumerWidget"
+  },
+  "Freezed Data Class": {
+    "prefix": "freezed-class",
+    "body": [
+      "@freezed",
+      "class ${1:ClassName} with _$${1:ClassName} {",
+      "  const factory ${1:ClassName}({",
+      "    ${2:required String id,}",
+      "    ${3:// Add more fields}",
+      "  }) = _${1:ClassName};",
+      "",
+      "  factory ${1:ClassName}.fromJson(Map<String, dynamic> json) =>",
+      "      _$${1:ClassName}FromJson(json);",
+      "}"
+    ],
+    "description": "Create a Freezed data class"
+  },
+  "Flutter Test Widget": {
+    "prefix": "flutter-test-widget",
+    "body": [
+      "testWidgets('${1:test description}', (WidgetTester tester) async {",
+      "  // Build the widget",
+      "  await tester.pumpWidget(",
+      "    const ProviderScope(",
+      "      child: MaterialApp(",
+      "        home: ${2:WidgetToTest}(),",
+      "      ),",
+      "    ),",
+      "  );",
+      "",
+      "  // Verify the widget",
+      "  ${3:expect(find.text('Expected Text'), findsOneWidget);}",
+      "});"
+    ],
+    "description": "Create a Flutter widget test with ProviderScope"
+  },
+  "Unit Test with Riverpod": {
+    "prefix": "riverpod-unit-test",
+    "body": [
+      "test('${1:test description}', () async {",
+      "  final container = ProviderContainer();",
+      "  addTearDown(container.dispose);",
+      "",
+      "  ${2:// Test setup}",
+      "",
+      "  final result = container.read(${3:someProvider});",
+      "  expect(result, ${4:expectedValue});",
+      "});"
+    ],
+    "description": "Create a unit test with Riverpod ProviderContainer"
+  },
+  "Flutter App with Riverpod": {
+    "prefix": "flutter-app-riverpod",
+    "body": [
+      "class ${1:AppName} extends StatelessWidget {",
+      "  const ${1:AppName}({super.key});",
+      "",
+      "  @override",
+      "  Widget build(BuildContext context) {",
+      "    return ProviderScope(",
+      "      child: MaterialApp(",
+      "        title: '${2:App Title}',",
+      "        theme: ThemeData(",
+      "          primarySwatch: Colors.blue,",
+      "        ),",
+      "        home: const ${3:HomePage}(),",
+      "      ),",
+      "    );",
+      "  }",
+      "}"
+    ],
+    "description": "Create a Flutter app with ProviderScope"
+  },
+  "Migration Test": {
+    "prefix": "migration-test",
+    "body": [
+      "test('${1:migration description}', () async {",
+      "  // Simulate ${2:version} data",
+      "  SharedPreferences.setMockInitialValues({",
+      "    ${3:'key': 'value',}",
+      "    'migration_version': ${4:1},",
+      "  });",
+      "",
+      "  final dataService = await LocalDataService.create();",
+      "  final config = dataService.getStudyConfiguration();",
+      "",
+      "  ${5:// Verify migration results}",
+      "  expect(config.${6:property}, ${7:expectedValue});",
+      "});"
+    ],
+    "description": "Create a migration test"
+  }
+}

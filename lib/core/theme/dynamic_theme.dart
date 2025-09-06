@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_saas_template/core/language/language.dart';
+import 'package:flutter_saas_template/core/models/language_definition.dart';
 
 /// Theme variants for different moods and contexts
 enum ThemeVariant {
@@ -22,6 +23,13 @@ enum ThemeVariant {
 class DynamicColorSchemes {
   /// Language-specific color palettes
   static Color getSeedColorForLanguage(AppLanguage language) {
+    // Use the language definition system for colors
+    final definition = LanguageRegistry.getLanguage(language.name);
+    if (definition != null) {
+      return definition.primaryColor;
+    }
+
+    // Fallback for backward compatibility
     switch (language) {
       case AppLanguage.latin:
         return const Color(0xFF6B73FF); // Vibrant purple-blue for classical

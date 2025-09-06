@@ -83,6 +83,7 @@ void main() {
             key.contains('quiz_') ||
             key.contains('app_settings') ||
             key.contains('config') ||
+            key.contains('migration') || // Migration tracking for app updates
             key.startsWith('flutter.'); // Flutter system keys
 
         expect(isValidKey, isTrue, reason: 'Unexpected data key found: $key');

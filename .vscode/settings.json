@@ -1,0 +1,88 @@
+{
+  // Flutter & Dart Configuration
+  "dart.flutterSdkPath": null,
+  "dart.debugExternalPackageLibraries": true,
+  "dart.debugSdkLibraries": false,
+  "dart.lineLength": 80,
+  "dart.insertArgumentPlaceholders": false,
+  "dart.completeFunctionCalls": true,
+  "dart.enableSnippets": true,
+  "dart.analyzerVmAdditionalArgs": [
+    "--enable-asserts"
+  ],
+  // Flutter Hot Reload
+  "dart.flutterHotReloadOnSave": "all",
+  "dart.hotReloadOnSave": "all",
+  "dart.flutterCreateAndroidLanguage": "kotlin",
+  "dart.flutterCreateIOSLanguage": "swift",
+  // Editor Configuration
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "editor.rulers": [
+    80
+  ],
+  "editor.wordWrap": "wordWrapColumn",
+  "editor.wordWrapColumn": 80,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  // File Associations
+  "files.associations": {
+    "*.dart": "dart",
+    "pubspec.yaml": "yaml",
+    "analysis_options.yaml": "yaml",
+    "*.arb": "json"
+  },
+  // Search Configuration
+  "search.exclude": {
+    "**/build": true,
+    "**/.dart_tool": true,
+    "**/.pub": true,
+    "**/ios/Pods": true,
+    "**/ios/Runner.xcworkspace": true,
+    "**/android/.gradle": true,
+    "**/android/app/build": true,
+    "**/coverage": true
+  },
+  // File Watcher Exclusions
+  "files.watcherExclude": {
+    "**/build/**": true,
+    "**/.dart_tool/**": true,
+    "**/ios/Pods/**": true,
+    "**/ios/Runner.xcworkspace/**": true,
+    "**/android/.gradle/**": true,
+    "**/android/app/build/**": true,
+    "**/coverage/**": true,
+    "**/*.g.dart": true,
+    "**/*.freezed.dart": true,
+    "**/*.gr.dart": true
+  },
+  // Testing Configuration
+  "dart.flutterTestLogFile": "/tmp/flutter_test.log",
+  "dart.allowTestsOutsideTestFolder": true,
+  // Code Generation
+  "dart.runPubGetOnPubspecChanges": "always",
+  // Terminal Configuration
+  "terminal.integrated.env.osx": {
+    "PATH": "${env:PATH}:${workspaceFolder}/bin"
+  },
+  // Language-specific Settings
+  "[dart]": {
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.selectionHighlight": false,
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.suggestSelection": "first",
+    "editor.tabCompletion": "onlySnippets",
+    "editor.wordBasedSuggestions": "off"
+  },
+  "[yaml]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.autoIndent": "advanced"
+  },
+  // Git Configuration  
+  "git.ignoreLimitWarning": true,
+  // Extensions
+  "extensions.ignoreRecommendations": false
+}

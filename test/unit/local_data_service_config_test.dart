@@ -1,5 +1,7 @@
 // ignore_for_file: directives_ordering
 
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,8 +24,14 @@ void main() {
         final config = dataService.getStudyConfiguration();
 
         expect(config.currentLanguage, AppLanguage.latin);
-        expect(config.enabledConfigurations, hasLength(1));
-        expect(config.enabledConfigurations.first.language, AppLanguage.latin);
+        expect(
+          config.enabledConfigurations,
+          hasLength(AppLanguage.values.length),
+        );
+        expect(
+          config.enabledConfigurations.map((c) => c.language),
+          containsAll(AppLanguage.values),
+        );
         expect(
           config.enabledConfigurations.first.level,
           VocabularyLevel.beginner,
@@ -119,7 +127,10 @@ void main() {
         // Should return default configuration
         final config = dataService.getStudyConfiguration();
         expect(config.currentLanguage, AppLanguage.latin);
-        expect(config.enabledConfigurations, hasLength(1));
+        expect(
+          config.enabledConfigurations,
+          hasLength(AppLanguage.values.length),
+        );
       });
     });
 
@@ -158,13 +169,72 @@ void main() {
         expect(configAfterFirst.toJson(), equals(configAfterSecond.toJson()));
       });
 
+      test(
+        'version 2 migration enables all languages for existing users',
+        () async {
+          // Simulate old configuration with only Latin enabled
+          final prefs = await SharedPreferences.getInstance();
+          final oldConfig = StudyConfigurationSet(
+            configurations: {
+              'latin': const LanguageStudyConfig(
+                language: AppLanguage.latin,
+                level: VocabularyLevel.intermediate,
+                isEnabled: true,
+              ),
+              'spanish': const LanguageStudyConfig(
+                language: AppLanguage.spanish,
+                level: VocabularyLevel.beginner,
+                isEnabled: false, // This is the old behavior
+              ),
+            },
+            currentLanguage: AppLanguage.latin,
+          );
+
+          // Store old config and set migration version to 1
+          await prefs.setString(
+            'study_configuration',
+            jsonEncode(oldConfig.toJson()),
+          );
+          await prefs.setInt('migration_version', 1);
+
+          // Create new data service (this will trigger migration)
+          final newDataService = await LocalDataService.create();
+          await newDataService.migrateToNewConfigSystem();
+
+          // Check that Spanish is now enabled
+          final migratedConfig = newDataService.getStudyConfiguration();
+          final spanishConfig = migratedConfig.getConfigForLanguage(
+            AppLanguage.spanish,
+          );
+
+          expect(spanishConfig?.isEnabled, true);
+          expect(
+            spanishConfig?.level,
+            VocabularyLevel.beginner,
+          ); // Level preserved
+
+          // Latin should still be enabled with its original level
+          final latinConfig = migratedConfig.getConfigForLanguage(
+            AppLanguage.latin,
+          );
+          expect(latinConfig?.isEnabled, true);
+          expect(
+            latinConfig?.level,
+            VocabularyLevel.intermediate,
+          ); // Level preserved
+        },
+      );
+
       test('migration handles missing old data gracefully', () async {
         // No old data exists
         await dataService.migrateToNewConfigSystem();
 
         final config = dataService.getStudyConfiguration();
         expect(config.currentLanguage, AppLanguage.latin);
-        expect(config.enabledConfigurations, hasLength(1));
+        expect(
+          config.enabledConfigurations,
+          hasLength(AppLanguage.values.length),
+        );
       });
     });
 
@@ -246,8 +316,14 @@ void main() {
         // Verify reset
         final config = dataService.getStudyConfiguration();
         expect(config.currentLanguage, AppLanguage.latin);
-        expect(config.enabledConfigurations, hasLength(1));
-        expect(config.enabledConfigurations.first.language, AppLanguage.latin);
+        expect(
+          config.enabledConfigurations,
+          hasLength(AppLanguage.values.length),
+        );
+        expect(
+          config.enabledConfigurations.map((c) => c.language),
+          contains(AppLanguage.latin),
+        );
       });
     });
   });

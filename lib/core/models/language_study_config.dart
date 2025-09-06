@@ -182,8 +182,7 @@ class StudyConfigurationSet {
       configurations[language.name] = LanguageStudyConfig(
         language: language,
         level: VocabularyLevel.beginner,
-        isEnabled:
-            language == AppLanguage.latin, // Only Latin enabled by default
+        isEnabled: true, // Enable all languages by default
       );
     }
 

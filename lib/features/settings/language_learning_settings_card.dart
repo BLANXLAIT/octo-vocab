@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flutter_saas_template/core/language/language.dart';
+import 'package:flutter_saas_template/core/models/language_definition.dart';
 import 'package:flutter_saas_template/core/models/language_study_config.dart';
 import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
 import 'package:flutter_saas_template/core/providers/study_config_providers.dart';
@@ -100,13 +101,21 @@ class LanguageLearningSettingsCard extends ConsumerWidget {
             const SizedBox(height: 16),
 
             // Language configurations
-            ...AppLanguage.values.map((language) {
+            ...LanguageRegistry.availableLanguages.map((
+              LanguageDefinition definition,
+            ) {
+              final language = AppLanguage.values.firstWhere(
+                (lang) => lang.name == definition.code,
+                orElse: () => AppLanguage.latin, // fallback
+              );
+
               final config =
                   configSet.getConfigForLanguage(language) ??
                   LanguageStudyConfig(
                     language: language,
                     level: VocabularyLevel.beginner,
-                    isEnabled: false,
+                    isEnabled:
+                        true, // Default to enabled for available languages
                   );
 
               return _buildLanguageSettingTile(context, ref, config, configSet);
@@ -315,6 +324,12 @@ class LanguageLearningSettingsCard extends ConsumerWidget {
   }
 
   Widget _getLanguageIcon(String language) {
+    final definition = LanguageRegistry.getLanguage(language);
+    if (definition != null) {
+      return Text(definition.flag, style: const TextStyle(fontSize: 18));
+    }
+
+    // Fallback for backward compatibility
     switch (language) {
       case 'latin':
         return const Text('🏛️', style: TextStyle(fontSize: 18));
@@ -326,6 +341,12 @@ class LanguageLearningSettingsCard extends ConsumerWidget {
   }
 
   String _getLanguageDisplayName(String language) {
+    final definition = LanguageRegistry.getLanguage(language);
+    if (definition != null) {
+      return definition.displayName;
+    }
+
+    // Fallback for backward compatibility
     switch (language) {
       case 'latin':
         return 'Latin';

@@ -138,9 +138,14 @@ void main() {
       final config = StudyConfigurationSet.createDefault();
 
       expect(config.currentLanguage, AppLanguage.latin);
-      expect(config.enabledConfigurations.length, 1);
+      // All available languages should be enabled by default
+      expect(config.enabledConfigurations.length, 2); // Latin and Spanish
       expect(config.enabledConfigurations.first.language, AppLanguage.latin);
       expect(config.enabledConfigurations.first.isEnabled, true);
+
+      // Verify Spanish is also enabled
+      final spanishConfig = config.getConfigForLanguage(AppLanguage.spanish);
+      expect(spanishConfig?.isEnabled, true);
     });
 
     test('updates language configuration correctly', () {

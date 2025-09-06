@@ -81,6 +81,10 @@ coverage/
 .env.local
 .env.*.local
 
+# Fastlane environment files
+ios/fastlane/.env
+android/fastlane/.env
+
 # IDE
 .vscode/launch.json
 .vscode/tasks.json

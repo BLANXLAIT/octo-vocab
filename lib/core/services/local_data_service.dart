@@ -22,6 +22,10 @@ class LocalDataService {
   static const String _keyStudyingLanguages = 'studying_languages';
   static const String _keyPerLanguageProgress = 'per_language_progress';
   static const String _keyStudyConfiguration = 'study_configuration';
+  static const String _keyMigrationVersion = 'migration_version';
+
+  // Current migration version
+  static const int _currentMigrationVersion = 2;
 
   final SharedPreferences _prefs;
 
@@ -165,6 +169,7 @@ class LocalDataService {
         _prefs.remove(_keyStudyingLanguages),
         _prefs.remove(_keyPerLanguageProgress),
         _prefs.remove(_keyStudyConfiguration),
+        _prefs.remove(_keyMigrationVersion),
       ]);
       return true;
     } catch (e) {
@@ -509,10 +514,33 @@ class LocalDataService {
 
   /// Migration: Convert existing settings to new configuration system
   Future<bool> migrateToNewConfigSystem() async {
-    // Check if already migrated
+    final currentVersion = _prefs.getInt(_keyMigrationVersion) ?? 0;
+
+    // If we're already at the current version, no migration needed
+    if (currentVersion >= _currentMigrationVersion) {
+      return true;
+    }
+
+    // Migration version 1: Initial configuration system
+    if (currentVersion < 1) {
+      await _migrateToV1();
+    }
+
+    // Migration version 2: Enable all available languages by default
+    if (currentVersion < 2) {
+      await _migrateToV2();
+    }
+
+    // Update migration version
+    await _prefs.setInt(_keyMigrationVersion, _currentMigrationVersion);
+    return true;
+  }
+
+  /// Version 1 migration: Initial configuration system
+  Future<void> _migrateToV1() async {
     final existingConfig = _prefs.getString(_keyStudyConfiguration);
     if (existingConfig != null) {
-      return true; // Already migrated
+      return; // Already has configuration
     }
 
     // Create default configuration
@@ -526,41 +554,31 @@ class LocalDataService {
           (lang) => lang.name == selectedLang,
         );
         configSet = configSet.withCurrentLanguage(appLang);
-
-        // Enable the selected language
-        final currentConfig = configSet.getConfigForLanguage(appLang);
-        if (currentConfig != null) {
-          configSet = configSet.updateLanguageConfig(
-            appLang,
-            currentConfig.copyWith(isEnabled: true),
-          );
-        }
       } catch (e) {
         // If language not found, keep default
       }
     }
 
-    // Migrate studying languages if they exist
-    final studyingLanguages = getStudyingLanguages();
-    for (final langName in studyingLanguages) {
-      try {
-        final appLang = AppLanguage.values.firstWhere(
-          (lang) => lang.name == langName,
+    await setStudyConfiguration(configSet);
+  }
+
+  /// Version 2 migration: Enable all available languages by default
+  Future<void> _migrateToV2() async {
+    var configSet = getStudyConfiguration();
+
+    // Ensure all available languages are enabled
+    for (final language in AppLanguage.values) {
+      final currentConfig = configSet.getConfigForLanguage(language);
+      if (currentConfig != null && !currentConfig.isEnabled) {
+        // Enable the language while preserving the user's chosen level
+        configSet = configSet.updateLanguageConfig(
+          language,
+          currentConfig.copyWith(isEnabled: true),
         );
-        final currentConfig = configSet.getConfigForLanguage(appLang);
-        if (currentConfig != null) {
-          configSet = configSet.updateLanguageConfig(
-            appLang,
-            currentConfig.copyWith(isEnabled: true),
-          );
-        }
-      } catch (e) {
-        // If language not found, skip
       }
     }
 
-    // Save the migrated configuration
-    return setStudyConfiguration(configSet);
+    await setStudyConfiguration(configSet);
   }
 }
 

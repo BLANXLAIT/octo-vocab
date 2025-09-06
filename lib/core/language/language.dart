@@ -1,38 +1,32 @@
 // ignore_for_file: public_member_api_docs
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_saas_template/core/models/language_definition.dart';
 import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
 import 'package:flutter_saas_template/core/providers/study_config_providers.dart';
 
+/// Supported languages enum for backward compatibility
+/// This will eventually be replaced by the LanguageDefinition system
 enum AppLanguage { latin, spanish }
 
 extension AppLanguageX on AppLanguage {
-  String get code {
-    switch (this) {
-      case AppLanguage.latin:
-        return 'latin';
-      case AppLanguage.spanish:
-        return 'spanish';
+  String get code => name;
+
+  /// Get language definition from the registry
+  LanguageDefinition get definition {
+    final def = LanguageRegistry.getLanguage(code);
+    if (def == null) {
+      throw StateError('Language definition not found for $code');
     }
+    return def;
   }
 
-  String get label {
-    switch (this) {
-      case AppLanguage.latin:
-        return 'Latin';
-      case AppLanguage.spanish:
-        return 'Spanish';
-    }
-  }
-
-  IconData get icon {
-    switch (this) {
-      case AppLanguage.latin:
-        return Icons.school;
-      case AppLanguage.spanish:
-        return Icons.translate;
-    }
-  }
+  String get label => definition.displayName;
+  IconData get icon => definition.icon;
+  String get flag => definition.flag;
+  Color get primaryColor => definition.primaryColor;
+  String get nativeName => definition.nativeName;
+  LanguageFamily get family => definition.family;
 }
 
 // Legacy providers - will be replaced by new system

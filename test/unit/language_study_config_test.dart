@@ -114,11 +114,16 @@ void main() {
       expect(configSet.currentLanguage, AppLanguage.latin);
       expect(configSet.configurations, hasLength(AppLanguage.values.length));
 
-      // Only Latin should be enabled by default
+      // All languages should be enabled by default now
       final enabledConfigs = configSet.enabledConfigurations;
-      expect(enabledConfigs, hasLength(1));
-      expect(enabledConfigs.first.language, AppLanguage.latin);
-      expect(enabledConfigs.first.level, VocabularyLevel.beginner);
+      expect(enabledConfigs, hasLength(AppLanguage.values.length));
+      expect(
+        enabledConfigs.map((c) => c.language),
+        containsAll(AppLanguage.values),
+      );
+      for (final config in enabledConfigs) {
+        expect(config.level, VocabularyLevel.beginner);
+      }
     });
 
     test('gets current configuration correctly', () {
@@ -142,7 +147,7 @@ void main() {
 
       expect(spanishConfig, isNotNull);
       expect(spanishConfig!.language, AppLanguage.spanish);
-      expect(spanishConfig.isEnabled, false);
+      expect(spanishConfig.isEnabled, true); // Now enabled by default
     });
 
     test('updates language configuration correctly', () {
@@ -168,7 +173,7 @@ void main() {
       final originalSpanish = original.getConfigForLanguage(
         AppLanguage.spanish,
       );
-      expect(originalSpanish!.isEnabled, false);
+      expect(originalSpanish!.isEnabled, true); // Now enabled by default
     });
 
     test('changes current language correctly', () {
