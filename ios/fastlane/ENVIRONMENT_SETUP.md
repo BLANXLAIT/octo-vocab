@@ -5,52 +5,47 @@ This guide explains how to configure your Fastlane environment for both local de
 ## Overview
 
 The Fastfile has been standardized to use centralized environment configuration that works seamlessly with both:
-- **Local Development**: Using `.env` file for sensitive credentials
+- **Local Development**: Using system environment variables (`.zshrc`)
 - **GitHub Actions**: Using GitHub Secrets for secure CI/CD deployment
 
 ## 🔧 Local Development Setup
 
-### 1. Create Local Environment File
+### Configure Your `.zshrc` File
 
-Copy the template and fill in your values:
-
-```bash
-cd ios/fastlane
-cp .env.template .env
-```
-
-### 2. Configure Your `.env` File
-
-Edit the `.env` file with your actual values:
+Add these environment variables to your `~/.zshrc` file:
 
 ```bash
 # Apple Developer Team Configuration
-FASTLANE_TEAM_ID=GCRLV5UC4Q
-FASTLANE_ITC_TEAM_ID=GCRLV5UC4Q
+export FASTLANE_TEAM_ID=YOUR_TEAM_ID
+export FASTLANE_ITC_TEAM_ID=YOUR_TEAM_ID
 
 # App Store Connect API Configuration
-APP_STORE_CONNECT_API_KEY_ID=S9RAGF997L
-APP_STORE_CONNECT_ISSUER_ID=69a6de83-1bd1-47e3-e053-5b8c7c11a4d1
-APP_STORE_CONNECT_API_KEY_PATH=$HOME/.appstoreconnect/private/AuthKey_S9RAGF997L.p8
+export APP_STORE_CONNECT_API_KEY_ID=YOUR_API_KEY_ID
+export APP_STORE_CONNECT_ISSUER_ID=YOUR_ISSUER_ID
+export APP_STORE_CONNECT_API_KEY_PATH="$HOME/.appstoreconnect/private/AuthKey_YOURKEY.p8"
 
 # Match (Certificate Management) Configuration  
-MATCH_PASSWORD=qdPe8fFWewKF2CMfjkn9
-MATCH_GIT_URL=https://github.com/BLANXLAIT/ios-certificates.git
-MATCH_GIT_BRANCH=main
-MATCH_READONLY=false
+export MATCH_PASSWORD=YOUR_MATCH_PASSWORD
+export MATCH_GIT_URL="https://github.com/YOUR_ORG/YOUR_MATCH_REPO"
+export MATCH_CERTS_PAT="YOUR_GITHUB_PAT"
 
-# App Configuration
-APP_IDENTIFIER=com.blanxlait.octo-vocab
-APP_NAME=Octo Vocab
+# Legacy Apple ID Configuration (Optional)
+export APPLE_ID="your.email@example.com"
+export FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD=your-app-specific-password
 ```
 
-### 3. Download App Store Connect API Key
+### Download App Store Connect API Key
 
 1. Go to [App Store Connect API Keys](https://appstoreconnect.apple.com/access/api)
 2. Download your `.p8` key file 
-3. Store it at: `~/.appstoreconnect/private/AuthKey_S9RAGF997L.p8`
+3. Store it at: `~/.appstoreconnect/private/AuthKey_YOURKEY.p8`
 
-⚠️ **Security Note**: The `.env` file is already in `.gitignore` and will never be committed to version control.
+After updating `.zshrc`, reload it:
+```bash
+source ~/.zshrc
+```
+
+⚠️ **Security Note**: Your `.zshrc` file stays on your local machine and is never committed to version control.
 
 ## 🚀 GitHub Actions Setup
 
@@ -120,8 +115,7 @@ FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD=tsbh-tmbs-gqoo-cxym
 ### Environment Loading Priority
 
 1. **GitHub Actions**: Environment variables set via secrets
-2. **Local Development**: Variables loaded from `.env` file
-3. **Fallback**: System environment variables
+2. **Local Development**: System environment variables from `.zshrc`
 
 ### Centralized Configuration
 
@@ -129,7 +123,7 @@ The Fastfile includes these helper functions:
 
 - **`validate_environment!`**: Ensures all required variables are present
 - **`get_app_store_api_key`**: Creates API key configuration from environment
-- **Automatic .env loading**: Loads local environment file if present
+- **System environment integration**: Uses variables from shell configuration
 
 ### Security Features
 
@@ -158,7 +152,7 @@ fastlane build_only         # Test build process
 
 **Missing Environment Variables**
 - Error: `❌ Missing required environment variables`
-- Solution: Ensure all required secrets are configured in `.env` (local) or GitHub Secrets (CI)
+- Solution: Ensure all required secrets are configured in `.zshrc` (local) or GitHub Secrets (CI)
 
 **API Key Issues**
 - Error: `❌ Either APP_STORE_CONNECT_API_KEY_CONTENT or APP_STORE_CONNECT_API_KEY_PATH must be set`

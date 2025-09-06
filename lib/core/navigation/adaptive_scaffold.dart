@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_saas_template/core/language/language.dart';
+import 'package:flutter_saas_template/core/providers/study_config_providers.dart';
 import 'package:flutter_saas_template/core/services/local_data_service.dart';
 import 'package:flutter_saas_template/core/theme/dynamic_theme.dart';
 import 'package:flutter_saas_template/features/flashcards/flashcards_screen.dart';
@@ -172,6 +173,55 @@ class AdaptiveScaffold extends ConsumerWidget {
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
+  Future<void> _showResetLanguageDialog(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reset Language Settings'),
+        content: const Text(
+          'This will reset your language settings and force a migration to re-enable all languages including Spanish.\n\n'
+          'Your learning progress will not be affected.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.orange),
+            child: const Text('Reset Languages'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed ?? false) {
+      final dataService = await ref.read(localDataServiceProvider.future);
+      
+      // Reset language settings using the new method
+      final success = await dataService.resetLanguageSettings();
+      
+      // Force re-initialization
+      if (success) {
+        await ref.read(studyConfigurationProvider.notifier).refresh();
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success
+                  ? 'Language settings reset! Spanish should now be available.'
+                  : 'Failed to reset language settings. Please try again.',
+            ),
+            backgroundColor: success ? Colors.green : Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _showResetDataDialog(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -341,6 +391,19 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                   ),
                 ],
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Debug: Reset Language Settings
+            Card(
+              key: const Key('debug_reset_language_card'),
+              child: ListTile(
+                leading: const Icon(Icons.language, color: Colors.orange),
+                title: const Text('DEBUG: Reset Language Settings'),
+                subtitle: const Text('Force language migration to re-enable Spanish'),
+                onTap: () => _showResetLanguageDialog(context, ref),
               ),
             ),
 

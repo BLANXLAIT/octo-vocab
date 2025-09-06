@@ -33,6 +33,8 @@ class StudyConfigurationNotifier
 
       // Load current configuration
       final config = dataService.getStudyConfiguration();
+      print('DEBUG: Study configuration loaded: ${config.configurations.keys} | Current: ${config.currentLanguage}');
+      print('DEBUG: Enabled configs: ${config.enabledConfigurations.map((c) => '${c.language.name}:${c.isEnabled}').join(', ')}');
       state = AsyncValue.data(config);
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);

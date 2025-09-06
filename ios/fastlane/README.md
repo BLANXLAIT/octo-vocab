@@ -119,6 +119,14 @@ Generate screenshots and update metadata
 
 Setup: Create app and sync certificates (run once)
 
+### ios test_upload
+
+```sh
+[bundle exec] fastlane ios test_upload
+```
+
+DEBUG: Test upload with explicit credentials
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.

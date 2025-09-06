@@ -101,7 +101,12 @@ class LanguageLearningSettingsCard extends ConsumerWidget {
             const SizedBox(height: 16),
 
             // Language configurations
-            ...LanguageRegistry.availableLanguages.map((
+            // Debug: Log available languages
+            ...() {
+              final availableLanguages = LanguageRegistry.availableLanguages;
+              print('DEBUG: Available languages: ${availableLanguages.map((l) => '${l.code} (${l.isAvailable})').join(', ')}');
+              return availableLanguages;
+            }().map((
               LanguageDefinition definition,
             ) {
               final language = AppLanguage.values.firstWhere(

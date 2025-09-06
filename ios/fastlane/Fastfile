@@ -12,35 +12,29 @@
 # ENVIRONMENT CONFIGURATION
 # =============================================================================
 
-# Load environment variables from .env file (for local development)
-# GitHub Actions will provide these via secrets
-if File.exist?(".env")
-  UI.message "📋 Loading environment variables from .env file"
-  File.readlines(".env").each do |line|
-    line = line.strip
-    next if line.empty? || line.start_with?("#")
-    
-    key, value = line.split("=", 2)
-    if key && value
-      # Expand common environment variables like $HOME
-      value = value.gsub('$HOME', ENV['HOME']) if value.include?('$HOME')
-      ENV[key] = value
-    end
-  end
-else
-  UI.message "📋 No .env file found - using system environment variables"
-end
+# Using system environment variables (from .zshrc)
+UI.message "📋 Using system environment variables from shell configuration"
 
 # Environment configuration helper
 def get_app_store_api_key
-  app_store_connect_api_key(
-    key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
-    issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-    key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"], # Preferred for CI/CD
-    key_filepath: ENV["APP_STORE_CONNECT_API_KEY_PATH"],   # Fallback for local dev
-    duration: 1200, # 20 minutes
-    in_house: false
-  )
+  # Use key_content if available, otherwise fallback to key_filepath
+  if ENV["APP_STORE_CONNECT_API_KEY_CONTENT"] && !ENV["APP_STORE_CONNECT_API_KEY_CONTENT"].empty?
+    app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
+      duration: 1200, # 20 minutes
+      in_house: false
+    )
+  else
+    app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_filepath: ENV["APP_STORE_CONNECT_API_KEY_PATH"],
+      duration: 1200, # 20 minutes
+      in_house: false
+    )
+  end
 end
 
 # Validate required environment variables
@@ -248,12 +242,15 @@ platform :ios do
     # Build the app
     build
     
-    # Configure App Store Connect API for upload only
-    api_key = get_app_store_api_key
-    
-    # Upload to TestFlight
+    # Upload to TestFlight with explicit API key (same as test_upload)
     upload_to_testflight(
-      api_key: api_key,
+      api_key: app_store_connect_api_key(
+        key_id: "NYY9BJ3V2H",
+        issuer_id: "69a6de83-1bd1-47e3-e053-5b8c7c11a4d1",
+        key_filepath: "/Users/ryan/.appstoreconnect/private/AuthKey_NYY9BJ3V2H.p8",
+        duration: 1200,
+        in_house: false
+      ),
       app_identifier: ENV["APP_IDENTIFIER"] || "com.blanxlait.octo-vocab",
       skip_waiting_for_build_processing: true,
       skip_submission: true,
@@ -370,13 +367,7 @@ platform :ios do
     UI.message "📝 Updating App Store Connect metadata..."
     
     # Configure App Store Connect API for metadata upload
-    api_key = app_store_connect_api_key(
-      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
-      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
-      duration: 1200, # 20 minutes
-      in_house: false
-    )
+    api_key = get_app_store_api_key
     
     # Upload metadata to App Store Connect
     deliver(
@@ -428,6 +419,29 @@ platform :ios do
   after_all do |lane|
     # This block is called, only if the executed lane was successful
     UI.success "✅ Lane #{lane} completed successfully!"
+  end
+
+  desc "DEBUG: Test upload with explicit credentials"
+  lane :test_upload do
+    UI.message "🧪 Testing upload with explicit API key..."
+    
+    # Create API key with explicit values
+    api_key = app_store_connect_api_key(
+      key_id: "NYY9BJ3V2H",
+      issuer_id: "69a6de83-1bd1-47e3-e053-5b8c7c11a4d1",
+      key_filepath: "/Users/ryan/.appstoreconnect/private/AuthKey_NYY9BJ3V2H.p8",
+      duration: 1200,
+      in_house: false
+    )
+    
+    # Upload to TestFlight
+    upload_to_testflight(
+      api_key: api_key,
+      ipa: "./build/Runner.ipa",
+      skip_waiting_for_build_processing: true
+    )
+    
+    UI.success "✅ Upload successful!"
   end
 
   error do |lane, exception|

@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flutter_saas_template/core/language/language.dart';
 import 'package:flutter_saas_template/core/models/language_study_config.dart';
+import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
 
 /// Privacy-first local data storage service
 /// All user data stays on device - no network transmission
@@ -25,7 +26,7 @@ class LocalDataService {
   static const String _keyMigrationVersion = 'migration_version';
 
   // Current migration version
-  static const int _currentMigrationVersion = 2;
+  static const int _currentMigrationVersion = 3;
 
   final SharedPreferences _prefs;
 
@@ -171,6 +172,18 @@ class LocalDataService {
         _prefs.remove(_keyStudyConfiguration),
         _prefs.remove(_keyMigrationVersion),
       ]);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// DEBUG: Reset language configuration and force re-migration
+  Future<bool> resetLanguageSettings() async {
+    try {
+      // Reset migration version to force re-migration
+      await _prefs.remove(_keyMigrationVersion);
+      await _prefs.remove(_keyStudyConfiguration);
       return true;
     } catch (e) {
       return false;
@@ -531,6 +544,11 @@ class LocalDataService {
       await _migrateToV2();
     }
 
+    // Migration version 3: Force Spanish to be enabled (debug Spanish issue)
+    if (currentVersion < 3) {
+      await _migrateToV3();
+    }
+
     // Update migration version
     await _prefs.setInt(_keyMigrationVersion, _currentMigrationVersion);
     return true;
@@ -579,6 +597,40 @@ class LocalDataService {
     }
 
     await setStudyConfiguration(configSet);
+  }
+
+  /// Version 3 migration: Force Spanish to be enabled and create missing configs
+  Future<void> _migrateToV3() async {
+    var configSet = getStudyConfiguration();
+    bool configChanged = false;
+
+    // Ensure ALL languages in the AppLanguage enum have configurations
+    for (final language in AppLanguage.values) {
+      final currentConfig = configSet.getConfigForLanguage(language);
+      
+      if (currentConfig == null) {
+        // Create missing configuration for this language
+        final newConfig = LanguageStudyConfig(
+          language: language,
+          level: VocabularyLevel.beginner,
+          isEnabled: true,
+        );
+        configSet = configSet.updateLanguageConfig(language, newConfig);
+        configChanged = true;
+      } else if (!currentConfig.isEnabled) {
+        // Force enable disabled languages (especially Spanish)
+        configSet = configSet.updateLanguageConfig(
+          language,
+          currentConfig.copyWith(isEnabled: true),
+        );
+        configChanged = true;
+      }
+    }
+
+    // Save configuration if it was changed
+    if (configChanged) {
+      await setStudyConfiguration(configSet);
+    }
   }
 }
 

@@ -76,14 +76,7 @@ coverage/
 /lib/firebase_options.dart
 /web/firebase-config.js
 
-# Environment files
-.env
-.env.local
-.env.*.local
-
-# Fastlane environment files
-ios/fastlane/.env
-android/fastlane/.env
+# Note: Environment variables stored in .zshrc (not tracked by git)
 
 # IDE
 .vscode/launch.json
