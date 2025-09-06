@@ -247,7 +247,7 @@ class ReviewScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Words you swipe left (Unknown) in the Learn tab will appear here for focused practice.',
+              'Words you swipe left (Unknown) in Learn or get wrong in Quiz will appear here for focused practice.',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),

@@ -10,11 +10,19 @@ import 'package:flutter_saas_template/core/language/language.dart';
 import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
 import 'package:flutter_saas_template/core/models/word.dart';
 import 'package:flutter_saas_template/core/providers/study_config_providers.dart';
+import 'package:flutter_saas_template/core/services/local_data_service.dart';
 import 'package:flutter_saas_template/features/quiz/animated_quiz_option.dart';
 
 final quizVocabProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
-  final lang = ref.watch(appLanguageProvider);
-  final level = ref.watch(currentLevelProvider);
+  final currentConfig = ref.watch(currentLanguageConfigProvider);
+
+  // If no configuration is available, return empty list
+  if (currentConfig == null || !currentConfig.isEnabled) {
+    return <Word>[];
+  }
+
+  final lang = currentConfig.language;
+  final level = currentConfig.level;
 
   // Load all vocabulary sets for the current language and level
   final allWords = <Word>[];
@@ -34,7 +42,7 @@ final quizVocabProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
     // Load all vocabulary sets for this level
     for (final vocabSet in vocabularySets) {
       try {
-        final path = vocabAssetPath(lang, '${level.code}/${vocabSet.filename}');
+        final path = vocabularySetAssetPath(lang, vocabSet);
         final jsonStr = await rootBundle.loadString(path);
         allWords.addAll(Word.listFromJsonString(jsonStr));
       } catch (e) {
@@ -274,6 +282,10 @@ class QuizScreen extends ConsumerWidget {
                                   // Check answer
                                   ref.read(showResultProvider.notifier).state =
                                       true;
+                                  
+                                  // Track word difficulty based on answer
+                                  _trackQuizResult(context, ref, current, isCorrect);
+                                  
                                   // Show celebration if correct
                                   if (isCorrect) {
                                     ref
@@ -346,5 +358,33 @@ class QuizScreen extends ConsumerWidget {
         );
       },
     );
+  }
+
+  /// Track quiz results for review system
+  Future<void> _trackQuizResult(
+    BuildContext context,
+    WidgetRef ref,
+    Word word,
+    bool isCorrect,
+  ) async {
+    try {
+      final dataService = await ref.read(localDataServiceProvider.future);
+      final currentConfig = ref.read(currentLanguageConfigProvider);
+
+      if (!context.mounted || currentConfig == null) return;
+
+      final languageName = currentConfig.language.name;
+
+      if (!isCorrect) {
+        // Wrong answer - add to review list for focused practice
+        await dataService.markWordAsDifficultForLanguage(word.id, languageName);
+      } else {
+        // Correct answer - mark as known (removes from review if it was there)
+        await dataService.markWordAsKnownForLanguage(word.id, languageName);
+      }
+    } catch (e) {
+      // Silent fail - don't break the quiz experience
+      // The user will still see correct/incorrect feedback
+    }
   }
 }
