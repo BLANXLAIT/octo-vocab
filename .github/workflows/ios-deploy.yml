@@ -166,122 +166,31 @@ jobs:
 
     # Configure App Store Connect API
     - name: 🔐 Configure App Store Connect API
-      working-directory: ios
       env:
         APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
         APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-        APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
-      run: |
-        # Export environment variables for fastlane
-        # Use key content directly instead of file path to avoid JSON parsing issues
-        echo "APP_STORE_CONNECT_API_KEY_ID=$APP_STORE_CONNECT_API_KEY_ID" >> $GITHUB_ENV
-        echo "APP_STORE_CONNECT_ISSUER_ID=$APP_STORE_CONNECT_ISSUER_ID" >> $GITHUB_ENV
-        
-        # Export the raw API key content (decode if base64 encoded)
-        if echo "$APP_STORE_CONNECT_API_KEY" | base64 --decode > /dev/null 2>&1; then
-          echo "🔍 API key is base64 encoded - decoding for environment variable..."
-          API_KEY_CONTENT=$(echo "$APP_STORE_CONNECT_API_KEY" | base64 --decode)
-        else
-          echo "🔍 API key is plain text - using directly..."
-          API_KEY_CONTENT="$APP_STORE_CONNECT_API_KEY"
-        fi
-        
-        # Export API key content as environment variable for fastlane
-        # Use multiline environment variable format
-        echo "APP_STORE_CONNECT_API_KEY_CONTENT<<EOF" >> $GITHUB_ENV
-        echo "$API_KEY_CONTENT" >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
-
-    # Configure Match (certificate management)
-    - name: 📜 Configure Match certificates
-      working-directory: ios
-      env:
+        APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+        FASTLANE_TEAM_ID: ${{ secrets.FASTLANE_TEAM_ID }}
         MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
-        MATCH_GIT_BRANCH: ${{ secrets.MATCH_GIT_BRANCH }}
-        # Hardcode team IDs since they're fixed for this Apple Developer account
-        FASTLANE_TEAM_ID: "GCRLV5UC4Q"
-        FASTLANE_ITC_TEAM_ID: "GCRLV5UC4Q"  # Usually same as team ID for individual/LLC accounts
-        FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
-        # Personal Access Token for accessing the match certificates repo
         MATCH_CERTS_PAT: ${{ secrets.MATCH_CERTS_PAT }}
       run: |
-        # Export all environment variables
+        # Export all environment variables for fastlane
+        echo "APP_STORE_CONNECT_API_KEY_ID=$APP_STORE_CONNECT_API_KEY_ID" >> $GITHUB_ENV
+        echo "APP_STORE_CONNECT_ISSUER_ID=$APP_STORE_CONNECT_ISSUER_ID" >> $GITHUB_ENV
+        echo "FASTLANE_TEAM_ID=$FASTLANE_TEAM_ID" >> $GITHUB_ENV
         echo "MATCH_PASSWORD=$MATCH_PASSWORD" >> $GITHUB_ENV
         echo "MATCH_GIT_URL=$MATCH_GIT_URL" >> $GITHUB_ENV
-        echo "MATCH_GIT_BRANCH=$MATCH_GIT_BRANCH" >> $GITHUB_ENV
-        echo "FASTLANE_TEAM_ID=$FASTLANE_TEAM_ID" >> $GITHUB_ENV
-        echo "FASTLANE_ITC_TEAM_ID=$FASTLANE_ITC_TEAM_ID" >> $GITHUB_ENV
-        echo "FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD=$FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD" >> $GITHUB_ENV
         echo "MATCH_CERTS_PAT=$MATCH_CERTS_PAT" >> $GITHUB_ENV
-        echo "MATCH_READONLY=false" >> $GITHUB_ENV
+        
+        # Export API key content as multiline environment variable
+        echo "APP_STORE_CONNECT_API_KEY_CONTENT<<EOF" >> $GITHUB_ENV
+        echo "$APP_STORE_CONNECT_API_KEY_CONTENT" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
 
-    # Validate secrets are available
-    - name: 🔍 Validate secrets
-      run: |
-        echo "Checking required secrets availability..."
-        if [ -z "${{ secrets.MATCH_PASSWORD }}" ]; then
-          echo "❌ MATCH_PASSWORD secret is missing"
-          exit 1
-        else
-          echo "✅ MATCH_PASSWORD is available"
-        fi
-        
-        if [ -z "${{ secrets.MATCH_GIT_URL }}" ]; then
-          echo "❌ MATCH_GIT_URL secret is missing"
-          exit 1
-        else
-          echo "✅ MATCH_GIT_URL is available"
-        fi
-        
-        if [ -z "${{ secrets.MATCH_CERTS_PAT }}" ]; then
-          echo "❌ MATCH_CERTS_PAT secret is missing"
-          exit 1
-        else
-          echo "✅ MATCH_CERTS_PAT is available"
-        fi
-        
-        if [ -z "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
-          echo "❌ APP_STORE_CONNECT_API_KEY_ID secret is missing"
-          exit 1
-        else
-          echo "✅ APP_STORE_CONNECT_API_KEY_ID is available"
-        fi
-        
-        echo "✅ All required secrets are available"
 
-    # Prebuild iOS release target to warm up build system and cache artifacts
-    - name: 🔨 Prebuild iOS Release Target
-      timeout-minutes: 15
-      run: |
-        echo "🔨 Starting iOS prebuild to warm up build system..."
-        
-        # Build iOS without code signing to prepare most build artifacts
-        flutter build ios \
-          --release \
-          --no-codesign \
-          --build-name=1.0.0 \
-          --build-number=1 \
-          --verbose || {
-            echo "⚠️ Prebuild failed, but this is not critical - continuing..."
-            echo "This may happen on first runs or cache misses"
-          }
-        
-        echo "✅ iOS prebuild completed - build system warmed up"
 
-    # Install CocoaPods dependencies if needed (utilizes cache)
-    - name: 🍫 Install CocoaPods Dependencies
-      working-directory: ios
-      run: |
-        echo "🍫 Installing CocoaPods dependencies..."
-        
-        # Check if Pods directory exists and Podfile.lock matches
-        if [ ! -d "Pods" ] || [ "Podfile" -nt "Podfile.lock" ]; then
-          echo "📦 Running pod install..."
-          pod install --repo-update
-        else
-          echo "✅ CocoaPods dependencies are up to date"
-        fi
+
 
     # Sync certificates and provisioning profiles using Match
     - name: 🔐 Sync certificates with Match
