@@ -109,21 +109,38 @@ echo "🔑 Setting up App Store Connect API secrets ($level_desc)..."
 echo
 
 # App Store Connect API Key ID
-$set_secret_fn "APP_STORE_CONNECT_API_KEY_ID" "S9RAGF997L" "App Store Connect API Key ID"
+read -p "Enter your App Store Connect API Key ID: " API_KEY_ID
+$set_secret_fn "APP_STORE_CONNECT_API_KEY_ID" "$API_KEY_ID" "App Store Connect API Key ID"
 
 # App Store Connect Issuer ID
-$set_secret_fn "APP_STORE_CONNECT_ISSUER_ID" "69a6de83-1bd1-47e3-e053-5b8c7c11a4d1" "App Store Connect API Issuer ID"
+read -p "Enter your App Store Connect Issuer ID: " ISSUER_ID
+$set_secret_fn "APP_STORE_CONNECT_ISSUER_ID" "$ISSUER_ID" "App Store Connect API Issuer ID"
 
-# App Store Connect API Key (Base64 encoded)
-API_KEY_PATH="$HOME/.appstoreconnect/private/AuthKey_S9RAGF997L.p8"
-if [ -f "$API_KEY_PATH" ]; then
-    echo "📄 Found API key file at: $API_KEY_PATH"
-    echo "🔄 Base64 encoding API key..."
-    API_KEY_BASE64=$(base64 -i "$API_KEY_PATH")
-    $set_secret_fn "APP_STORE_CONNECT_API_KEY" "$API_KEY_BASE64" "Base64 encoded App Store Connect API Key (.p8 file)"
+# App Store Connect API Key (Content or Path)
+echo "📄 Choose API Key input method:"
+echo "1) Provide file path to .p8 key file"
+echo "2) Paste API key content directly"
+read -p "Enter choice (1 or 2): " choice
+
+if [ "$choice" = "1" ]; then
+    read -p "Enter path to your .p8 API key file: " API_KEY_PATH
+    if [ -f "$API_KEY_PATH" ]; then
+        echo "📄 Found API key file at: $API_KEY_PATH"
+        echo "🔄 Reading API key content..."
+        API_KEY_CONTENT=$(cat "$API_KEY_PATH")
+        $set_secret_fn "APP_STORE_CONNECT_API_KEY_CONTENT" "$API_KEY_CONTENT" "App Store Connect API Key content (.p8 file)"
+    else
+        echo "❌ API key file not found at: $API_KEY_PATH"
+        echo "Please ensure the API key file exists at the correct location."
+        echo
+    fi
+elif [ "$choice" = "2" ]; then
+    echo "Paste your API key content (including -----BEGIN PRIVATE KEY----- and -----END PRIVATE KEY----- lines):"
+    echo "Press Enter, then Ctrl+D when finished:"
+    API_KEY_CONTENT=$(cat)
+    $set_secret_fn "APP_STORE_CONNECT_API_KEY_CONTENT" "$API_KEY_CONTENT" "App Store Connect API Key content"
 else
-    echo "❌ API key file not found at: $API_KEY_PATH"
-    echo "Please ensure the API key file exists at the correct location."
+    echo "❌ Invalid choice. Skipping API key setup."
     echo
 fi
 
@@ -131,22 +148,23 @@ echo "📜 Setting up Match (Certificate Management) secrets ($level_desc)..."
 echo
 
 # Match Password
-$set_secret_fn "MATCH_PASSWORD" "qdPe8fFWewKF2CMfjkn9" "Password for Match certificate repository"
+read -s -p "Enter your Match password: " MATCH_PASSWORD
+echo
+$set_secret_fn "MATCH_PASSWORD" "$MATCH_PASSWORD" "Password for Match certificate repository"
 
 # Match Git URL
-$set_secret_fn "MATCH_GIT_URL" "https://github.com/BLANXLAIT/blanxlait-ci-shared" "Git repository URL for Match certificates"
-
-# Match Git Branch
-$set_secret_fn "MATCH_GIT_BRANCH" "main" "Git branch for Match certificates"
+read -p "Enter Match Git repository URL: " MATCH_GIT_URL
+$set_secret_fn "MATCH_GIT_URL" "$MATCH_GIT_URL" "Git repository URL for Match certificates"
 
 # Match Personal Access Token
-$set_secret_fn "MATCH_CERTS_PAT" "YOUR_GITHUB_PAT_HERE" "GitHub Personal Access Token for Match repository access"
-
-echo "🍎 Setting up optional Apple ID secrets ($level_desc)..."
+read -s -p "Enter GitHub Personal Access Token for Match repository: " MATCH_CERTS_PAT
 echo
+$set_secret_fn "MATCH_CERTS_PAT" "$MATCH_CERTS_PAT" "GitHub Personal Access Token for Match repository access"
 
-# Apple Application Specific Password (Legacy)
-$set_secret_fn "FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD" "YOUR_APP_SPECIFIC_PASSWORD_HERE" "App-specific password for legacy Apple ID authentication"
+# Fastlane Team ID
+read -p "Enter your Fastlane Team ID: " FASTLANE_TEAM_ID
+$set_secret_fn "FASTLANE_TEAM_ID" "$FASTLANE_TEAM_ID" "Apple Developer Team ID"
+
 
 echo "🎉 GitHub Secrets Setup Complete!"
 echo

@@ -21,17 +21,44 @@ on:
         required: false
         default: false
         type: boolean
+      skip_preflight:
+        description: 'Skip preflight check (not recommended)'
+        required: false
+        default: false
+        type: boolean
 
 env:
   FLUTTER_VERSION: '3.35.0'
   FLUTTER_CHANNEL: 'stable'
 
 jobs:
+  # Run preflight check first
+  preflight:
+    if: ${{ !inputs.skip_preflight }}
+    uses: ./.github/workflows/preflight-check.yml
+    secrets: inherit
+    
+  # Only proceed with deployment if preflight passes
   ios_deploy:
-    runs-on: macos-15  # Use latest macOS with Xcode 16+ (required for project compatibility)
+    needs: [preflight]
+    if: ${{ always() && (inputs.skip_preflight || needs.preflight.outputs.ready_for_deployment == 'true') }}
+    runs-on: macos-15
     timeout-minutes: 45
     
     steps:
+    # Show preflight results
+    - name: 📋 Preflight Check Results
+      if: ${{ !inputs.skip_preflight }}
+      run: |
+        echo "## 🚀 Preflight Check Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ needs.preflight.outputs.ready_for_deployment }}" = "true" ]; then
+          echo "✅ **Preflight check passed** - proceeding with deployment" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Preflight check failed** - deployment should not proceed" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ **This deployment was force-started despite preflight failure**" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
     # Checkout code
     - name: 📱 Checkout repository
       uses: actions/checkout@v4

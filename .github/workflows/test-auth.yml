@@ -62,13 +62,13 @@ jobs:
       working-directory: ios
       run: |
         echo "🔍 Testing App Store Connect API authentication..."
-        fastlane test_auth || echo "Auth test failed - expected for now due to 'invalid curve name' issue"
-        echo "ℹ️ Note: This test currently fails due to OpenSSL/fastlane compatibility, but actual uploads work"
+        echo "This test must succeed for deployment to work properly."
+        fastlane test_auth
 
-    - name: 🔐 Test Match Certificate Access
+    - name: 🔐 Test Match Certificate Access (Read-Only)
       working-directory: ios
       run: |
-        echo "🔍 Testing Match certificate repository access..."
+        echo "🔍 Testing Match certificate repository access (read-only)..."
         
         # Configure Git credentials for private repository access
         git config --global user.name "GitHub Actions"
@@ -76,22 +76,44 @@ jobs:
         
         # Test basic Match access (readonly mode to avoid making changes)
         MATCH_READONLY=true fastlane sync_certificates
+        
+    - name: 🔐 Test Match Certificate Validation (API Required)
+      working-directory: ios
+      run: |
+        echo "🔍 Testing Match certificate validation with Apple API..."
+        echo "This validates that certificates are still valid on Apple's servers."
+        
+        # Test non-readonly mode which requires Apple API validation
+        # This is the same test that the actual deployment uses
+        fastlane sync_certificates
 
     - name: ✅ Authentication Summary  
       if: always()
       run: |
         echo "## 🔐 Authentication Test Results" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Results:" >> $GITHUB_STEP_SUMMARY
-        echo "- **App Store Connect API**: Test completed (see logs)" >> $GITHUB_STEP_SUMMARY
-        echo "- **Match Certificates**: ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
+        echo "### Test Components:" >> $GITHUB_STEP_SUMMARY
+        echo "1. **App Store Connect API Authentication**: Direct API key validation" >> $GITHUB_STEP_SUMMARY
+        echo "2. **Match Certificate Repository**: GitHub PAT access test" >> $GITHUB_STEP_SUMMARY
+        echo "3. **Match Certificate Apple Validation**: Apple API certificate validation" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Overall Result:" >> $GITHUB_STEP_SUMMARY
         if [ "${{ job.status }}" = "success" ]; then
-          echo "🎉 **All authentication tests passed!** Ready for full deployment." >> $GITHUB_STEP_SUMMARY
+          echo "🎉 **All authentication tests passed!** ✅" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**✅ Ready for iOS deployment**" >> $GITHUB_STEP_SUMMARY
+          echo "- App Store Connect API key is valid and working" >> $GITHUB_STEP_SUMMARY
+          echo "- GitHub PAT has proper repository access" >> $GITHUB_STEP_SUMMARY
+          echo "- Apple certificate validation is working" >> $GITHUB_STEP_SUMMARY
         else
-          echo "❌ **Authentication issues detected.** Check logs and fix before deploying." >> $GITHUB_STEP_SUMMARY
+          echo "❌ **Authentication issues detected** ❌" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**🚨 NOT ready for deployment**" >> $GITHUB_STEP_SUMMARY
+          echo "- Check App Store Connect API key validity and expiration" >> $GITHUB_STEP_SUMMARY
+          echo "- Verify GitHub PAT has repository access permissions" >> $GITHUB_STEP_SUMMARY
+          echo "- Confirm all organization secrets are properly configured" >> $GITHUB_STEP_SUMMARY
         fi
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
-        echo "- If successful: Run full iOS deployment workflow" >> $GITHUB_STEP_SUMMARY
-        echo "- If failed: Check GitHub organization secrets and API key validity" >> $GITHUB_STEP_SUMMARY
+        echo "- **If successful**: Safe to run iOS deployment workflow" >> $GITHUB_STEP_SUMMARY
+        echo "- **If failed**: Fix authentication issues before deploying" >> $GITHUB_STEP_SUMMARY

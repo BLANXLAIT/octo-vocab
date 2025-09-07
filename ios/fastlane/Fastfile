@@ -17,8 +17,9 @@ UI.message "📋 Using system environment variables from shell configuration"
 
 # Environment configuration helper
 def get_app_store_api_key
-  # Use key_content if available, otherwise fallback to key_filepath
+  # Priority order: key_content (CI) > individual key_filepath (local) > JSON file
   if ENV["APP_STORE_CONNECT_API_KEY_CONTENT"] && !ENV["APP_STORE_CONNECT_API_KEY_CONTENT"].empty?
+    UI.message "🔑 Using App Store Connect API Key from content (CI)"
     app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
@@ -26,7 +27,8 @@ def get_app_store_api_key
       duration: 1200, # 20 minutes
       in_house: false
     )
-  else
+  elsif ENV["APP_STORE_CONNECT_API_KEY_PATH"] && File.exist?(ENV["APP_STORE_CONNECT_API_KEY_PATH"])
+    UI.message "🔑 Using App Store Connect API Key from .p8 file: #{ENV['APP_STORE_CONNECT_API_KEY_PATH']}"
     app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
@@ -34,30 +36,48 @@ def get_app_store_api_key
       duration: 1200, # 20 minutes
       in_house: false
     )
+  elsif ENV["FASTLANE_API_KEY_PATH"] && File.exist?(ENV["FASTLANE_API_KEY_PATH"])
+    UI.message "🔑 Using App Store Connect API Key from JSON file: #{ENV['FASTLANE_API_KEY_PATH']}"
+    # Use the api_key_path parameter for actions directly
+    return { api_key_path: ENV["FASTLANE_API_KEY_PATH"] }
+  else
+    UI.user_error!("❌ No valid App Store Connect API Key found. Set APP_STORE_CONNECT_API_KEY_CONTENT (CI) or APP_STORE_CONNECT_API_KEY_PATH + APP_STORE_CONNECT_API_KEY_ID + APP_STORE_CONNECT_ISSUER_ID (local).")
   end
 end
 
 # Validate required environment variables
 def validate_environment!
-  required_vars = [
-    "APP_STORE_CONNECT_ISSUER_ID",
-    "APP_STORE_CONNECT_API_KEY_ID", 
-    "FASTLANE_TEAM_ID",
-    "MATCH_PASSWORD"
-  ]
-  
-  missing_vars = required_vars.select { |var| ENV[var].nil? || ENV[var].empty? }
+  # Always required
+  always_required = ["FASTLANE_TEAM_ID", "MATCH_PASSWORD", "MATCH_GIT_URL", "MATCH_CERTS_PAT"]
+  missing_vars = always_required.select { |var| ENV[var].nil? || ENV[var].empty? }
   
   unless missing_vars.empty?
     UI.user_error!("❌ Missing required environment variables: #{missing_vars.join(', ')}")
   end
   
-  # Validate API key availability (either content or filepath)
-  unless ENV["APP_STORE_CONNECT_API_KEY_CONTENT"] || ENV["APP_STORE_CONNECT_API_KEY_PATH"]
-    UI.user_error!("❌ Either APP_STORE_CONNECT_API_KEY_CONTENT or APP_STORE_CONNECT_API_KEY_PATH must be set")
+  # Validate API key availability (priority order: JSON file > content > individual p8)
+  has_json_key = ENV["FASTLANE_API_KEY_PATH"] && File.exist?(ENV["FASTLANE_API_KEY_PATH"])
+  has_key_content = ENV["APP_STORE_CONNECT_API_KEY_CONTENT"] && !ENV["APP_STORE_CONNECT_API_KEY_CONTENT"].empty?
+  has_individual_keys = ENV["APP_STORE_CONNECT_API_KEY_ID"] && ENV["APP_STORE_CONNECT_ISSUER_ID"] && 
+                        ENV["APP_STORE_CONNECT_API_KEY_PATH"] && File.exist?(ENV["APP_STORE_CONNECT_API_KEY_PATH"])
+  
+  unless has_json_key || has_key_content || has_individual_keys
+    UI.user_error!(
+      "❌ No valid App Store Connect API Key configuration found.\n\n" +
+      "Options:\n" +
+      "1. JSON file (preferred): Set FASTLANE_API_KEY_PATH\n" +
+      "2. CI content: Set APP_STORE_CONNECT_API_KEY_CONTENT + APP_STORE_CONNECT_API_KEY_ID + APP_STORE_CONNECT_ISSUER_ID\n" +
+      "3. Individual .p8: Set APP_STORE_CONNECT_API_KEY_PATH + APP_STORE_CONNECT_API_KEY_ID + APP_STORE_CONNECT_ISSUER_ID"
+    )
   end
   
-  UI.success "✅ All required environment variables are available"
+  if has_json_key
+    UI.success "✅ Using JSON API key file (preferred method)"
+  elsif has_key_content
+    UI.success "✅ Using API key content (CI method)"
+  else
+    UI.success "✅ Using individual API key parameters"
+  end
 end
 
 # =============================================================================
@@ -131,6 +151,39 @@ platform :ios do
     UI.success "✅ App created successfully!"
   end
 
+  desc "Test App Store Connect API authentication"
+  lane :test_auth do
+    UI.message "🔍 Testing App Store Connect API authentication..."
+    
+    # Debug: Show what environment variables are available
+    UI.message "🔍 Environment Debug Info:"
+    UI.message "   APP_STORE_CONNECT_API_KEY_ID: #{ENV['APP_STORE_CONNECT_API_KEY_ID'] ? 'SET' : 'MISSING'}"
+    UI.message "   APP_STORE_CONNECT_ISSUER_ID: #{ENV['APP_STORE_CONNECT_ISSUER_ID'] ? 'SET' : 'MISSING'}"
+    UI.message "   APP_STORE_CONNECT_API_KEY_CONTENT: #{ENV['APP_STORE_CONNECT_API_KEY_CONTENT'] ? "SET (#{ENV['APP_STORE_CONNECT_API_KEY_CONTENT'].length} chars)" : 'MISSING'}"
+    UI.message "   FASTLANE_TEAM_ID: #{ENV['FASTLANE_TEAM_ID'] ? 'SET' : 'MISSING'}"
+    
+    begin
+      # Get API key using the same method as successful upload
+      api_key = get_app_store_api_key
+      UI.message "🔑 API Key object type: #{api_key.class}"
+      
+      # Test with a simple pilot action that we know works
+      # Use the latest_testflight_build_number which makes a simple API call
+      build_number = latest_testflight_build_number(
+        api_key.is_a?(Hash) && api_key[:api_key_path] ? { api_key_path: api_key[:api_key_path] } : { api_key: api_key },
+        app_identifier: ENV["APP_IDENTIFIER"] || "com.blanxlait.octo-vocab"
+      )
+      
+      UI.success "✅ API Authentication successful!"
+      UI.message "   Latest TestFlight build number: #{build_number}"
+      
+    rescue => e
+      UI.error "❌ API Authentication failed: #{e.message}"
+      UI.error "   Full error: #{e.inspect}"
+      UI.user_error!("❌ App Store Connect API authentication failed. Check your API key configuration.")
+    end
+  end
+
   desc "Sync certificates and provisioning profiles using match"
   lane :sync_certificates do
     UI.message "📱 Syncing certificates and provisioning profiles using match..."
@@ -150,15 +203,23 @@ platform :ios do
     
     # Use match for certificate and provisioning profile management
     # Allow creation of new profiles if MATCH_READONLY is not set to "true"
-    match(
+    match_params = {
       type: "appstore",
       app_identifier: ENV["APP_IDENTIFIER"] || "com.blanxlait.octo-vocab",
       git_url: git_url,
       git_branch: ENV["MATCH_GIT_BRANCH"] || "main",
       readonly: ENV["MATCH_READONLY"] == "true",  # Respect MATCH_READONLY environment variable
-      force_for_new_devices: true,
-      api_key: api_key
-    )
+      force_for_new_devices: true
+    }
+    
+    # Add API key based on format (same pattern as upload_to_testflight)
+    if api_key.is_a?(Hash) && api_key[:api_key_path]
+      match_params[:api_key_path] = api_key[:api_key_path]
+    else
+      match_params[:api_key] = api_key
+    end
+    
+    match(match_params)
     
     UI.success "✅ Certificates and provisioning profiles synced successfully!"
   end
@@ -236,32 +297,57 @@ platform :ios do
   end
 
   desc "Deploy to TestFlight for beta testing"
-  lane :beta do
+  lane :beta do |options|
     UI.message "🧪 Deploying to TestFlight..."
     
     # Build the app
     build
     
-    # Upload to TestFlight with explicit API key (same as test_upload)
-    upload_to_testflight(
-      api_key: app_store_connect_api_key(
-        key_id: "NYY9BJ3V2H",
-        issuer_id: "69a6de83-1bd1-47e3-e053-5b8c7c11a4d1",
-        key_filepath: "/Users/ryan/.appstoreconnect/private/AuthKey_NYY9BJ3V2H.p8",
-        duration: 1200,
-        in_house: false
-      ),
+    # Upload to TestFlight using environment-based API key
+    api_key = get_app_store_api_key
+    
+    # Generate dynamic changelog if not provided
+    changelog = options[:changelog] || ENV["CHANGELOG"] || begin
+      # Try to get changelog from git commits
+      if system("git --version > /dev/null 2>&1")
+        recent_commits = sh("git log --oneline -5 --pretty=format:'• %s'", log: false).strip
+        "Recent updates:\n\n#{recent_commits}\n\nPrivacy-first vocabulary learning app for students."
+      else
+        "Privacy-first vocabulary learning app for students.\n\nFeatures:\n• ACTFL-aligned leveling system\n• Offline-first architecture\n• No data collection\n• Latin and Spanish vocabulary\n• Adaptive mobile/tablet UI"
+      end
+    rescue
+      "Privacy-first vocabulary learning app for students.\n\nFeatures:\n• ACTFL-aligned leveling system\n• Offline-first architecture\n• No data collection\n• Latin and Spanish vocabulary\n• Adaptive mobile/tablet UI"
+    end
+    
+    # Handle API key format (hash vs object)
+    upload_params = {
       app_identifier: ENV["APP_IDENTIFIER"] || "com.blanxlait.octo-vocab",
-      skip_waiting_for_build_processing: true,
+      skip_waiting_for_build_processing: ENV["CI"] ? true : false, # Skip processing in CI for faster builds
       skip_submission: true,
       # Beta app information
-      changelog: "Privacy-first vocabulary learning app for students.\n\nFeatures:\n• ACTFL-aligned leveling system\n• Offline-first architecture\n• No data collection\n• Latin and Spanish vocabulary\n• Adaptive mobile/tablet UI",
-      # Beta testing
+      changelog: changelog,
+      # Beta testing configuration
       distribute_external: false,
-      notify_external_testers: false
-    )
+      notify_external_testers: false,
+      # Compliance
+      uses_non_exempt_encryption: false
+    }
+    
+    # Add API key based on format
+    if api_key.is_a?(Hash) && api_key[:api_key_path]
+      upload_params[:api_key_path] = api_key[:api_key_path]
+    else
+      upload_params[:api_key] = api_key
+    end
+    
+    upload_to_testflight(upload_params)
     
     UI.success "🎉 App uploaded to TestFlight! Check App Store Connect for processing status."
+    
+    if ENV["CI"]
+      UI.message "⚡ Running in CI - build processing will continue in background"
+      UI.message "   Check App Store Connect for build processing progress"
+    end
   end
 
   desc "Deploy to App Store for production release"
@@ -421,28 +507,6 @@ platform :ios do
     UI.success "✅ Lane #{lane} completed successfully!"
   end
 
-  desc "DEBUG: Test upload with explicit credentials"
-  lane :test_upload do
-    UI.message "🧪 Testing upload with explicit API key..."
-    
-    # Create API key with explicit values
-    api_key = app_store_connect_api_key(
-      key_id: "NYY9BJ3V2H",
-      issuer_id: "69a6de83-1bd1-47e3-e053-5b8c7c11a4d1",
-      key_filepath: "/Users/ryan/.appstoreconnect/private/AuthKey_NYY9BJ3V2H.p8",
-      duration: 1200,
-      in_house: false
-    )
-    
-    # Upload to TestFlight
-    upload_to_testflight(
-      api_key: api_key,
-      ipa: "./build/Runner.ipa",
-      skip_waiting_for_build_processing: true
-    )
-    
-    UI.success "✅ Upload successful!"
-  end
 
   error do |lane, exception|
     UI.error "❌ Lane #{lane} failed with error: #{exception.message}"

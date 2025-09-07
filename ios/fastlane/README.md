@@ -31,6 +31,14 @@ Create bundle identifier on Apple Developer Portal
 
 Create app on App Store Connect and Developer Portal
 
+### ios test_auth
+
+```sh
+[bundle exec] fastlane ios test_auth
+```
+
+Test App Store Connect API authentication
+
 ### ios sync_certificates
 
 ```sh
@@ -118,14 +126,6 @@ Generate screenshots and update metadata
 ```
 
 Setup: Create app and sync certificates (run once)
-
-### ios test_upload
-
-```sh
-[bundle exec] fastlane ios test_upload
-```
-
-DEBUG: Test upload with explicit credentials
 
 ----
 

@@ -154,3 +154,65 @@ Uses Riverpod for state management with providers for:
 - Implement accessibility-first design with proper semantic labels and contrast
 - Generated files are excluded from version control and static analysis
 - Vocabulary data stored as JSON assets for offline access
+
+## iOS Deployment & TestFlight Setup
+
+### Environment Configuration
+
+**IMPORTANT: Never use .env files for deployment secrets. Always use ~/.zshrc environment variables for local development.**
+
+#### Required Environment Variables (.zshrc)
+Add these to your `~/.zshrc` for local development:
+
+```bash
+# App Store Connect API (option 1: JSON file - RECOMMENDED)
+export FASTLANE_API_KEY_PATH="$HOME/.appstoreconnect/private/AuthKey_[YOUR_KEY_ID].json"
+
+# App Store Connect API (option 2: individual values - for CI/legacy)
+export APP_STORE_CONNECT_API_KEY_ID="[YOUR_KEY_ID]"
+export APP_STORE_CONNECT_ISSUER_ID="[YOUR_ISSUER_ID]"
+export APP_STORE_CONNECT_API_KEY_PATH="$HOME/.appstoreconnect/private/AuthKey_[YOUR_KEY_ID].p8"
+
+# Match & Fastlane
+export FASTLANE_TEAM_ID="[YOUR_TEAM_ID]"
+export MATCH_PASSWORD="[YOUR_MATCH_PASSWORD]"
+export MATCH_GIT_URL="https://github.com/BLANXLAIT/blanxlait-ci-shared"
+export MATCH_CERTS_PAT="[YOUR_GITHUB_PAT]"
+```
+
+#### API Key JSON Format (Preferred)
+Create `~/.appstoreconnect/private/AuthKey_[KEY_ID].json`:
+```json
+{
+  "key_id": "[YOUR_KEY_ID]",
+  "issuer_id": "[YOUR_ISSUER_ID]",
+  "key": "-----BEGIN PRIVATE KEY-----\n[YOUR_PRIVATE_KEY_CONTENT]\n-----END PRIVATE KEY-----",
+  "duration": 1200,
+  "in_house": false
+}
+```
+
+#### GitHub Secrets Setup (Organization Level)
+Run once to set org-wide secrets for all iOS apps:
+```bash
+./ios/fastlane/setup-github-secrets.sh org
+```
+
+### iOS Deployment Commands
+```bash
+# Verify environment setup (run this first)
+./ios/fastlane/verify-setup.rb
+
+# Deploy to TestFlight
+cd ios && fastlane beta
+
+# Deploy to App Store (production)
+cd ios && fastlane release
+
+# Sync certificates
+cd ios && fastlane sync_certificates
+
+# Test GitHub Actions deployment
+gh workflow run ios-deploy.yml --ref main
+gh run watch  # Monitor the workflow
+```
