@@ -191,17 +191,28 @@ jobs:
         chmod +x ./scripts/test.sh
         ./scripts/test.sh all
 
-    # Configure App Store Connect API
+    # Configure App Store Connect API using validated values from preflight
     - name: 🔐 Configure App Store Connect API
       env:
-        APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-        APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-        APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
-        FASTLANE_TEAM_ID: ${{ secrets.FASTLANE_TEAM_ID }}
-        MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-        MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
-        MATCH_CERTS_PAT: ${{ secrets.MATCH_CERTS_PAT }}
+        # Use validated values from preflight check when available, fallback to secrets
+        APP_STORE_CONNECT_API_KEY_ID: ${{ inputs.skip_preflight && secrets.APP_STORE_CONNECT_API_KEY_ID || needs.preflight.outputs.app_store_api_key_id }}
+        APP_STORE_CONNECT_ISSUER_ID: ${{ inputs.skip_preflight && secrets.APP_STORE_CONNECT_ISSUER_ID || needs.preflight.outputs.app_store_issuer_id }}
+        APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}  # Always from secrets (sensitive)
+        FASTLANE_TEAM_ID: ${{ inputs.skip_preflight && secrets.FASTLANE_TEAM_ID || needs.preflight.outputs.fastlane_team_id }}
+        MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}  # Always from secrets (sensitive)
+        MATCH_GIT_URL: ${{ inputs.skip_preflight && secrets.MATCH_GIT_URL || needs.preflight.outputs.match_git_url }}
+        MATCH_CERTS_PAT: ${{ secrets.MATCH_CERTS_PAT }}  # Always from secrets (sensitive)
       run: |
+        echo "🔐 Using validated configuration from preflight check..."
+        if [ "${{ inputs.skip_preflight }}" = "true" ]; then
+          echo "⚠️ Using secrets directly (preflight was skipped)"
+        else
+          echo "✅ Using preflight-validated configuration values"
+          echo "   API Key ID: ${APP_STORE_CONNECT_API_KEY_ID:0:8}..."
+          echo "   Issuer ID: ${APP_STORE_CONNECT_ISSUER_ID:0:8}..."
+          echo "   Team ID: $FASTLANE_TEAM_ID"
+        fi
+        
         # Export all environment variables for fastlane
         echo "APP_STORE_CONNECT_API_KEY_ID=$APP_STORE_CONNECT_API_KEY_ID" >> $GITHUB_ENV
         echo "APP_STORE_CONNECT_ISSUER_ID=$APP_STORE_CONNECT_ISSUER_ID" >> $GITHUB_ENV

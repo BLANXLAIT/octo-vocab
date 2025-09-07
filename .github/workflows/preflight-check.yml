@@ -33,6 +33,13 @@ jobs:
     name: 🚀 Preflight Check
     outputs:
       ready: ${{ steps.final_check.outputs.ready }}
+      # Export validated environment variables for use by dependent workflows
+      app_store_api_key_id: ${{ steps.export_validated.outputs.app_store_api_key_id }}
+      app_store_issuer_id: ${{ steps.export_validated.outputs.app_store_issuer_id }}
+      fastlane_team_id: ${{ steps.export_validated.outputs.fastlane_team_id }}
+      match_git_url: ${{ steps.export_validated.outputs.match_git_url }}
+      # Note: Sensitive values like API key content and passwords are not exported
+      # They must still be accessed from secrets, but we validate they work first
     
     steps:
     - name: 📱 Checkout repository
@@ -234,7 +241,22 @@ jobs:
         fi
         echo "" >> $GITHUB_STEP_SUMMARY
 
-    # STEP 6: Final Assessment
+    # STEP 6: Export Validated Environment Variables
+    - name: 📤 Export Validated Environment Variables
+      id: export_validated
+      if: steps.validate_secrets.outputs.secrets_valid == 'true'
+      run: |
+        echo "Exporting validated environment variables for dependent workflows..."
+        
+        # Export non-sensitive validated values (sensitive values still come from secrets)
+        echo "app_store_api_key_id=${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" >> $GITHUB_OUTPUT
+        echo "app_store_issuer_id=${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" >> $GITHUB_OUTPUT
+        echo "fastlane_team_id=${{ secrets.FASTLANE_TEAM_ID }}" >> $GITHUB_OUTPUT
+        echo "match_git_url=${{ secrets.MATCH_GIT_URL }}" >> $GITHUB_OUTPUT
+        
+        echo "✅ Validated environment variables exported for deployment workflow"
+
+    # STEP 7: Final Assessment
     - name: ✅ Final Deployment Readiness Assessment
       id: final_check
       if: always()
