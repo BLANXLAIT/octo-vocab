@@ -32,33 +32,51 @@ env:
   FLUTTER_CHANNEL: 'stable'
 
 jobs:
-  # Run preflight check first
-  preflight:
-    if: ${{ !inputs.skip_preflight }}
-    uses: ./.github/workflows/preflight-check.yml
-    secrets: inherit
-    
-  # Only proceed with deployment if preflight passes
   ios_deploy:
-    needs: [preflight]
-    if: ${{ always() && (inputs.skip_preflight || needs.preflight.outputs.ready_for_deployment == 'true') }}
     runs-on: macos-15
     timeout-minutes: 45
     
     steps:
-    # Show preflight results
-    - name: 📋 Preflight Check Results
+    # PREFLIGHT: Validate secrets and API authentication before proceeding
+    - name: 🚀 Preflight - Validate Secrets and API Authentication
       if: ${{ !inputs.skip_preflight }}
+      env:
+        APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+        APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+        FASTLANE_TEAM_ID: ${{ secrets.FASTLANE_TEAM_ID }}
+        MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+        MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+        MATCH_CERTS_PAT: ${{ secrets.MATCH_CERTS_PAT }}
       run: |
-        echo "## 🚀 Preflight Check Results" >> $GITHUB_STEP_SUMMARY
+        echo "## 🚀 Preflight Authentication Check" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        if [ "${{ needs.preflight.outputs.ready_for_deployment }}" = "true" ]; then
-          echo "✅ **Preflight check passed** - proceeding with deployment" >> $GITHUB_STEP_SUMMARY
+        
+        PREFLIGHT_PASSED=true
+        
+        # Validate required secrets are present
+        echo "### 🔍 Secret Validation:" >> $GITHUB_STEP_SUMMARY
+        for secret in "APP_STORE_CONNECT_API_KEY_ID" "APP_STORE_CONNECT_ISSUER_ID" "APP_STORE_CONNECT_API_KEY_CONTENT" "FASTLANE_TEAM_ID" "MATCH_PASSWORD" "MATCH_GIT_URL" "MATCH_CERTS_PAT"; do
+          secret_var="${secret}"
+          if [ -z "$(eval echo \$$secret_var)" ]; then
+            echo "❌ $secret is missing" >> $GITHUB_STEP_SUMMARY
+            echo "❌ $secret is missing"
+            PREFLIGHT_PASSED=false
+          else
+            echo "✅ $secret is configured" >> $GITHUB_STEP_SUMMARY
+            echo "✅ $secret is configured"
+          fi
+        done
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ "$PREFLIGHT_PASSED" = "true" ]; then
+          echo "✅ **All secrets validated** - proceeding with deployment" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Preflight check passed - deployment will proceed"
         else
-          echo "❌ **Preflight check failed** - deployment should not proceed" >> $GITHUB_STEP_SUMMARY
-          echo "⚠️ **This deployment was force-started despite preflight failure**" >> $GITHUB_STEP_SUMMARY
+          echo "❌ **Secret validation failed** - cannot proceed with deployment" >> $GITHUB_STEP_SUMMARY
+          echo "❌ PREFLIGHT FAILED: Missing required secrets"
+          exit 1
         fi
-        echo "" >> $GITHUB_STEP_SUMMARY
     # Checkout code
     - name: 📱 Checkout repository
       uses: actions/checkout@v4
@@ -191,26 +209,28 @@ jobs:
         chmod +x ./scripts/test.sh
         ./scripts/test.sh all
 
-    # Configure App Store Connect API using validated values from preflight
+    # Configure App Store Connect API (post-preflight validation)
     - name: 🔐 Configure App Store Connect API
       env:
-        # Use validated values from preflight check when available, fallback to secrets
-        APP_STORE_CONNECT_API_KEY_ID: ${{ inputs.skip_preflight && secrets.APP_STORE_CONNECT_API_KEY_ID || needs.preflight.outputs.app_store_api_key_id }}
-        APP_STORE_CONNECT_ISSUER_ID: ${{ inputs.skip_preflight && secrets.APP_STORE_CONNECT_ISSUER_ID || needs.preflight.outputs.app_store_issuer_id }}
-        APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}  # Always from secrets (sensitive)
-        FASTLANE_TEAM_ID: ${{ inputs.skip_preflight && secrets.FASTLANE_TEAM_ID || needs.preflight.outputs.fastlane_team_id }}
-        MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}  # Always from secrets (sensitive)
-        MATCH_GIT_URL: ${{ inputs.skip_preflight && secrets.MATCH_GIT_URL || needs.preflight.outputs.match_git_url }}
-        MATCH_CERTS_PAT: ${{ secrets.MATCH_CERTS_PAT }}  # Always from secrets (sensitive)
+        APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+        APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+        FASTLANE_TEAM_ID: ${{ secrets.FASTLANE_TEAM_ID }}
+        MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+        MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+        MATCH_CERTS_PAT: ${{ secrets.MATCH_CERTS_PAT }}
       run: |
-        echo "🔐 Using validated configuration from preflight check..."
-        if [ "${{ inputs.skip_preflight }}" = "true" ]; then
-          echo "⚠️ Using secrets directly (preflight was skipped)"
+        echo "🔐 Configuring validated App Store Connect API..."
+        echo "   API Key ID: ${APP_STORE_CONNECT_API_KEY_ID}"
+        echo "   Issuer ID: ${APP_STORE_CONNECT_ISSUER_ID}"  
+        echo "   Team ID: ${FASTLANE_TEAM_ID}"
+        echo "   API Key Content Length: ${#APP_STORE_CONNECT_API_KEY_CONTENT} characters"
+        
+        # Validate API key content format
+        if [[ "$APP_STORE_CONNECT_API_KEY_CONTENT" == *"BEGIN PRIVATE KEY"* ]]; then
+          echo "✅ API key content has valid P8 format"
         else
-          echo "✅ Using preflight-validated configuration values"
-          echo "   API Key ID: ${APP_STORE_CONNECT_API_KEY_ID:0:8}..."
-          echo "   Issuer ID: ${APP_STORE_CONNECT_ISSUER_ID:0:8}..."
-          echo "   Team ID: $FASTLANE_TEAM_ID"
+          echo "❌ WARNING: API key content doesn't appear to be valid P8 format"
         fi
         
         # Export all environment variables for fastlane
