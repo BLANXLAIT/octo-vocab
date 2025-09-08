@@ -8,6 +8,8 @@
 # Uncomment the line if you want fastlane to automatically update itself
 # update_fastlane
 
+require 'json'
+
 # =============================================================================
 # ENVIRONMENT CONFIGURATION
 # =============================================================================
@@ -15,34 +17,40 @@
 # Using system environment variables (from .zshrc)
 UI.message "📋 Using system environment variables from shell configuration"
 
-# Environment configuration helper
+# Environment configuration helper - Official Fastlane method
 def get_app_store_api_key
-  # Priority order: key_content (CI) > individual key_filepath (local) > JSON file
-  if ENV["APP_STORE_CONNECT_API_KEY_CONTENT"] && !ENV["APP_STORE_CONNECT_API_KEY_CONTENT"].empty?
-    UI.message "🔑 Using App Store Connect API Key from content (CI)"
-    app_store_connect_api_key(
+  # Priority 1: JSON file (local development - official recommended method)
+  json_key_path = "AuthKey_NYY9BJ3V2H.json"
+  
+  if File.exist?(json_key_path)
+    UI.message "🔑 Using App Store Connect API Key from JSON file (recommended)"
+    begin
+      json_content = JSON.parse(File.read(json_key_path))
+      return app_store_connect_api_key(
+        key_id: json_content["key_id"],
+        issuer_id: json_content["issuer_id"],
+        key_content: json_content["key"],
+        duration: json_content["duration"] || 1200,
+        in_house: json_content["in_house"] || false
+      )
+    rescue => e
+      UI.error "❌ Failed to parse JSON file: #{e.message}"
+    end
+  end
+  
+  # Priority 2: Environment variables (CI/CD - official supported method)
+  if ENV["APP_STORE_CONNECT_API_KEY_CONTENT"] && ENV["APP_STORE_CONNECT_API_KEY_ID"] && ENV["APP_STORE_CONNECT_ISSUER_ID"]
+    UI.message "🔑 Using App Store Connect API Key from environment variables (CI/CD)"
+    return app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
       key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
-      duration: 1200, # 20 minutes
+      duration: 1200,
       in_house: false
     )
-  elsif ENV["APP_STORE_CONNECT_API_KEY_PATH"] && File.exist?(ENV["APP_STORE_CONNECT_API_KEY_PATH"])
-    UI.message "🔑 Using App Store Connect API Key from .p8 file: #{ENV['APP_STORE_CONNECT_API_KEY_PATH']}"
-    app_store_connect_api_key(
-      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
-      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_filepath: ENV["APP_STORE_CONNECT_API_KEY_PATH"],
-      duration: 1200, # 20 minutes
-      in_house: false
-    )
-  elsif ENV["FASTLANE_API_KEY_PATH"] && File.exist?(ENV["FASTLANE_API_KEY_PATH"])
-    UI.message "🔑 Using App Store Connect API Key from JSON file: #{ENV['FASTLANE_API_KEY_PATH']}"
-    # Use the api_key_path parameter for actions directly
-    return { api_key_path: ENV["FASTLANE_API_KEY_PATH"] }
-  else
-    UI.user_error!("❌ No valid App Store Connect API Key found. Set APP_STORE_CONNECT_API_KEY_CONTENT (CI) or APP_STORE_CONNECT_API_KEY_PATH + APP_STORE_CONNECT_API_KEY_ID + APP_STORE_CONNECT_ISSUER_ID (local).")
   end
+  
+  UI.user_error!("❌ No valid App Store Connect API Key found.\n\nLocal: Place AuthKey_NYY9BJ3V2H.json in fastlane/ directory\nCI/CD: Set APP_STORE_CONNECT_API_KEY_CONTENT, APP_STORE_CONNECT_API_KEY_ID, APP_STORE_CONNECT_ISSUER_ID")
 end
 
 # Validate required environment variables
@@ -55,29 +63,9 @@ def validate_environment!
     UI.user_error!("❌ Missing required environment variables: #{missing_vars.join(', ')}")
   end
   
-  # Validate API key availability (priority order: JSON file > content > individual p8)
-  has_json_key = ENV["FASTLANE_API_KEY_PATH"] && File.exist?(ENV["FASTLANE_API_KEY_PATH"])
-  has_key_content = ENV["APP_STORE_CONNECT_API_KEY_CONTENT"] && !ENV["APP_STORE_CONNECT_API_KEY_CONTENT"].empty?
-  has_individual_keys = ENV["APP_STORE_CONNECT_API_KEY_ID"] && ENV["APP_STORE_CONNECT_ISSUER_ID"] && 
-                        ENV["APP_STORE_CONNECT_API_KEY_PATH"] && File.exist?(ENV["APP_STORE_CONNECT_API_KEY_PATH"])
-  
-  unless has_json_key || has_key_content || has_individual_keys
-    UI.user_error!(
-      "❌ No valid App Store Connect API Key configuration found.\n\n" +
-      "Options:\n" +
-      "1. JSON file (preferred): Set FASTLANE_API_KEY_PATH\n" +
-      "2. CI content: Set APP_STORE_CONNECT_API_KEY_CONTENT + APP_STORE_CONNECT_API_KEY_ID + APP_STORE_CONNECT_ISSUER_ID\n" +
-      "3. Individual .p8: Set APP_STORE_CONNECT_API_KEY_PATH + APP_STORE_CONNECT_API_KEY_ID + APP_STORE_CONNECT_ISSUER_ID"
-    )
-  end
-  
-  if has_json_key
-    UI.success "✅ Using JSON API key file (preferred method)"
-  elsif has_key_content
-    UI.success "✅ Using API key content (CI method)"
-  else
-    UI.success "✅ Using individual API key parameters"
-  end
+  # API key validation is handled by get_app_store_api_key method
+  # Local: JSON file, CI/CD: environment variables
+  UI.success "✅ Using official Fastlane API key methods"
 end
 
 # =============================================================================
@@ -169,10 +157,19 @@ platform :ios do
       
       # Test with a simple pilot action that we know works
       # Use the latest_testflight_build_number which makes a simple API call
-      build_number = latest_testflight_build_number(
-        api_key.is_a?(Hash) && api_key[:api_key_path] ? { api_key_path: api_key[:api_key_path] } : { api_key: api_key },
-        app_identifier: ENV["APP_IDENTIFIER"] || "com.blanxlait.octo-vocab"
-      )
+      if api_key.is_a?(Hash) && api_key[:api_key_path]
+        # JSON file method
+        build_number = latest_testflight_build_number(
+          api_key_path: api_key[:api_key_path],
+          app_identifier: ENV["APP_IDENTIFIER"] || "com.blanxlait.octo-vocab"
+        )
+      else
+        # Environment variable method
+        build_number = latest_testflight_build_number(
+          api_key: api_key,
+          app_identifier: ENV["APP_IDENTIFIER"] || "com.blanxlait.octo-vocab"
+        )
+      end
       
       UI.success "✅ API Authentication successful!"
       UI.message "   Latest TestFlight build number: #{build_number}"
@@ -212,7 +209,7 @@ platform :ios do
       force_for_new_devices: true
     }
     
-    # Add API key based on format (same pattern as upload_to_testflight)
+    # Add API key based on format
     if api_key.is_a?(Hash) && api_key[:api_key_path]
       match_params[:api_key_path] = api_key[:api_key_path]
     else
