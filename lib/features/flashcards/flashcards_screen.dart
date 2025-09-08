@@ -4,54 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:flutter_saas_template/core/language/language.dart';
-import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
-import 'package:flutter_saas_template/core/models/word.dart';
-import 'package:flutter_saas_template/core/providers/study_config_providers.dart';
+import 'package:flutter_saas_template/core/language/language_plugin.dart';
+import 'package:flutter_saas_template/core/language/language_registry.dart';
+import 'package:flutter_saas_template/core/language/models/vocabulary_item.dart';
+import 'package:flutter_saas_template/core/language/widgets/language_selector.dart';
 import 'package:flutter_saas_template/core/services/local_data_service.dart';
-
-/// Loads vocabulary based on current study configuration
-final vocabSetProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
-  final currentConfig = ref.watch(currentLanguageConfigProvider);
-
-  // If no configuration is available, return empty list
-  if (currentConfig == null || !currentConfig.isEnabled) {
-    return <Word>[];
-  }
-
-  final lang = currentConfig.language;
-  final level = currentConfig.level;
-
-  // Load ALL vocabulary sets for the selected level
-  final allWords = <Word>[];
-  final vocabularySets = VocabularySets.getSetsForLevel(level);
-
-  if (vocabularySets.isEmpty) {
-    // Fallback to legacy format if no leveled sets available
-    try {
-      final path = vocabAssetPath(lang, 'grade8_set1.json');
-      final jsonStr = await rootBundle.loadString(path);
-      allWords.addAll(Word.listFromJsonString(jsonStr));
-    } catch (e) {
-      // If grade8_set1 doesn't exist, return empty list
-      return <Word>[];
-    }
-  } else {
-    // Load all vocabulary sets for this level
-    for (final vocabSet in vocabularySets) {
-      try {
-        final path = vocabularySetAssetPath(lang, vocabSet);
-        final jsonStr = await rootBundle.loadString(path);
-        allWords.addAll(Word.listFromJsonString(jsonStr));
-      } catch (e) {
-        // Skip sets that don't exist for this language
-        continue;
-      }
-    }
-  }
-
-  return allWords;
-});
 
 /// Card controller for programmatic control
 final cardControllerProvider = Provider.autoDispose<CardSwiperController>(
@@ -69,16 +26,19 @@ class FlashcardsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cardsAsync = ref.watch(vocabSetProvider);
+    final vocabularyAsync = ref.watch(vocabularyProvider);
     final currentIndex = ref.watch(currentCardIndexProvider);
     final controller = ref.watch(cardControllerProvider);
 
-    return cardsAsync.when(
+    return vocabularyAsync.when(
       loading: () => Scaffold(
         appBar: AppBar(
           title: const Text('Learn'),
           automaticallyImplyLeading: false,
-          actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
+          actions: const [
+            LanguageSelectorAction(),
+            SizedBox(width: 8),
+          ],
         ),
         body: const Center(child: CircularProgressIndicator()),
       ),
@@ -86,17 +46,23 @@ class FlashcardsScreen extends ConsumerWidget {
         appBar: AppBar(
           title: const Text('Learn'),
           automaticallyImplyLeading: false,
-          actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
+          actions: const [
+            LanguageSelectorAction(),
+            SizedBox(width: 8),
+          ],
         ),
-        body: Center(child: Text('Failed to load vocab: $e')),
+        body: Center(child: Text('Failed to load vocabulary: $e')),
       ),
-      data: (words) {
-        if (words.isEmpty) {
+      data: (vocabulary) {
+        if (vocabulary.isEmpty) {
           return Scaffold(
             appBar: AppBar(
               title: const Text('Learn'),
               automaticallyImplyLeading: false,
-              actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
+              actions: const [
+                LanguageSelectorAction(),
+                SizedBox(width: 8),
+              ],
             ),
             body: const Center(child: Text('No vocabulary found')),
           );
@@ -107,12 +73,12 @@ class FlashcardsScreen extends ConsumerWidget {
             title: const Text('Learn'),
             automaticallyImplyLeading: false,
             actions: [
-              const LanguageSwitcherAction(),
+              const LanguageSelectorAction(),
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Center(
-                  child: Text('${currentIndex + 1}/${words.length}'),
+                  child: Text('${currentIndex + 1}/${vocabulary.length}'),
                 ),
               ),
             ],
@@ -121,45 +87,38 @@ class FlashcardsScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             child: CardSwiper(
               controller: controller,
-              cardsCount: words.length,
+              cardsCount: vocabulary.length,
               numberOfCardsDisplayed: 1,
               onSwipe: (previousIndex, currentIndex, direction) {
                 // Handle swipe logic
                 HapticFeedback.lightImpact();
 
                 // Get the word that was just swiped
-                final swipedWord = words[previousIndex];
+                final swipedItem = vocabulary[previousIndex];
 
-                // Track word difficulty based on swipe direction (async but don't block UI)
-                _trackWordDifficulty(context, ref, swipedWord, direction);
+                // Track word difficulty based on swipe direction
+                _trackWordDifficulty(context, ref, swipedItem, direction);
 
                 // Reset flip state for next card
                 ref.read(isCardFlippedProvider.notifier).state = false;
 
                 // Update current index
                 if (currentIndex != null) {
-                  ref.read(currentCardIndexProvider.notifier).state =
-                      currentIndex;
+                  ref.read(currentCardIndexProvider.notifier).state = currentIndex;
                 }
 
                 return true;
               },
-              cardBuilder:
-                  (
-                    context,
-                    index,
-                    horizontalThresholdPercentage,
-                    verticalThresholdPercentage,
-                  ) {
-                    final word = words[index];
-                    return FlashcardWidget(
-                      word: word,
-                      onTap: () {
-                        ref.read(isCardFlippedProvider.notifier).state = !ref
-                            .read(isCardFlippedProvider);
-                      },
-                    );
+              cardBuilder: (context, index, horizontalThresholdPercentage, verticalThresholdPercentage) {
+                final item = vocabulary[index];
+                return FlashcardWidget(
+                  vocabularyItem: item,
+                  onTap: () {
+                    ref.read(isCardFlippedProvider.notifier).state = 
+                        !ref.read(isCardFlippedProvider);
                   },
+                );
+              },
             ),
           ),
         );
@@ -167,11 +126,7 @@ class FlashcardsScreen extends ConsumerWidget {
     );
   }
 
-  void _showFeedbackSnackBar(
-    BuildContext context,
-    String message,
-    Color color,
-  ) {
+  void _showFeedbackSnackBar(BuildContext context, String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -186,25 +141,28 @@ class FlashcardsScreen extends ConsumerWidget {
   Future<void> _trackWordDifficulty(
     BuildContext context,
     WidgetRef ref,
-    Word word,
+    VocabularyItem item,
     CardSwiperDirection direction,
   ) async {
     try {
       final dataService = await ref.read(localDataServiceProvider.future);
-      final currentConfig = ref.read(currentLanguageConfigProvider);
+      final currentPlugin = ref.read(currentLanguagePluginProvider);
 
-      if (!context.mounted || currentConfig == null) return;
+      if (!context.mounted || currentPlugin == null) return;
 
-      final languageName = currentConfig.language.name;
-
+      final progressKey = currentPlugin.getProgressKey(item.id);
+      final wordProgressMap = dataService.getWordProgress();
+      
       if (direction == CardSwiperDirection.right) {
-        // Known - mark as known for current language
-        await dataService.markWordAsKnownForLanguage(word.id, languageName);
+        // Known - mark as known
+        wordProgressMap[progressKey] = 'known';
+        await dataService.setWordProgress(wordProgressMap);
         if (!context.mounted) return;
         _showFeedbackSnackBar(context, 'Known! ✅', Colors.green);
       } else if (direction == CardSwiperDirection.left) {
-        // Unknown - mark as difficult for current language
-        await dataService.markWordAsDifficultForLanguage(word.id, languageName);
+        // Unknown - mark as difficult
+        wordProgressMap[progressKey] = 'difficult';
+        await dataService.setWordProgress(wordProgressMap);
         if (!context.mounted) return;
         _showFeedbackSnackBar(context, 'Will review later! 📚', Colors.orange);
       }
@@ -221,18 +179,27 @@ class FlashcardsScreen extends ConsumerWidget {
   }
 }
 
-/// A simplified flashcard widget for use with CardSwiper
+/// A flashcard widget that works with the new modular VocabularyItem
 class FlashcardWidget extends ConsumerWidget {
-  const FlashcardWidget({required this.word, required this.onTap, super.key});
+  const FlashcardWidget({
+    required this.vocabularyItem,
+    required this.onTap,
+    super.key,
+  });
 
-  final Word word;
+  final VocabularyItem vocabularyItem;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isFlipped = ref.watch(isCardFlippedProvider);
+    final currentPlugin = ref.watch(currentLanguagePluginProvider);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    if (currentPlugin == null) {
+      return const Center(child: Text('No language plugin available'));
+    }
 
     return GestureDetector(
       onTap: () {
@@ -242,10 +209,7 @@ class FlashcardWidget extends ConsumerWidget {
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 600),
         transitionBuilder: (child, animation) {
-          final rotateAnimation = Tween<double>(
-            begin: 0,
-            end: 1,
-          ).animate(animation);
+          final rotateAnimation = Tween<double>(begin: 0, end: 1).animate(animation);
 
           return AnimatedBuilder(
             animation: rotateAnimation,
@@ -275,9 +239,7 @@ class FlashcardWidget extends ConsumerWidget {
         child: Card(
           key: ValueKey(isFlipped ? 'back' : 'front'),
           elevation: 8,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
@@ -297,9 +259,9 @@ class FlashcardWidget extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (!isFlipped)
-                    ..._buildFrontContent(theme)
+                    ..._buildFrontContent(theme, currentPlugin)
                   else
-                    ..._buildBackContent(theme),
+                    ..._buildBackContent(theme, currentPlugin),
                 ],
               ),
             ),
@@ -309,16 +271,35 @@ class FlashcardWidget extends ConsumerWidget {
     );
   }
 
-  List<Widget> _buildFrontContent(ThemeData theme) {
+  List<Widget> _buildFrontContent(ThemeData theme, LanguagePlugin? plugin) {
+    if (plugin == null) {
+      return [
+        Icon(
+          Icons.language,
+          size: 48,
+          color: theme.colorScheme.outline.withValues(alpha: 0.7),
+        ),
+        const SizedBox(height: 24),
+        Text(
+          vocabularyItem.term,
+          style: theme.textTheme.displayMedium?.copyWith(
+            color: theme.colorScheme.onSurface,
+            fontWeight: FontWeight.w500,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ];
+    }
+    
     return [
       Icon(
-        Icons.translate,
+        plugin.language.icon,
         size: 48,
-        color: theme.colorScheme.primary.withValues(alpha: 0.7),
+        color: plugin.language.color.withValues(alpha: 0.7),
       ),
       const SizedBox(height: 24),
       Text(
-        word.latin,
+        plugin.formatTerm(vocabularyItem),
         style: theme.textTheme.displayMedium?.copyWith(
           color: theme.colorScheme.onSurface,
           fontWeight: FontWeight.w500,
@@ -341,47 +322,11 @@ class FlashcardWidget extends ConsumerWidget {
         ),
       ),
       const Spacer(),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Column(
-            children: [
-              Icon(
-                Icons.swipe_left,
-                color: Colors.red.withValues(alpha: 0.6),
-                size: 32,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Unknown',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.red.withValues(alpha: 0.6),
-                ),
-              ),
-            ],
-          ),
-          Column(
-            children: [
-              Icon(
-                Icons.swipe_right,
-                color: Colors.green.withValues(alpha: 0.6),
-                size: 32,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Known',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.green.withValues(alpha: 0.6),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+      _buildSwipeInstructions(theme),
     ];
   }
 
-  List<Widget> _buildBackContent(ThemeData theme) {
+  List<Widget> _buildBackContent(ThemeData theme, LanguagePlugin? plugin) {
     return [
       Icon(
         Icons.lightbulb,
@@ -390,14 +335,14 @@ class FlashcardWidget extends ConsumerWidget {
       ),
       const SizedBox(height: 24),
       Text(
-        word.english,
+        plugin?.formatTranslation(vocabularyItem) ?? vocabularyItem.translation,
         style: theme.textTheme.displayMedium?.copyWith(
           color: theme.colorScheme.onSurface,
           fontWeight: FontWeight.w500,
         ),
         textAlign: TextAlign.center,
       ),
-      if (word.exampleLatin != null || word.exampleEnglish != null) ...[
+      if (vocabularyItem.exampleTerm != null || vocabularyItem.exampleTranslation != null) ...[
         const SizedBox(height: 24),
         Container(
           padding: const EdgeInsets.all(16),
@@ -405,71 +350,61 @@ class FlashcardWidget extends ConsumerWidget {
             color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Column(
-            children: [
-              if (word.exampleLatin != null)
-                Text(
-                  '"${word.exampleLatin}"',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.colorScheme.onSecondaryContainer,
-                    fontStyle: FontStyle.italic,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              if (word.exampleLatin != null && word.exampleEnglish != null)
-                const SizedBox(height: 8),
-              if (word.exampleEnglish != null)
-                Text(
-                  '— ${word.exampleEnglish}',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSecondaryContainer.withValues(
-                      alpha: 0.8,
-                    ),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-            ],
+          child: Text(
+            plugin?.formatExample(vocabularyItem) ?? 
+              (vocabularyItem.exampleTerm != null && vocabularyItem.exampleTranslation != null
+                ? '${vocabularyItem.exampleTerm} — ${vocabularyItem.exampleTranslation}'
+                : ''),
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.onSecondaryContainer,
+              fontStyle: FontStyle.italic,
+            ),
+            textAlign: TextAlign.center,
           ),
         ),
       ],
       const Spacer(),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Column(
-            children: [
-              Icon(
-                Icons.swipe_left,
-                color: Colors.red.withValues(alpha: 0.6),
-                size: 32,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Unknown',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.red.withValues(alpha: 0.6),
-                ),
-              ),
-            ],
-          ),
-          Column(
-            children: [
-              Icon(
-                Icons.swipe_right,
-                color: Colors.green.withValues(alpha: 0.6),
-                size: 32,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Known',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.green.withValues(alpha: 0.6),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+      _buildSwipeInstructions(theme),
     ];
+  }
+
+  Widget _buildSwipeInstructions(ThemeData theme) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Column(
+          children: [
+            Icon(
+              Icons.swipe_left,
+              color: Colors.red.withValues(alpha: 0.6),
+              size: 32,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Unknown',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.red.withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ),
+        Column(
+          children: [
+            Icon(
+              Icons.swipe_right,
+              color: Colors.green.withValues(alpha: 0.6),
+              size: 32,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Known',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.green.withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }

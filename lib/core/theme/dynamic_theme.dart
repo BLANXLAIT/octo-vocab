@@ -2,8 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_saas_template/core/language/language.dart';
-import 'package:flutter_saas_template/core/models/language_definition.dart';
 
 /// Theme variants for different moods and contexts
 enum ThemeVariant {
@@ -21,22 +19,6 @@ enum ThemeVariant {
 
 /// Dynamic color schemes that adapt to different contexts
 class DynamicColorSchemes {
-  /// Language-specific color palettes
-  static Color getSeedColorForLanguage(AppLanguage language) {
-    // Use the language definition system for colors
-    final definition = LanguageRegistry.getLanguage(language.name);
-    if (definition != null) {
-      return definition.primaryColor;
-    }
-
-    // Fallback for backward compatibility
-    switch (language) {
-      case AppLanguage.latin:
-        return const Color(0xFF6B73FF); // Vibrant purple-blue for classical
-      case AppLanguage.spanish:
-        return const Color(0xFFFF6B6B); // Warm coral-red for passion
-    }
-  }
 
   /// Generate a vibrant color scheme with high fidelity to seed color
   static ColorScheme createVibrantScheme({
@@ -83,12 +65,9 @@ final themeVariantProvider = StateProvider<ThemeVariant>(
 /// Dynamic theme data provider that adapts to language and variant
 final dynamicThemeProvider = Provider<ThemeData>((ref) {
   final variant = ref.watch(themeVariantProvider);
-  final language = ref.watch(appLanguageProvider);
 
-  // Use language-specific color if variant is vibrant, otherwise use variant color
-  final seedColor = variant == ThemeVariant.vibrant
-      ? DynamicColorSchemes.getSeedColorForLanguage(language)
-      : variant.seedColor;
+  // Always use variant color for now (language-specific colors can be added later)
+  final seedColor = variant.seedColor;
 
   final colorScheme = DynamicColorSchemes.createVibrantScheme(
     seedColor: seedColor,

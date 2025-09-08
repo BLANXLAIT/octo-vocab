@@ -5,84 +5,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:flutter_saas_template/core/animations/celebration_overlay.dart';
-import 'package:flutter_saas_template/core/language/language.dart';
-import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
-import 'package:flutter_saas_template/core/models/word.dart';
-import 'package:flutter_saas_template/core/providers/study_config_providers.dart';
+import 'package:flutter_saas_template/core/language/language_registry.dart';
+import 'package:flutter_saas_template/core/language/models/vocabulary_item.dart';
+import 'package:flutter_saas_template/core/language/widgets/language_selector.dart';
 import 'package:flutter_saas_template/core/services/local_data_service.dart';
 import 'package:flutter_saas_template/features/quiz/animated_quiz_option.dart';
 
-final quizVocabProvider = FutureProvider.autoDispose<List<Word>>((ref) async {
-  final currentConfig = ref.watch(currentLanguageConfigProvider);
-
-  // If no configuration is available, return empty list
-  if (currentConfig == null || !currentConfig.isEnabled) {
-    return <Word>[];
-  }
-
-  final lang = currentConfig.language;
-  final level = currentConfig.level;
-
-  // Load all vocabulary sets for the current language and level
-  final allWords = <Word>[];
-  final vocabularySets = VocabularySets.getSetsForLevel(level);
-
-  if (vocabularySets.isEmpty) {
-    // Fallback to grade8_set1 if no sets are defined for this level
-    try {
-      final path = vocabAssetPath(lang, 'grade8_set1.json');
-      final jsonStr = await rootBundle.loadString(path);
-      allWords.addAll(Word.listFromJsonString(jsonStr));
-    } catch (e) {
-      // If grade8_set1 doesn't exist, return empty list
-      return <Word>[];
-    }
-  } else {
-    // Load all vocabulary sets for this level
-    for (final vocabSet in vocabularySets) {
-      try {
-        final path = vocabularySetAssetPath(lang, vocabSet);
-        final jsonStr = await rootBundle.loadString(path);
-        allWords.addAll(Word.listFromJsonString(jsonStr));
-      } catch (e) {
-        // Skip sets that don't exist for this language
-        continue;
-      }
-    }
-  }
-
-  // Shuffle the words to provide variety in quiz order
-  final rng = Random();
-  allWords.shuffle(rng);
-
-  return allWords;
-});
-
-final quizIndexProvider = StateProvider.autoDispose<int>((ref) => 0);
-final selectedAnswerProvider = StateProvider.autoDispose<String?>(
-  (ref) => null,
-);
-final showResultProvider = StateProvider.autoDispose<bool>((ref) => false);
-final showCelebrationProvider = StateProvider.autoDispose<bool>((ref) => false);
+/// Quiz state management
+final currentQuestionIndexProvider = StateProvider.autoDispose<int>((ref) => 0);
+final selectedAnswerProvider = StateProvider.autoDispose<int?>((ref) => null);
+final isAnswerSubmittedProvider = StateProvider.autoDispose<bool>((ref) => false);
+final quizResultsProvider = StateProvider.autoDispose<List<bool>>((ref) => []);
 
 class QuizScreen extends ConsumerWidget {
   const QuizScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final wordsAsync = ref.watch(quizVocabProvider);
-    final index = ref.watch(quizIndexProvider);
-    final selected = ref.watch(selectedAnswerProvider);
-    final showResult = ref.watch(showResultProvider);
-    final showCelebration = ref.watch(showCelebrationProvider);
+    final vocabularyAsync = ref.watch(vocabularyProvider);
+    final currentQuestionIndex = ref.watch(currentQuestionIndexProvider);
+    final quizResults = ref.watch(quizResultsProvider);
 
-    return wordsAsync.when(
+    return vocabularyAsync.when(
       loading: () => Scaffold(
         appBar: AppBar(
           title: const Text('Quiz'),
           automaticallyImplyLeading: false,
-          actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
+          actions: const [
+            LanguageSelectorAction(),
+            SizedBox(width: 8),
+          ],
         ),
         body: const Center(child: CircularProgressIndicator()),
       ),
@@ -90,269 +42,147 @@ class QuizScreen extends ConsumerWidget {
         appBar: AppBar(
           title: const Text('Quiz'),
           automaticallyImplyLeading: false,
-          actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
+          actions: const [
+            LanguageSelectorAction(),
+            SizedBox(width: 8),
+          ],
         ),
-        body: Center(child: Text('Failed to load vocab: $e')),
+        body: Center(child: Text('Failed to load quiz: $e')),
       ),
-      data: (words) {
-        if (words.length < 4) {
+      data: (vocabulary) {
+        if (vocabulary.isEmpty) {
           return Scaffold(
             appBar: AppBar(
               title: const Text('Quiz'),
               automaticallyImplyLeading: false,
-              actions: const [LanguageSwitcherAction(), SizedBox(width: 8)],
+              actions: const [
+                LanguageSelectorAction(),
+                SizedBox(width: 8),
+              ],
             ),
-            body: const Center(
-              child: Text('Not enough words for a multiple-choice quiz.'),
-            ),
+            body: const Center(child: Text('No vocabulary found for quiz')),
           );
         }
 
-        final i = index % words.length;
-        final current = words[i];
+        // Show results if quiz is complete
+        if (currentQuestionIndex >= vocabulary.length) {
+          return _buildResultsScreen(context, ref, quizResults, vocabulary.length);
+        }
 
-        // Build 4 options: correct English + 3 distractors.
-        // Use stable seed based on word ID for consistent question options
-        final rng = Random(current.id.hashCode);
-        final pool = [...words]
-          ..removeAt(i)
-          ..shuffle(rng);
-        final distractors = pool.take(3).map((w) => w.english).toList();
-        final options = [...distractors, current.english]..shuffle(rng);
+        final currentItem = vocabulary[currentQuestionIndex];
+        final wrongAnswers = _generateWrongAnswers(vocabulary, currentItem);
+        final allAnswers = [currentItem.translation, ...wrongAnswers]..shuffle();
+        final correctAnswerIndex = allAnswers.indexOf(currentItem.translation);
 
-        final isCorrect = selected != null && selected == current.english;
-
-        return CelebrationOverlay(
-          isVisible: showCelebration,
-          child: Scaffold(
-            appBar: AppBar(
-              title: const Text('Quiz'),
-              automaticallyImplyLeading: false,
-              actions: [
-                const LanguageSwitcherAction(),
-                const SizedBox(width: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        '${i + 1}/${words.length}',
-                        style: TextStyle(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onPrimaryContainer,
-                          fontWeight: FontWeight.w600,
+        return Scaffold(
+          appBar: AppBar(
+            title: Text('Quiz ${currentQuestionIndex + 1}/${vocabulary.length}'),
+            automaticallyImplyLeading: false,
+            actions: [
+              const LanguageSelectorAction(),
+              const SizedBox(width: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Center(
+                  child: Text(
+                    'Score: ${quizResults.where((r) => r).length}/${quizResults.length}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
                         ),
-                      ),
-                    ),
                   ),
                 ),
-              ],
-            ),
-            body: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  const SizedBox(height: 16),
-                  // Question section with enhanced styling
-                  Container(
+              ),
+            ],
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Question Card
+                Card(
+                  elevation: 4,
+                  child: Padding(
                     padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.outline.withValues(alpha: 0.2),
-                      ),
-                    ),
                     child: Column(
                       children: [
-                        Text(
-                          'What is the English translation?',
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.8),
-                              ),
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final currentPlugin = ref.watch(currentLanguagePluginProvider);
+                            return Icon(
+                              currentPlugin?.language.icon ?? Icons.quiz,
+                              size: 48,
+                              color: currentPlugin?.language.color ?? Theme.of(context).colorScheme.primary,
+                            );
+                          },
                         ),
                         const SizedBox(height: 16),
-                        AnimatedDefaultTextStyle(
-                          duration: const Duration(milliseconds: 300),
-                          style:
-                              Theme.of(
-                                context,
-                              ).textTheme.displaySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.w600,
-                              ) ??
-                              const TextStyle(),
-                          child: Text(
-                            current.latin,
-                            textAlign: TextAlign.center,
-                          ),
+                        Text(
+                          'What does this mean?',
+                          style: Theme.of(context).textTheme.titleMedium,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final currentPlugin = ref.watch(currentLanguagePluginProvider);
+                            return Text(
+                              currentPlugin?.formatTerm(currentItem) ?? currentItem.term,
+                              style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                                    color: currentPlugin?.language.color ?? Theme.of(context).colorScheme.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                              textAlign: TextAlign.center,
+                            );
+                          },
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 32),
-                  // Answer options with animations
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: options.length,
-                      itemBuilder: (context, idx) {
-                        final opt = options[idx];
-                        final isSelected = selected == opt;
-                        final isCorrect = opt == current.english;
-
-                        return AnimatedQuizOption(
-                          option: opt,
-                          isSelected: isSelected,
-                          isCorrect: isCorrect,
-                          showResult: showResult,
-                          index: idx,
-                          onTap: () {
-                            ref.read(selectedAnswerProvider.notifier).state =
-                                opt;
-                          },
-                        );
-                      },
-                    ),
+                ),
+                const SizedBox(height: 24),
+                // Answer Options
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: allAnswers.length,
+                    itemBuilder: (context, index) {
+                      final selectedAnswer = ref.watch(selectedAnswerProvider);
+                      final isAnswerSubmitted = ref.watch(isAnswerSubmittedProvider);
+                      
+                      return AnimatedQuizOption(
+                        option: allAnswers[index],
+                        isSelected: selectedAnswer == index,
+                        isCorrect: index == correctAnswerIndex,
+                        showResult: isAnswerSubmitted,
+                        onTap: () => _handleAnswerSelection(context, ref, index, correctAnswerIndex),
+                        index: index,
+                      );
+                    },
                   ),
-                  // Flexible spacer to push buttons to bottom
-                  const SizedBox(height: 8),
-                  // Single row with all action buttons
-                  Row(
-                    children: [
-                      // Clear button (smaller)
-                      OutlinedButton(
-                        onPressed: showResult
-                            ? null
-                            : () {
-                                ref
-                                        .read(selectedAnswerProvider.notifier)
-                                        .state =
-                                    null;
-                                ref.read(showResultProvider.notifier).state =
-                                    false;
-                              },
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                            horizontal: 16,
-                          ),
-                          minimumSize: const Size(60, 48),
-                        ),
-                        child: const Text('Clear'),
-                      ),
-                      const SizedBox(width: 12),
-                      // Check Answer / Next Question button (takes remaining space)
-                      Expanded(
-                        child: FilledButton(
-                          onPressed: selected == null && !showResult
-                              ? null
-                              : showResult
-                              ? () {
-                                  // Next question
-                                  ref.read(quizIndexProvider.notifier).state =
-                                      index + 1;
-                                  ref
-                                          .read(selectedAnswerProvider.notifier)
-                                          .state =
-                                      null;
-                                  ref.read(showResultProvider.notifier).state =
-                                      false;
-                                  ref
-                                          .read(
-                                            showCelebrationProvider.notifier,
-                                          )
-                                          .state =
-                                      false;
-                                }
-                              : () {
-                                  // Check answer
-                                  ref.read(showResultProvider.notifier).state =
-                                      true;
-                                  
-                                  // Track word difficulty based on answer
-                                  _trackQuizResult(context, ref, current, isCorrect);
-                                  
-                                  // Show celebration if correct
-                                  if (isCorrect) {
-                                    ref
-                                            .read(
-                                              showCelebrationProvider.notifier,
-                                            )
-                                            .state =
-                                        true;
-                                    // Auto-hide celebration after 1.5 seconds for faster interaction
-                                    Future.delayed(
-                                      const Duration(milliseconds: 1500),
-                                      () {
-                                        if (ref.context.mounted) {
-                                          ref
-                                                  .read(
-                                                    showCelebrationProvider
-                                                        .notifier,
-                                                  )
-                                                  .state =
-                                              false;
-                                        }
-                                      },
-                                    );
-                                  }
-                                },
-                          style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (showResult && isCorrect)
-                                const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
-                                  size: 20,
-                                )
-                              else if (showResult && !isCorrect)
-                                const Icon(
-                                  Icons.cancel,
-                                  color: Colors.red,
-                                  size: 20,
-                                ),
-                              if (showResult) const SizedBox(width: 8),
-                              Flexible(
-                                child: Text(
-                                  showResult
-                                      ? (isCorrect
-                                            ? 'Correct! Next Question'
-                                            : 'Try Again - Next')
-                                      : 'Check Answer',
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              if (showResult) ...[
-                                const SizedBox(width: 4),
-                                const Icon(Icons.navigate_next, size: 20),
-                              ],
-                            ],
-                          ),
+                ),
+                // Next Button
+                const SizedBox(height: 16),
+                Consumer(
+                  builder: (context, ref, _) {
+                    final isAnswerSubmitted = ref.watch(isAnswerSubmittedProvider);
+                    return ElevatedButton(
+                      onPressed: isAnswerSubmitted
+                          ? () => _handleNextQuestion(context, ref, vocabulary.length)
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                      child: Text(
+                        currentQuestionIndex == vocabulary.length - 1 ? 'Finish Quiz' : 'Next Question',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
         );
@@ -360,31 +190,148 @@ class QuizScreen extends ConsumerWidget {
     );
   }
 
-  /// Track quiz results for review system
-  Future<void> _trackQuizResult(
-    BuildContext context,
-    WidgetRef ref,
-    Word word,
-    bool isCorrect,
-  ) async {
+  Widget _buildResultsScreen(BuildContext context, WidgetRef ref, List<bool> results, int totalQuestions) {
+    final correctAnswers = results.where((r) => r).length;
+    final percentage = (correctAnswers / totalQuestions * 100).round();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Quiz Results'),
+        automaticallyImplyLeading: false,
+        actions: const [
+          LanguageSelectorAction(),
+          SizedBox(width: 8),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Card(
+              elevation: 8,
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  children: [
+                    Icon(
+                      percentage >= 80 ? Icons.emoji_events : Icons.thumb_up,
+                      size: 64,
+                      color: percentage >= 80 ? Colors.amber : Colors.blue,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Quiz Complete!',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      '$correctAnswers / $totalQuestions',
+                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    Text(
+                      '$percentage% Correct',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      _getEncouragingMessage(percentage),
+                      style: Theme.of(context).textTheme.bodyLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: () => _resetQuiz(ref),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Take Quiz Again'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _handleAnswerSelection(BuildContext context, WidgetRef ref, int selectedIndex, int correctIndex) {
+    final isAnswerSubmitted = ref.read(isAnswerSubmittedProvider);
+    if (isAnswerSubmitted) return;
+
+    // Set selected answer and submit
+    ref.read(selectedAnswerProvider.notifier).state = selectedIndex;
+    ref.read(isAnswerSubmittedProvider.notifier).state = true;
+
+    // Update results
+    final isCorrect = selectedIndex == correctIndex;
+    final currentResults = ref.read(quizResultsProvider);
+    ref.read(quizResultsProvider.notifier).state = [...currentResults, isCorrect];
+
+    // Haptic feedback
+    HapticFeedback.selectionClick();
+
+    // Save progress
+    _saveQuizProgress(context, ref, isCorrect);
+  }
+
+  void _handleNextQuestion(BuildContext context, WidgetRef ref, int totalQuestions) {
+    final currentIndex = ref.read(currentQuestionIndexProvider);
+    
+    if (currentIndex < totalQuestions - 1) {
+      // Move to next question
+      ref.read(currentQuestionIndexProvider.notifier).state = currentIndex + 1;
+      ref.read(selectedAnswerProvider.notifier).state = null;
+      ref.read(isAnswerSubmittedProvider.notifier).state = false;
+    } else {
+      // Quiz complete - move to results
+      ref.read(currentQuestionIndexProvider.notifier).state = totalQuestions;
+    }
+
+    HapticFeedback.lightImpact();
+  }
+
+  void _resetQuiz(WidgetRef ref) {
+    ref.read(currentQuestionIndexProvider.notifier).state = 0;
+    ref.read(selectedAnswerProvider.notifier).state = null;
+    ref.read(isAnswerSubmittedProvider.notifier).state = false;
+    ref.read(quizResultsProvider.notifier).state = [];
+  }
+
+  Future<void> _saveQuizProgress(BuildContext context, WidgetRef ref, bool isCorrect) async {
     try {
       final dataService = await ref.read(localDataServiceProvider.future);
-      final currentConfig = ref.read(currentLanguageConfigProvider);
-
-      if (!context.mounted || currentConfig == null) return;
-
-      final languageName = currentConfig.language.name;
-
-      if (!isCorrect) {
-        // Wrong answer - add to review list for focused practice
-        await dataService.markWordAsDifficultForLanguage(word.id, languageName);
-      } else {
-        // Correct answer - mark as known (removes from review if it was there)
-        await dataService.markWordAsKnownForLanguage(word.id, languageName);
-      }
+      await dataService.recordStudySession();
     } catch (e) {
       // Silent fail - don't break the quiz experience
-      // The user will still see correct/incorrect feedback
     }
+  }
+
+  List<String> _generateWrongAnswers(List<VocabularyItem> allItems, VocabularyItem correctItem) {
+    final wrongAnswers = allItems
+        .where((item) => item.id != correctItem.id)
+        .map((item) => item.translation)
+        .toList();
+    
+    wrongAnswers.shuffle();
+    return wrongAnswers.take(3).toList();
+  }
+
+  String _getEncouragingMessage(int percentage) {
+    if (percentage >= 90) return 'Outstanding! You\'re mastering this language! 🏆';
+    if (percentage >= 80) return 'Excellent work! Keep it up! 🌟';
+    if (percentage >= 70) return 'Good job! You\'re making great progress! 👍';
+    if (percentage >= 60) return 'Nice effort! Keep studying and you\'ll improve! 📚';
+    return 'Don\'t give up! Practice makes perfect! 💪';
   }
 }

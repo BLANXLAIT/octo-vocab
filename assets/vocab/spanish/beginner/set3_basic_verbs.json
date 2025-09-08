@@ -1,0 +1,182 @@
+[
+  {
+    "id": "ser",
+    "spanish": "ser",
+    "english": "to be (permanent)",
+    "pos": "verb",
+    "exampleSpanish": "Soy estudiante.",
+    "exampleEnglish": "I am a student.",
+    "tags": ["beginner", "verbs", "identity", "high-frequency"]
+  },
+  {
+    "id": "estar",
+    "spanish": "estar",
+    "english": "to be (temporary)",
+    "pos": "verb",
+    "exampleSpanish": "Estoy feliz.",
+    "exampleEnglish": "I am happy.",
+    "tags": ["beginner", "verbs", "state", "high-frequency"]
+  },
+  {
+    "id": "tener",
+    "spanish": "tener",
+    "english": "to have",
+    "pos": "verb",
+    "exampleSpanish": "Tengo un perro.",
+    "exampleEnglish": "I have a dog.",
+    "tags": ["beginner", "verbs", "possession", "high-frequency"]
+  },
+  {
+    "id": "hacer",
+    "spanish": "hacer",
+    "english": "to make/do",
+    "pos": "verb",
+    "exampleSpanish": "Hago mi tarea.",
+    "exampleEnglish": "I do my homework.",
+    "tags": ["beginner", "verbs", "actions", "high-frequency"]
+  },
+  {
+    "id": "ir",
+    "spanish": "ir",
+    "english": "to go",
+    "pos": "verb",
+    "exampleSpanish": "Voy a la escuela.",
+    "exampleEnglish": "I go to school.",
+    "tags": ["beginner", "verbs", "movement", "high-frequency"]
+  },
+  {
+    "id": "ver",
+    "spanish": "ver",
+    "english": "to see",
+    "pos": "verb",
+    "exampleSpanish": "Veo la televisión.",
+    "exampleEnglish": "I watch television.",
+    "tags": ["beginner", "verbs", "senses", "high-frequency"]
+  },
+  {
+    "id": "dar",
+    "spanish": "dar",
+    "english": "to give",
+    "pos": "verb",
+    "exampleSpanish": "Doy un regalo.",
+    "exampleEnglish": "I give a gift.",
+    "tags": ["beginner", "verbs", "actions", "high-frequency"]
+  },
+  {
+    "id": "saber",
+    "spanish": "saber",
+    "english": "to know (facts)",
+    "pos": "verb",
+    "exampleSpanish": "Sé la respuesta.",
+    "exampleEnglish": "I know the answer.",
+    "tags": ["beginner", "verbs", "knowledge", "high-frequency"]
+  },
+  {
+    "id": "querer",
+    "spanish": "querer",
+    "english": "to want/love",
+    "pos": "verb",
+    "exampleSpanish": "Quiero agua.",
+    "exampleEnglish": "I want water.",
+    "tags": ["beginner", "verbs", "desires", "high-frequency"]
+  },
+  {
+    "id": "llegar",
+    "spanish": "llegar",
+    "english": "to arrive",
+    "pos": "verb",
+    "exampleSpanish": "Llego a casa tarde.",
+    "exampleEnglish": "I arrive home late.",
+    "tags": ["beginner", "verbs", "movement", "high-frequency"]
+  },
+  {
+    "id": "pasar",
+    "spanish": "pasar",
+    "english": "to pass/happen",
+    "pos": "verb",
+    "exampleSpanish": "Paso por el parque.",
+    "exampleEnglish": "I pass through the park.",
+    "tags": ["beginner", "verbs", "movement", "high-frequency"]
+  },
+  {
+    "id": "venir",
+    "spanish": "venir",
+    "english": "to come",
+    "pos": "verb",
+    "exampleSpanish": "Vengo a tu casa.",
+    "exampleEnglish": "I come to your house.",
+    "tags": ["beginner", "verbs", "movement", "high-frequency"]
+  },
+  {
+    "id": "decir",
+    "spanish": "decir",
+    "english": "to say/tell",
+    "pos": "verb",
+    "exampleSpanish": "Digo la verdad.",
+    "exampleEnglish": "I tell the truth.",
+    "tags": ["beginner", "verbs", "communication", "high-frequency"]
+  },
+  {
+    "id": "salir",
+    "spanish": "salir",
+    "english": "to go out/leave",
+    "pos": "verb",
+    "exampleSpanish": "Salgo con mis amigos.",
+    "exampleEnglish": "I go out with my friends.",
+    "tags": ["beginner", "verbs", "movement", "high-frequency"]
+  },
+  {
+    "id": "poder",
+    "spanish": "poder",
+    "english": "can/to be able",
+    "pos": "verb",
+    "exampleSpanish": "Puedo nadar.",
+    "exampleEnglish": "I can swim.",
+    "tags": ["beginner", "verbs", "ability", "high-frequency"]
+  },
+  {
+    "id": "poner",
+    "spanish": "poner",
+    "english": "to put/place",
+    "pos": "verb",
+    "exampleSpanish": "Pongo el libro en la mesa.",
+    "exampleEnglish": "I put the book on the table.",
+    "tags": ["beginner", "verbs", "placement", "high-frequency"]
+  },
+  {
+    "id": "trabajar",
+    "spanish": "trabajar",
+    "english": "to work",
+    "pos": "verb",
+    "exampleSpanish": "Trabajo en una oficina.",
+    "exampleEnglish": "I work in an office.",
+    "tags": ["beginner", "verbs", "activities", "high-frequency"]
+  },
+  {
+    "id": "vivir",
+    "spanish": "vivir",
+    "english": "to live",
+    "pos": "verb",
+    "exampleSpanish": "Vivo en México.",
+    "exampleEnglish": "I live in Mexico.",
+    "tags": ["beginner", "verbs", "existence", "high-frequency"]
+  },
+  {
+    "id": "comer",
+    "spanish": "comer",
+    "english": "to eat",
+    "pos": "verb",
+    "exampleSpanish": "Como tacos.",
+    "exampleEnglish": "I eat tacos.",
+    "tags": ["beginner", "verbs", "activities", "high-frequency"]
+  },
+  {
+    "id": "beber",
+    "spanish": "beber",
+    "english": "to drink",
+    "pos": "verb",
+    "exampleSpanish": "Bebo café.",
+    "exampleEnglish": "I drink coffee.",
+    "tags": ["beginner", "verbs", "activities", "high-frequency"]
+  }
+]

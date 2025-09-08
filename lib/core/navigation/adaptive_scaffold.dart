@@ -1,15 +1,10 @@
 // ignore_for_file: public_member_api_docs
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_saas_template/core/language/language.dart';
-import 'package:flutter_saas_template/core/providers/study_config_providers.dart';
 import 'package:flutter_saas_template/core/services/local_data_service.dart';
 import 'package:flutter_saas_template/core/theme/dynamic_theme.dart';
 import 'package:flutter_saas_template/features/flashcards/flashcards_screen.dart';
-import 'package:flutter_saas_template/features/progress/progress_screen.dart';
 import 'package:flutter_saas_template/features/quiz/quiz_screen.dart';
-import 'package:flutter_saas_template/features/review/review_screen.dart';
-import 'package:flutter_saas_template/features/settings/language_learning_settings_card.dart';
 
 /// Navigation destinations for the app
 enum AppDestination {
@@ -26,20 +21,6 @@ enum AppDestination {
     label: 'Quiz',
     semanticLabel: 'Take vocabulary quiz',
     accessibilityKey: 'quiz_tab',
-  ),
-  review(
-    icon: Icons.psychology_outlined,
-    selectedIcon: Icons.psychology,
-    label: 'Review',
-    semanticLabel: 'Review vocabulary words',
-    accessibilityKey: 'review_tab',
-  ),
-  progress(
-    icon: Icons.insights_outlined,
-    selectedIcon: Icons.insights,
-    label: 'Progress',
-    semanticLabel: 'View learning progress',
-    accessibilityKey: 'progress_tab',
   ),
   settings(
     icon: Icons.settings_outlined,
@@ -79,10 +60,6 @@ class AdaptiveScaffold extends ConsumerWidget {
         return const FlashcardsScreen();
       case AppDestination.quiz:
         return const QuizScreen();
-      case AppDestination.review:
-        return const ReviewScreen();
-      case AppDestination.progress:
-        return const ProgressScreen();
       case AppDestination.settings:
         return const SettingsScreen();
     }
@@ -173,54 +150,6 @@ class AdaptiveScaffold extends ConsumerWidget {
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
-  Future<void> _showResetLanguageDialog(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Reset Language Settings'),
-        content: const Text(
-          'This will reset your language settings and force a migration to re-enable all languages including Spanish.\n\n'
-          'Your learning progress will not be affected.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: FilledButton.styleFrom(backgroundColor: Colors.orange),
-            child: const Text('Reset Languages'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed ?? false) {
-      final dataService = await ref.read(localDataServiceProvider.future);
-      
-      // Reset language settings using the new method
-      final success = await dataService.resetLanguageSettings();
-      
-      // Force re-initialization
-      if (success) {
-        await ref.read(studyConfigurationProvider.notifier).refresh();
-      }
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              success
-                  ? 'Language settings reset! Spanish should now be available.'
-                  : 'Failed to reset language settings. Please try again.',
-            ),
-            backgroundColor: success ? Colors.green : Colors.red,
-          ),
-        );
-      }
-    }
-  }
 
   Future<void> _showResetDataDialog(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
@@ -247,8 +176,8 @@ class SettingsScreen extends ConsumerWidget {
     );
 
     if (confirmed ?? false) {
-      final dataService = await ref.read(localDataServiceProvider.future);
-      final success = await dataService.resetAllData();
+      final dataService = await LocalDataService.create();
+      final success = await dataService.clearAllData();
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -271,23 +200,13 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Settings'),
         automaticallyImplyLeading: false,
-        actions: [
-          Semantics(
-            label: 'Switch learning language',
-            child: const LanguageSwitcherAction(),
-          ),
-          const SizedBox(width: 8),
-        ],
+        actions: const [],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Language Learning Configuration
-            const LanguageLearningSettingsCard(),
-
-            const SizedBox(height: 16),
 
             // Theme Section
             const Text(
@@ -396,18 +315,6 @@ class SettingsScreen extends ConsumerWidget {
 
             const SizedBox(height: 8),
 
-            // Debug: Reset Language Settings
-            Card(
-              key: const Key('debug_reset_language_card'),
-              child: ListTile(
-                leading: const Icon(Icons.language, color: Colors.orange),
-                title: const Text('DEBUG: Reset Language Settings'),
-                subtitle: const Text('Force language migration to re-enable Spanish'),
-                onTap: () => _showResetLanguageDialog(context, ref),
-              ),
-            ),
-
-            const SizedBox(height: 8),
 
             Card(
               key: const Key('reset_data_card'),

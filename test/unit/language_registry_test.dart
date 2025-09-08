@@ -1,110 +1,163 @@
-import 'package:flutter_saas_template/core/models/language_definition.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_saas_template/core/language/language_plugin.dart';
+import 'package:flutter_saas_template/core/language/language_registry.dart';
+import 'package:flutter_saas_template/core/language/models/language.dart';
+import 'package:flutter_saas_template/core/language/models/vocabulary_item.dart';
+import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
+
+// Test plugin implementation
+class TestLanguagePlugin extends LanguagePlugin {
+  TestLanguagePlugin(this._language, [this._vocabulary = const []]);
+
+  final Language _language;
+  final List<VocabularyItem> _vocabulary;
+
+  @override
+  Language get language => _language;
+
+  @override
+  Future<List<VocabularyItem>> loadVocabulary(VocabularyLevel level, VocabularySet vocabSet) async {
+    // For testing, only return vocabulary for the first set to avoid duplicates
+    final sets = VocabularySets.getSetsForLevel(level);
+    if (vocabSet == sets.first) {
+      return _vocabulary;
+    }
+    // Throw exception for other sets to simulate them not existing
+    throw Exception('Mock vocabulary set not found');
+  }
+
+  @override
+  String formatTerm(VocabularyItem item) => '${item.term} (${language.code})';
+}
 
 void main() {
-  group('LanguageRegistry Tests', () {
-    test('provides correct language definitions', () {
-      // Test available languages
-      final availableLanguages = LanguageRegistry.availableLanguages;
+  group('LanguageRegistry', () {
+    late LanguageRegistry registry;
 
-      expect(availableLanguages.length, equals(2));
-      expect(availableLanguages.every((lang) => lang.isAvailable), true);
-
-      final codes = availableLanguages.map((lang) => lang.code).toSet();
-      expect(codes, containsAll(['latin', 'spanish']));
+    setUp(() {
+      registry = LanguageRegistry.instance;
+      // Clear any existing plugins from previous tests
+      registry.clear();
     });
 
-    test('getLanguage returns correct definitions', () {
-      final latin = LanguageRegistry.getLanguage('latin');
-      final spanish = LanguageRegistry.getLanguage('spanish');
-      final nonExistent = LanguageRegistry.getLanguage('klingon');
-
-      expect(latin?.displayName, 'Latin');
-      expect(latin?.isAvailable, true);
-      expect(latin?.primaryColor.value, isNotNull);
-
-      expect(spanish?.displayName, 'Spanish');
-      expect(spanish?.isAvailable, true);
-      expect(spanish?.family, LanguageFamily.romance);
-
-      expect(nonExistent, isNull);
+    test('starts empty', () {
+      expect(registry.getAvailableLanguages(), isEmpty);
     });
 
-    test('filters languages by family correctly', () {
-      final romanceLanguages = LanguageRegistry.getLanguagesByFamily(
-        LanguageFamily.romance,
+    test('registers and retrieves a language plugin', () {
+      const testLanguage = Language(
+        code: 'test',
+        name: 'Test Language',
+        nativeName: 'Test',
+        icon: Icons.abc,
+        color: Colors.blue,
       );
+      final plugin = TestLanguagePlugin(testLanguage);
 
+      registry.register(plugin);
+
+      expect(registry.getAvailableLanguages(), hasLength(1));
+      expect(registry.getAvailableLanguages().first.code, equals('test'));
+      expect(registry.getPlugin('test'), equals(plugin));
+    });
+
+    test('registers multiple language plugins', () {
+      const lang1 = Language(code: 'la', name: 'Latin', nativeName: 'Latina', icon: Icons.abc, color: Colors.brown);
+      const lang2 = Language(code: 'es', name: 'Spanish', nativeName: 'Español', icon: Icons.abc, color: Colors.orange);
+      
+      final plugin1 = TestLanguagePlugin(lang1);
+      final plugin2 = TestLanguagePlugin(lang2);
+
+      registry.register(plugin1);
+      registry.register(plugin2);
+
+      final languages = registry.getAvailableLanguages();
+      expect(languages, hasLength(2));
+      expect(languages.map((l) => l.code), containsAll(['la', 'es']));
+      
+      expect(registry.getPlugin('la'), equals(plugin1));
+      expect(registry.getPlugin('es'), equals(plugin2));
+    });
+
+    test('checks if language is available', () {
+      const testLanguage = Language(code: 'fr', name: 'French', nativeName: 'Français', icon: Icons.abc, color: Colors.blue);
+      final plugin = TestLanguagePlugin(testLanguage);
+
+      expect(registry.isLanguageAvailable('fr'), isFalse);
+      
+      registry.register(plugin);
+      
+      expect(registry.isLanguageAvailable('fr'), isTrue);
+      expect(registry.isLanguageAvailable('de'), isFalse);
+    });
+
+    test('returns null for unregistered language', () {
+      expect(registry.getPlugin('nonexistent'), isNull);
+    });
+
+    test('loads vocabulary through registry', () async {
+      const testLanguage = Language(code: 'test', name: 'Test', nativeName: 'Test', icon: Icons.abc, color: Colors.blue);
+      final testVocabulary = [
+        const VocabularyItem(id: '1', term: 'hello', translation: 'hola'),
+        const VocabularyItem(id: '2', term: 'world', translation: 'mundo'),
+      ];
+      final plugin = TestLanguagePlugin(testLanguage, testVocabulary);
+
+      registry.register(plugin);
+
+      final vocabulary = await registry.loadVocabulary('test', VocabularyLevel.beginner);
+      
+      expect(vocabulary, hasLength(2));
+      expect(vocabulary[0].term, equals('hello'));
+      expect(vocabulary[1].term, equals('world'));
+    });
+
+    test('throws exception when loading vocabulary for unregistered language', () async {
       expect(
-        romanceLanguages.any((lang) => lang.code == 'spanish'),
-        true,
-        reason: 'Spanish should be in romance languages',
+        () => registry.loadVocabulary('nonexistent', VocabularyLevel.beginner),
+        throwsA(isA<Exception>().having(
+          (e) => e.toString(),
+          'message',
+          contains('Language plugin not found: nonexistent'),
+        )),
       );
-      expect(
-        romanceLanguages.any((lang) => lang.code == 'french'),
-        true,
-        reason: 'French should be in romance languages (even if unavailable)',
-      );
     });
 
-    test('future languages are marked as unavailable', () {
-      final allLanguages = LanguageRegistry.allLanguages;
-      final futureLanguages = allLanguages
-          .where((lang) => !lang.isAvailable)
-          .map((lang) => lang.code)
-          .toSet();
+    test('loads specific vocabulary set through registry', () async {
+      const testLanguage = Language(code: 'test', name: 'Test', nativeName: 'Test', icon: Icons.abc, color: Colors.blue);
+      final testVocabulary = [
+        const VocabularyItem(id: '1', term: 'essential', translation: 'esencial'),
+      ];
+      final plugin = TestLanguagePlugin(testLanguage, testVocabulary);
 
-      expect(futureLanguages, containsAll(['french', 'german']));
+      registry.register(plugin);
+
+      final vocabSet = VocabularySets.beginner.first; // essentials set
+      final vocabulary = await registry.loadVocabularySet('test', VocabularyLevel.beginner, vocabSet);
+      
+      expect(vocabulary, hasLength(1));
+      expect(vocabulary[0].term, equals('essential'));
     });
 
-    test('language properties are consistent', () {
-      for (final language in LanguageRegistry.allLanguages) {
-        expect(language.code, isNotEmpty);
-        expect(language.displayName, isNotEmpty);
-        expect(language.nativeName, isNotEmpty);
-        expect(language.flag, isNotEmpty);
-        expect(language.primaryColor, isNotNull);
-        expect(language.family, isNotNull);
-        expect(language.writingSystem, isNotNull);
-      }
+    test('replaces plugin when registering same language code twice', () {
+      const testLanguage = Language(code: 'test', name: 'Test', nativeName: 'Test', icon: Icons.abc, color: Colors.blue);
+      final plugin1 = TestLanguagePlugin(testLanguage, [const VocabularyItem(id: '1', term: 'first', translation: 'primero')]);
+      final plugin2 = TestLanguagePlugin(testLanguage, [const VocabularyItem(id: '2', term: 'second', translation: 'segundo')]);
+
+      registry.register(plugin1);
+      expect(registry.getPlugin('test'), equals(plugin1));
+
+      registry.register(plugin2);
+      expect(registry.getPlugin('test'), equals(plugin2));
+      expect(registry.getAvailableLanguages(), hasLength(1)); // Still only one language
     });
 
-    test('supports language checking', () {
-      expect(LanguageRegistry.isSupported('latin'), true);
-      expect(LanguageRegistry.isSupported('spanish'), true);
-      expect(
-        LanguageRegistry.isSupported('french'),
-        true,
-      ); // Defined but unavailable
-      expect(LanguageRegistry.isSupported('klingon'), false);
-    });
+    test('uses singleton instance', () {
+      final instance1 = LanguageRegistry.instance;
+      final instance2 = LanguageRegistry.instance;
 
-    test('provides available language codes', () {
-      final codes = LanguageRegistry.availableLanguageCodes;
-      expect(codes, containsAll(['latin', 'spanish']));
-      expect(codes, isNot(contains('french'))); // French is unavailable
-    });
-  });
-
-  group('LanguageFamily Tests', () {
-    test('family labels are correct', () {
-      expect(LanguageFamily.romance.label, 'Romance Languages');
-      expect(LanguageFamily.germanic.label, 'Germanic Languages');
-      expect(LanguageFamily.other.label, 'Other Languages');
-    });
-  });
-
-  group('WritingSystem Tests', () {
-    test('writing system labels are correct', () {
-      expect(WritingSystem.latin.label, 'Latin Script');
-      expect(WritingSystem.cyrillic.label, 'Cyrillic Script');
-      expect(WritingSystem.arabic.label, 'Arabic Script');
-    });
-
-    test('provides correct font requirements', () {
-      expect(WritingSystem.latin.needsSpecialFont, false);
-      expect(WritingSystem.arabic.needsSpecialFont, true);
-      expect(WritingSystem.chinese.needsSpecialFont, true);
+      expect(identical(instance1, instance2), isTrue);
     });
   });
 }
