@@ -161,58 +161,48 @@ Uses Riverpod for state management with providers for:
 
 **IMPORTANT: Never use .env files for deployment secrets. Always use ~/.zshrc environment variables for local development.**
 
-#### Required Environment Variables (.zshrc)
-Add these to your `~/.zshrc` for local development:
+#### App Store Connect API Key Setup
 
+**Local Development (Recommended)**: Use JSON file method
+1. Create `ios/fastlane/AuthKey_NYY9BJ3V2H.json` with your API key details
+2. This file is already configured in the Fastfile and will be used automatically
+
+**Environment Variables (.zshrc)**: Only needed for Match & Fastlane settings
 ```bash
-# App Store Connect API (option 1: JSON file - RECOMMENDED)
-export FASTLANE_API_KEY_PATH="$HOME/.appstoreconnect/private/AuthKey_[YOUR_KEY_ID].json"
-
-# App Store Connect API (option 2: individual values - for CI/legacy)
-export APP_STORE_CONNECT_API_KEY_ID="[YOUR_KEY_ID]"
-export APP_STORE_CONNECT_ISSUER_ID="[YOUR_ISSUER_ID]"
-export APP_STORE_CONNECT_API_KEY_PATH="$HOME/.appstoreconnect/private/AuthKey_[YOUR_KEY_ID].p8"
-
-# Match & Fastlane
+# Match & Fastlane settings
 export FASTLANE_TEAM_ID="[YOUR_TEAM_ID]"
 export MATCH_PASSWORD="[YOUR_MATCH_PASSWORD]"
 export MATCH_GIT_URL="https://github.com/BLANXLAIT/blanxlait-ci-shared"
 export MATCH_CERTS_PAT="[YOUR_GITHUB_PAT]"
 ```
 
-#### API Key JSON Format (Preferred)
-Create `~/.appstoreconnect/private/AuthKey_[KEY_ID].json`:
-```json
-{
-  "key_id": "[YOUR_KEY_ID]",
-  "issuer_id": "[YOUR_ISSUER_ID]",
-  "key": "-----BEGIN PRIVATE KEY-----\n[YOUR_PRIVATE_KEY_CONTENT]\n-----END PRIVATE KEY-----",
-  "duration": 1200,
-  "in_house": false
-}
-```
+> **Note:** This follows the official Fastlane recommendations. Local development uses JSON file authentication (most convenient), while CI/CD uses organization-level GitHub secrets. No custom base64 encoding or environment variable handling needed.
 
-#### GitHub Secrets Setup (Organization Level)
-Run once to set org-wide secrets for all iOS apps:
+#### Local Development Only
+**IMPORTANT**: After extensive testing, Fastlane iOS deployments only work locally, not via GitHub Actions.
+
+Organization-level secrets are configured but GitHub Actions automation proved unreliable:
+- `APP_STORE_CONNECT_API_KEY_CONTENT`
+- `APP_STORE_CONNECT_API_KEY_ID` 
+- `APP_STORE_CONNECT_ISSUER_ID`
+
+### iOS Deployment Commands (LOCAL ONLY)
 ```bash
-./ios/fastlane/setup-github-secrets.sh org
-```
-
-### iOS Deployment Commands
-```bash
-# Verify environment setup (run this first)
-./ios/fastlane/verify-setup.rb
-
-# Deploy to TestFlight
+# Deploy to TestFlight (LOCAL DEVELOPMENT ONLY)
 cd ios && fastlane beta
 
-# Deploy to App Store (production)
+# Deploy to App Store (LOCAL DEVELOPMENT ONLY)
 cd ios && fastlane release
 
-# Sync certificates
+# Sync certificates (LOCAL DEVELOPMENT ONLY)
 cd ios && fastlane sync_certificates
 
-# Test GitHub Actions deployment
-gh workflow run ios-deploy.yml --ref main
-gh run watch  # Monitor the workflow
+# Test authentication (LOCAL DEVELOPMENT ONLY)
+cd ios && fastlane test_auth
 ```
+
+### Key Learnings
+- ✅ **Local Fastlane works perfectly** with JSON API key files
+- ❌ **GitHub Actions automation is unreliable** - removed all deployment workflows  
+- ✅ **Organization secrets are configured** but only useful for local development
+- 🏠 **Manual deployment process** - run Fastlane locally when ready to deploy
