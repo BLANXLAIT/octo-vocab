@@ -1,12 +1,9 @@
 // ignore_for_file: public_member_api_docs
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flutter_saas_template/core/language/language_registry.dart';
-import 'package:flutter_saas_template/core/language/models/vocabulary_item.dart';
 import 'package:flutter_saas_template/core/language/widgets/language_selector.dart';
 import 'package:flutter_saas_template/core/services/local_data_service.dart';
 import 'package:flutter_saas_template/features/quiz/animated_quiz_option.dart';
@@ -16,6 +13,54 @@ final currentQuestionIndexProvider = StateProvider.autoDispose<int>((ref) => 0);
 final selectedAnswerProvider = StateProvider.autoDispose<int?>((ref) => null);
 final isAnswerSubmittedProvider = StateProvider.autoDispose<bool>((ref) => false);
 final quizResultsProvider = StateProvider.autoDispose<List<bool>>((ref) => []);
+
+/// Provider that generates shuffled answers once per question
+final shuffledAnswersProvider = Provider.autoDispose<List<String>>((ref) {
+  final vocabulary = ref.watch(vocabularyProvider);
+  final currentQuestionIndex = ref.watch(currentQuestionIndexProvider);
+  
+  return vocabulary.when(
+    data: (vocab) {
+      if (vocab.isEmpty || currentQuestionIndex >= vocab.length) {
+        return <String>[];
+      }
+      
+      final currentItem = vocab[currentQuestionIndex];
+      final wrongAnswers = vocab
+          .where((item) => item.id != currentItem.id)
+          .map((item) => item.translation)
+          .toList()
+        ..shuffle();
+      
+      final allAnswers = [currentItem.translation, ...wrongAnswers.take(3)]
+        ..shuffle();
+      
+      return allAnswers;
+    },
+    loading: () => <String>[],
+    error: (_, __) => <String>[],
+  );
+});
+
+/// Provider that gets the correct answer index for the current question
+final correctAnswerIndexProvider = Provider.autoDispose<int>((ref) {
+  final vocabulary = ref.watch(vocabularyProvider);
+  final currentQuestionIndex = ref.watch(currentQuestionIndexProvider);
+  final shuffledAnswers = ref.watch(shuffledAnswersProvider);
+  
+  return vocabulary.when(
+    data: (vocab) {
+      if (vocab.isEmpty || currentQuestionIndex >= vocab.length || shuffledAnswers.isEmpty) {
+        return -1;
+      }
+      
+      final currentItem = vocab[currentQuestionIndex];
+      return shuffledAnswers.indexOf(currentItem.translation);
+    },
+    loading: () => -1,
+    error: (_, __) => -1,
+  );
+});
 
 class QuizScreen extends ConsumerWidget {
   const QuizScreen({super.key});
@@ -70,9 +115,23 @@ class QuizScreen extends ConsumerWidget {
         }
 
         final currentItem = vocabulary[currentQuestionIndex];
-        final wrongAnswers = _generateWrongAnswers(vocabulary, currentItem);
-        final allAnswers = [currentItem.translation, ...wrongAnswers]..shuffle();
-        final correctAnswerIndex = allAnswers.indexOf(currentItem.translation);
+        final allAnswers = ref.watch(shuffledAnswersProvider);
+        final correctAnswerIndex = ref.watch(correctAnswerIndexProvider);
+
+        // Handle empty answers (shouldn't happen, but defensive programming)
+        if (allAnswers.isEmpty) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Quiz'),
+              automaticallyImplyLeading: false,
+              actions: const [
+                LanguageSelectorAction(),
+                SizedBox(width: 8),
+              ],
+            ),
+            body: const Center(child: Text('Error loading quiz question')),
+          );
+        }
 
         return Scaffold(
           appBar: AppBar(
@@ -142,8 +201,9 @@ class QuizScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
                 // Answer Options
-                Expanded(
+                Flexible(
                   child: ListView.builder(
+                    shrinkWrap: true,
                     itemCount: allAnswers.length,
                     itemBuilder: (context, index) {
                       final selectedAnswer = ref.watch(selectedAnswerProvider);
@@ -161,7 +221,7 @@ class QuizScreen extends ConsumerWidget {
                   ),
                 ),
                 // Next Button
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
                 Consumer(
                   builder: (context, ref, _) {
                     final isAnswerSubmitted = ref.watch(isAnswerSubmittedProvider);
@@ -317,15 +377,6 @@ class QuizScreen extends ConsumerWidget {
     }
   }
 
-  List<String> _generateWrongAnswers(List<VocabularyItem> allItems, VocabularyItem correctItem) {
-    final wrongAnswers = allItems
-        .where((item) => item.id != correctItem.id)
-        .map((item) => item.translation)
-        .toList();
-    
-    wrongAnswers.shuffle();
-    return wrongAnswers.take(3).toList();
-  }
 
   String _getEncouragingMessage(int percentage) {
     if (percentage >= 90) return 'Outstanding! You\'re mastering this language! 🏆';
