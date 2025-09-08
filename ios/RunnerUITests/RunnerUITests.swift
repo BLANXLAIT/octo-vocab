@@ -31,24 +31,14 @@ final class RunnerUITests: XCTestCase {
         // Debug: Print accessibility tree to help troubleshoot
         printAccessibilityTree()
         
-        // The first screen after launch is already Learn, so capture it
-        snapshot("02_Home") // This is actually showing Learn screen
-        
-        // Navigate through each tab using multiple strategies
-        // Tab 0: Learn (already on it)
-        snapshot("03_Learn")
+        // The first screen after launch is Learn, so capture it
+        snapshot("02_Learn")
         
         // Tab 1: Quiz
-        navigateToTabByIndex(1, screenshotName: "04_Quiz")
+        navigateToTabByIndex(1, screenshotName: "03_Quiz")
         
-        // Tab 2: Review
-        navigateToTabByIndex(2, screenshotName: "05_Review")
-        
-        // Tab 3: Progress
-        navigateToTabByIndex(3, screenshotName: "06_Progress")
-        
-        // Tab 4: Settings
-        navigateToTabByIndex(4, screenshotName: "07_Settings")
+        // Tab 2: Settings
+        navigateToTabByIndex(2, screenshotName: "04_Settings")
     }
     
     @MainActor
@@ -70,7 +60,7 @@ final class RunnerUITests: XCTestCase {
         print("Screen dimensions: \(screenWidth) x \(screenHeight)")
         
         // Bottom navigation bar coordinates - more precise positioning
-        let tabCount: CGFloat = 5 // 5 tabs: Learn, Quiz, Review, Progress, Settings
+        let tabCount: CGFloat = 3 // 3 tabs: Learn, Quiz, Settings
         let tabWidth = screenWidth / tabCount
         let xPosition = (CGFloat(index) * tabWidth) + (tabWidth / 2) // Center of each tab
         

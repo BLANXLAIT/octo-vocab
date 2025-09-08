@@ -19,23 +19,16 @@ UI.message "📋 Using system environment variables from shell configuration"
 
 # Environment configuration helper - Official Fastlane method
 def get_app_store_api_key
-  # Priority 1: JSON file (local development - official recommended method)
-  json_key_path = "AuthKey_NYY9BJ3V2H.json"
+  # Priority 1: .p8 file in secure location (local development - official recommended method)
+  p8_key_path = File.expand_path("~/.appstoreconnect/private/AuthKey_XGFA878VQB.p8")
   
-  if File.exist?(json_key_path)
-    UI.message "🔑 Using App Store Connect API Key from JSON file (recommended)"
-    begin
-      json_content = JSON.parse(File.read(json_key_path))
-      return app_store_connect_api_key(
-        key_id: json_content["key_id"],
-        issuer_id: json_content["issuer_id"],
-        key_content: json_content["key"],
-        duration: json_content["duration"] || 1200,
-        in_house: json_content["in_house"] || false
-      )
-    rescue => e
-      UI.error "❌ Failed to parse JSON file: #{e.message}"
-    end
+  if File.exist?(p8_key_path)
+    UI.message "🔑 Using App Store Connect API Key from secure location (official method)"
+    return app_store_connect_api_key(
+      key_id: "XGFA878VQB",
+      issuer_id: "69a6de83-1bd1-47e3-e053-5b8c7c11a4d1",
+      key_filepath: p8_key_path
+    )
   end
   
   # Priority 2: Environment variables (CI/CD - official supported method)
@@ -50,7 +43,7 @@ def get_app_store_api_key
     )
   end
   
-  UI.user_error!("❌ No valid App Store Connect API Key found.\n\nLocal: Place AuthKey_NYY9BJ3V2H.json in fastlane/ directory\nCI/CD: Set APP_STORE_CONNECT_API_KEY_CONTENT, APP_STORE_CONNECT_API_KEY_ID, APP_STORE_CONNECT_ISSUER_ID")
+  UI.user_error!("❌ No valid App Store Connect API Key found.\n\nLocal: Place AuthKey_XGFA878VQB.p8 in ~/.appstoreconnect/private/ directory\nCI/CD: Set APP_STORE_CONNECT_API_KEY_CONTENT, APP_STORE_CONNECT_API_KEY_ID, APP_STORE_CONNECT_ISSUER_ID")
 end
 
 # Validate required environment variables
@@ -157,19 +150,10 @@ platform :ios do
       
       # Test with a simple pilot action that we know works
       # Use the latest_testflight_build_number which makes a simple API call
-      if api_key.is_a?(Hash) && api_key[:api_key_path]
-        # JSON file method
-        build_number = latest_testflight_build_number(
-          api_key_path: api_key[:api_key_path],
-          app_identifier: ENV["APP_IDENTIFIER"] || "com.blanxlait.octo-vocab"
-        )
-      else
-        # Environment variable method
-        build_number = latest_testflight_build_number(
-          api_key: api_key,
-          app_identifier: ENV["APP_IDENTIFIER"] || "com.blanxlait.octo-vocab"
-        )
-      end
+      build_number = latest_testflight_build_number(
+        api_key: api_key,
+        app_identifier: ENV["APP_IDENTIFIER"] || "com.blanxlait.octo-vocab"
+      )
       
       UI.success "✅ API Authentication successful!"
       UI.message "   Latest TestFlight build number: #{build_number}"
@@ -209,12 +193,8 @@ platform :ios do
       force_for_new_devices: true
     }
     
-    # Add API key based on format
-    if api_key.is_a?(Hash) && api_key[:api_key_path]
-      match_params[:api_key_path] = api_key[:api_key_path]
-    else
-      match_params[:api_key] = api_key
-    end
+    # Add API key
+    match_params[:api_key] = api_key
     
     match(match_params)
     
@@ -316,8 +296,9 @@ platform :ios do
       "Privacy-first vocabulary learning app for students.\n\nFeatures:\n• ACTFL-aligned leveling system\n• Offline-first architecture\n• No data collection\n• Latin and Spanish vocabulary\n• Adaptive mobile/tablet UI"
     end
     
-    # Handle API key format (hash vs object)
-    upload_params = {
+    # Upload to TestFlight
+    upload_to_testflight(
+      api_key: api_key,
       app_identifier: ENV["APP_IDENTIFIER"] || "com.blanxlait.octo-vocab",
       skip_waiting_for_build_processing: ENV["CI"] ? true : false, # Skip processing in CI for faster builds
       skip_submission: true,
@@ -328,16 +309,7 @@ platform :ios do
       notify_external_testers: false,
       # Compliance
       uses_non_exempt_encryption: false
-    }
-    
-    # Add API key based on format
-    if api_key.is_a?(Hash) && api_key[:api_key_path]
-      upload_params[:api_key_path] = api_key[:api_key_path]
-    else
-      upload_params[:api_key] = api_key
-    end
-    
-    upload_to_testflight(upload_params)
+    )
     
     UI.success "🎉 App uploaded to TestFlight! Check App Store Connect for processing status."
     
@@ -369,6 +341,7 @@ platform :ios do
       # App Store submission
       submit_for_review: false, # Manual review submission for safety
       automatic_release: false,
+      run_precheck_before_submit: false, # Skip precheck to avoid API key limitations
       # Privacy and compliance
       submission_information: {
         add_id_info_uses_idfa: false,
@@ -460,7 +433,8 @@ platform :ios do
       skip_screenshots: true,
       force: true,
       # Metadata will be read from fastlane/metadata/en-US/ files
-      overwrite_screenshots: false
+      overwrite_screenshots: false,
+      run_precheck_before_submit: false  # Skip precheck to avoid API key limitations
     )
     
     UI.success "✅ App Store metadata updated successfully!"
@@ -483,7 +457,8 @@ platform :ios do
       skip_binary_upload: true,
       skip_screenshots: false, # Include screenshots
       force: true,
-      overwrite_screenshots: true
+      overwrite_screenshots: true,
+      run_precheck_before_submit: false  # Skip precheck to avoid API key limitations
     )
     
     UI.success "✅ All App Store assets updated successfully!"
