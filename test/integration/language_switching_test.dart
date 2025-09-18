@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_saas_template/core/language/language_registry.dart';
-import 'package:flutter_saas_template/core/language/models/language.dart';
-import 'package:flutter_saas_template/core/language/models/vocabulary_item.dart';
-import 'package:flutter_saas_template/core/language/plugins/latin_plugin.dart';
-import 'package:flutter_saas_template/core/language/plugins/spanish_plugin.dart';
-import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
+import 'package:octo_vocab/core/language/language_registry.dart';
+import 'package:octo_vocab/core/language/models/language.dart';
+import 'package:octo_vocab/core/language/models/vocabulary_item.dart';
+import 'package:octo_vocab/core/language/plugins/latin_plugin.dart';
+import 'package:octo_vocab/core/language/plugins/spanish_plugin.dart';
+import 'package:octo_vocab/core/models/vocabulary_level.dart';
 
 void main() {
   group('Language Switching Integration Tests', () {
@@ -83,8 +83,8 @@ void main() {
       final latinPath = latinPlugin.getVocabularyAssetPath(VocabularyLevel.beginner, vocabSet);
       final spanishPath = spanishPlugin.getVocabularyAssetPath(VocabularyLevel.beginner, vocabSet);
 
-      expect(latinPath, equals('assets/vocab/la/beginner/${vocabSet.filename}'));
-      expect(spanishPath, equals('assets/vocab/es/beginner/${vocabSet.filename}'));
+      expect(latinPath, equals('assets/vocab/latin/beginner/${vocabSet.filename}'));
+      expect(spanishPath, equals('assets/vocab/spanish/beginner/${vocabSet.filename}'));
       expect(latinPath, isNot(equals(spanishPath)));
     });
 

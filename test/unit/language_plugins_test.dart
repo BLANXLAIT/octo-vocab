@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_saas_template/core/language/models/vocabulary_item.dart';
-import 'package:flutter_saas_template/core/language/plugins/latin_plugin.dart';
-import 'package:flutter_saas_template/core/language/plugins/spanish_plugin.dart';
-import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
+import 'package:octo_vocab/core/language/models/vocabulary_item.dart';
+import 'package:octo_vocab/core/language/plugins/latin_plugin.dart';
+import 'package:octo_vocab/core/language/plugins/spanish_plugin.dart';
+import 'package:octo_vocab/core/models/vocabulary_level.dart';
 
 void main() {
   group('LatinPlugin', () {
@@ -78,7 +78,7 @@ void main() {
       final vocabSet = VocabularySets.beginner.first;
       final path = plugin.getVocabularyAssetPath(VocabularyLevel.beginner, vocabSet);
       
-      expect(path, equals('assets/vocab/la/beginner/${vocabSet.filename}'));
+      expect(path, equals('assets/vocab/latin/beginner/${vocabSet.filename}'));
     });
 
     test('generates correct progress key', () {
@@ -161,7 +161,7 @@ void main() {
       final vocabSet = VocabularySets.beginner.first;
       final path = plugin.getVocabularyAssetPath(VocabularyLevel.beginner, vocabSet);
       
-      expect(path, equals('assets/vocab/es/beginner/${vocabSet.filename}'));
+      expect(path, equals('assets/vocab/spanish/beginner/${vocabSet.filename}'));
     });
 
     test('generates correct progress key', () {

@@ -4,8 +4,6 @@ analyzer:
   errors:
     public_member_api_docs: ignore
   exclude:
-    - "**/*.g.dart"
-    - "**/*.freezed.dart"
     - "build/**"
   language:
     strict-casts: true

@@ -4,11 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:flutter_saas_template/core/language/language_plugin.dart';
-import 'package:flutter_saas_template/core/language/language_registry.dart';
-import 'package:flutter_saas_template/core/language/models/vocabulary_item.dart';
-import 'package:flutter_saas_template/core/language/widgets/language_selector.dart';
-import 'package:flutter_saas_template/core/services/local_data_service.dart';
+import 'package:octo_vocab/core/language/language_plugin.dart';
+import 'package:octo_vocab/core/language/language_registry.dart';
+import 'package:octo_vocab/core/language/models/vocabulary_item.dart';
+import 'package:octo_vocab/core/language/widgets/language_selector.dart';
+import 'package:octo_vocab/core/services/local_data_service.dart';
 
 /// Card controller for programmatic control
 final cardControllerProvider = Provider.autoDispose<CardSwiperController>(
@@ -161,6 +161,7 @@ class FlashcardsScreen extends ConsumerWidget {
         _showFeedbackSnackBar(context, 'Known! ✅', Colors.green);
       } else if (direction == CardSwiperDirection.left) {
         // Unknown - mark as difficult
+        debugPrint('📱 SIMULATOR: Swiped left on "${item.term}" - marking as difficult');
         wordProgressMap[progressKey] = 'difficult';
         await dataService.setWordProgress(wordProgressMap);
         if (!context.mounted) return;

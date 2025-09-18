@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_saas_template/core/language/language_registry.dart';
-import 'package:flutter_saas_template/core/language/models/language.dart';
-import 'package:flutter_saas_template/core/language/widgets/language_selector.dart';
+import 'package:octo_vocab/core/language/language_registry.dart';
+import 'package:octo_vocab/core/language/models/language.dart';
+import 'package:octo_vocab/core/language/widgets/language_selector.dart';
 
 void main() {
   group('LanguageSelector Widget Tests', () {

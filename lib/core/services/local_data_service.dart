@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, directives_ordering
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -104,7 +105,10 @@ class LocalDataService {
 
   /// Privacy Compliance
   Future<bool> clearAllData() async {
-    return _prefs.clear();
+    debugPrint('🗑️ CLEAR DATA: Starting to clear all SharedPreferences data');
+    final success = await _prefs.clear();
+    debugPrint('🗑️ CLEAR DATA: Clear operation ${success ? "successful" : "failed"}');
+    return success;
   }
 }
 

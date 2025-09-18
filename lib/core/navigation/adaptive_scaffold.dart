@@ -1,10 +1,12 @@
 // ignore_for_file: public_member_api_docs
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_saas_template/core/services/local_data_service.dart';
-import 'package:flutter_saas_template/core/theme/dynamic_theme.dart';
-import 'package:flutter_saas_template/features/flashcards/flashcards_screen.dart';
-import 'package:flutter_saas_template/features/quiz/quiz_screen.dart';
+import 'package:octo_vocab/core/services/local_data_service.dart';
+import 'package:octo_vocab/core/theme/dynamic_theme.dart';
+import 'package:octo_vocab/features/flashcards/flashcards_screen.dart';
+import 'package:octo_vocab/features/progress/progress_screen.dart';
+import 'package:octo_vocab/features/quiz/quiz_screen.dart';
+import 'package:octo_vocab/features/review/review_screen.dart';
 
 /// Navigation destinations for the app
 enum AppDestination {
@@ -21,6 +23,20 @@ enum AppDestination {
     label: 'Quiz',
     semanticLabel: 'Take vocabulary quiz',
     accessibilityKey: 'quiz_tab',
+  ),
+  progress(
+    icon: Icons.trending_up_outlined,
+    selectedIcon: Icons.trending_up,
+    label: 'Progress',
+    semanticLabel: 'View learning progress and statistics',
+    accessibilityKey: 'progress_tab',
+  ),
+  review(
+    icon: Icons.refresh_outlined,
+    selectedIcon: Icons.refresh,
+    label: 'Review',
+    semanticLabel: 'Review difficult words with spaced repetition',
+    accessibilityKey: 'review_tab',
   ),
   settings(
     icon: Icons.settings_outlined,
@@ -60,6 +76,10 @@ class AdaptiveScaffold extends ConsumerWidget {
         return const FlashcardsScreen();
       case AppDestination.quiz:
         return const QuizScreen();
+      case AppDestination.progress:
+        return const ProgressScreen();
+      case AppDestination.review:
+        return const ReviewScreen();
       case AppDestination.settings:
         return const SettingsScreen();
     }
@@ -152,6 +172,7 @@ class SettingsScreen extends ConsumerWidget {
 
 
   Future<void> _showResetDataDialog(BuildContext context, WidgetRef ref) async {
+    debugPrint('🗑️ USER ACTION: Showing reset data dialog');
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -163,21 +184,54 @@ class SettingsScreen extends ConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () {
+              debugPrint('🗑️ USER ACTION: Cancel button pressed');
+              Navigator.of(context).pop(false);
+            },
             child: const Text('Cancel'),
           ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete All Data'),
+          Semantics(
+            label: 'Confirm delete all data',
+            child: FilledButton(
+              key: const Key('confirm_delete_button'),
+              onPressed: () {
+                debugPrint('🗑️ USER ACTION: Delete All Data confirmation button pressed');
+                Navigator.of(context).pop(true);
+              },
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Delete All Data'),
+            ),
           ),
         ],
       ),
     );
 
+    debugPrint('🗑️ USER ACTION: Dialog result: $confirmed');
+
     if (confirmed ?? false) {
+      debugPrint('🗑️ USER ACTION: Clear All Data button pressed - proceeding with deletion');
       final dataService = await LocalDataService.create();
       final success = await dataService.clearAllData();
+      debugPrint('🗑️ USER ACTION: Clear All Data result: ${success ? "SUCCESS" : "FAILED"}');
+
+      if (success) {
+        // CRITICAL: Invalidate providers so they reload fresh data after reset
+        //
+        // This is essential because Riverpod providers cache data even after
+        // SharedPreferences is cleared. Without this invalidation, the UI would
+        // still show cached word progress, review queue items, etc.
+        //
+        // The bug was: user presses "Reset All Data" → SharedPreferences cleared
+        // → but providers kept showing old data → user sees reset "didn't work"
+        //
+        // The fix: After SharedPreferences clearing, invalidate all data providers
+        // so they re-read from the now-empty storage and update the UI correctly.
+        debugPrint('🔄 Invalidating providers to refresh app state');
+        ref.invalidate(wordProgressProvider);     // Core word progress data
+        ref.invalidate(reviewQueueProvider);      // Review words queue
+        ref.invalidate(reviewSessionsProvider);   // Review session data
+        ref.invalidate(localDataServiceProvider); // Force LocalDataService reload
+      }
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -325,7 +379,10 @@ class SettingsScreen extends ConsumerWidget {
                   leading: const Icon(Icons.delete_forever, color: Colors.red),
                   title: const Text('Reset My Data'),
                   subtitle: const Text('Delete all progress and preferences'),
-                  onTap: () => _showResetDataDialog(context, ref),
+                  onTap: () {
+                    debugPrint('🗑️ USER ACTION: Reset My Data ListTile tapped');
+                    _showResetDataDialog(context, ref);
+                  },
                 ),
               ),
             ),

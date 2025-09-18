@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_saas_template/core/language/models/language.dart';
+import 'package:octo_vocab/core/language/models/language.dart';
 
 void main() {
   group('Language', () {

@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_saas_template/core/theme/dynamic_theme.dart';
-import 'package:flutter_saas_template/routing/router.dart';
+import 'package:octo_vocab/core/theme/dynamic_theme.dart';
+import 'package:octo_vocab/routing/router.dart';
 
 class OctoVocabApp extends ConsumerWidget {
   const OctoVocabApp({super.key});

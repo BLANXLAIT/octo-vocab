@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_saas_template/core/language/language_plugin.dart';
-import 'package:flutter_saas_template/core/language/models/language.dart';
-import 'package:flutter_saas_template/core/language/models/vocabulary_item.dart';
-import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
+import 'package:octo_vocab/core/language/language_plugin.dart';
+import 'package:octo_vocab/core/language/models/language.dart';
+import 'package:octo_vocab/core/language/models/vocabulary_item.dart';
+import 'package:octo_vocab/core/models/vocabulary_level.dart';
 
 // ignore_for_file: public_member_api_docs
 

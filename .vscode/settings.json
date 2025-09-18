@@ -26,6 +26,16 @@
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
   "editor.detectIndentation": false,
+  // Session Management - Prevent unwanted file restoration
+  "workbench.startupEditor": "newUntitledFile",
+  "window.restoreWindows": "one",
+  "workbench.editor.restoreViewState": false,
+  "workbench.editor.enablePreview": true,
+  "workbench.editor.enablePreviewFromQuickOpen": true,
+  "workbench.editor.closeEmptyGroups": true,
+  "workbench.editor.limit.enabled": true,
+  "workbench.editor.limit.value": 10,
+  "workbench.editor.limit.excludeDirty": true,
   // File Associations
   "files.associations": {
     "*.dart": "dart",
@@ -83,6 +93,14 @@
   },
   // Git Configuration  
   "git.ignoreLimitWarning": true,
+  // GitHub Copilot Configuration
+  "github.copilot.enable": {
+    "*": true,
+    "yaml": false,
+    "plaintext": false
+  },
+  "github.copilot.editor.enableAutoCompletions": true,
+  "github.copilot.chat.experimental.temporaryChat": false,
   // Extensions
   "extensions.ignoreRecommendations": false
 }

@@ -148,8 +148,3 @@ pubspec_overrides.yaml
 **/macos/Flutter/Generated.xcconfig
 **/macos/Flutter/flutter_export_environment.sh
 
-# Dart build_runner generated files
-**/*.g.dart
-**/*.freezed.dart
-**/*.gen.dart
-**/*.mocks.dart

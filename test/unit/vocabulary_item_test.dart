@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_saas_template/core/language/models/vocabulary_item.dart';
+import 'package:octo_vocab/core/language/models/vocabulary_item.dart';
 
 void main() {
   group('VocabularyItem', () {

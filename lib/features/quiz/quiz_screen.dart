@@ -3,10 +3,67 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:flutter_saas_template/core/language/language_registry.dart';
-import 'package:flutter_saas_template/core/language/widgets/language_selector.dart';
-import 'package:flutter_saas_template/core/services/local_data_service.dart';
-import 'package:flutter_saas_template/features/quiz/animated_quiz_option.dart';
+import 'package:octo_vocab/core/language/language_registry.dart';
+import 'package:octo_vocab/core/language/models/vocabulary_item.dart';
+import 'package:octo_vocab/core/language/widgets/language_selector.dart';
+import 'package:octo_vocab/core/services/local_data_service.dart';
+import 'package:octo_vocab/features/quiz/animated_quiz_option.dart';
+
+/// Quiz length options
+enum QuizLength {
+  quick5(5, 'Quick (5)'),
+  short10(10, 'Short (10)'),
+  medium15(15, 'Medium (15)'),
+  full(0, 'Full');
+
+  const QuizLength(this.count, this.displayName);
+  final int count; // 0 means all available questions
+  final String displayName;
+}
+
+/// Quiz length setting provider
+final quizLengthProvider = StateNotifierProvider<QuizLengthNotifier, QuizLength>((ref) {
+  return QuizLengthNotifier(ref);
+});
+
+class QuizLengthNotifier extends StateNotifier<QuizLength> {
+  QuizLengthNotifier(this._ref) : super(QuizLength.short10) {
+    _loadSetting();
+  }
+
+  final Ref _ref;
+  static const String _settingKey = 'quiz_length';
+
+  Future<void> _loadSetting() async {
+    try {
+      final dataService = await _ref.read(localDataServiceProvider.future);
+      final settings = dataService.getAppSettings();
+      final savedLength = settings[_settingKey] as String?;
+      
+      if (savedLength != null) {
+        final quizLength = QuizLength.values.firstWhere(
+          (e) => e.name == savedLength,
+          orElse: () => QuizLength.short10,
+        );
+        state = quizLength;
+      }
+    } catch (e) {
+      // Default to short10 if loading fails
+    }
+  }
+
+  Future<void> setQuizLength(QuizLength length) async {
+    state = length;
+    try {
+      final dataService = await _ref.read(localDataServiceProvider.future);
+      final settings = dataService.getAppSettings();
+      settings[_settingKey] = length.name;
+      await dataService.saveAppSettings(settings);
+    } catch (e) {
+      // Silent fail
+    }
+  }
+}
 
 /// Quiz state management
 final currentQuestionIndexProvider = StateProvider.autoDispose<int>((ref) => 0);
@@ -14,52 +71,66 @@ final selectedAnswerProvider = StateProvider.autoDispose<int?>((ref) => null);
 final isAnswerSubmittedProvider = StateProvider.autoDispose<bool>((ref) => false);
 final quizResultsProvider = StateProvider.autoDispose<List<bool>>((ref) => []);
 
-/// Provider that generates shuffled answers once per question
-final shuffledAnswersProvider = Provider.autoDispose<List<String>>((ref) {
+/// Provider that returns quiz vocabulary based on length setting
+final quizVocabularyProvider = Provider.autoDispose<List<VocabularyItem>>((ref) {
   final vocabulary = ref.watch(vocabularyProvider);
-  final currentQuestionIndex = ref.watch(currentQuestionIndexProvider);
+  final quizLength = ref.watch(quizLengthProvider);
   
   return vocabulary.when(
     data: (vocab) {
-      if (vocab.isEmpty || currentQuestionIndex >= vocab.length) {
-        return <String>[];
+      if (vocab.isEmpty) return [];
+      
+      // Shuffle the vocabulary for randomness
+      final shuffledVocab = [...vocab]..shuffle();
+      
+      // Return limited list based on quiz length setting
+      if (quizLength.count == 0) {
+        // Full quiz - return all
+        return shuffledVocab;
+      } else {
+        // Limited quiz - return up to the specified count
+        return shuffledVocab.take(quizLength.count).toList();
       }
-      
-      final currentItem = vocab[currentQuestionIndex];
-      final wrongAnswers = vocab
-          .where((item) => item.id != currentItem.id)
-          .map((item) => item.translation)
-          .toList()
-        ..shuffle();
-      
-      final allAnswers = [currentItem.translation, ...wrongAnswers.take(3)]
-        ..shuffle();
-      
-      return allAnswers;
     },
-    loading: () => <String>[],
-    error: (_, __) => <String>[],
+    loading: () => [],
+    error: (_, __) => [],
   );
+});
+
+/// Provider that generates shuffled answers once per question
+final shuffledAnswersProvider = Provider.autoDispose<List<String>>((ref) {
+  final vocabulary = ref.watch(quizVocabularyProvider); // Use limited quiz vocabulary
+  final currentQuestionIndex = ref.watch(currentQuestionIndexProvider);
+  
+  if (vocabulary.isEmpty || currentQuestionIndex >= vocabulary.length) {
+    return <String>[];
+  }
+  
+  final currentItem = vocabulary[currentQuestionIndex];
+  final wrongAnswers = vocabulary
+      .where((item) => item.id != currentItem.id)
+      .map((item) => item.translation)
+      .toList()
+    ..shuffle();
+  
+  final allAnswers = [currentItem.translation, ...wrongAnswers.take(3)]
+    ..shuffle();
+  
+  return allAnswers;
 });
 
 /// Provider that gets the correct answer index for the current question
 final correctAnswerIndexProvider = Provider.autoDispose<int>((ref) {
-  final vocabulary = ref.watch(vocabularyProvider);
+  final vocabulary = ref.watch(quizVocabularyProvider); // Use limited quiz vocabulary
   final currentQuestionIndex = ref.watch(currentQuestionIndexProvider);
   final shuffledAnswers = ref.watch(shuffledAnswersProvider);
   
-  return vocabulary.when(
-    data: (vocab) {
-      if (vocab.isEmpty || currentQuestionIndex >= vocab.length || shuffledAnswers.isEmpty) {
-        return -1;
-      }
-      
-      final currentItem = vocab[currentQuestionIndex];
-      return shuffledAnswers.indexOf(currentItem.translation);
-    },
-    loading: () => -1,
-    error: (_, __) => -1,
-  );
+  if (vocabulary.isEmpty || currentQuestionIndex >= vocabulary.length || shuffledAnswers.isEmpty) {
+    return -1;
+  }
+  
+  final currentItem = vocabulary[currentQuestionIndex];
+  return shuffledAnswers.indexOf(currentItem.translation);
 });
 
 class QuizScreen extends ConsumerWidget {
@@ -67,92 +138,74 @@ class QuizScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final vocabularyAsync = ref.watch(vocabularyProvider);
+    final vocabulary = ref.watch(quizVocabularyProvider); // Use limited quiz vocabulary
     final currentQuestionIndex = ref.watch(currentQuestionIndexProvider);
     final quizResults = ref.watch(quizResultsProvider);
 
-    return vocabularyAsync.when(
-      loading: () => Scaffold(
+    if (vocabulary.isEmpty) {
+      return Scaffold(
         appBar: AppBar(
           title: const Text('Quiz'),
           automaticallyImplyLeading: false,
-          actions: const [
-            LanguageSelectorAction(),
-            SizedBox(width: 8),
+          actions: [
+            _buildQuizLengthSelector(context, ref),
+            const SizedBox(width: 8),
+            const LanguageSelectorAction(),
+            const SizedBox(width: 8),
           ],
         ),
-        body: const Center(child: CircularProgressIndicator()),
-      ),
-      error: (e, st) => Scaffold(
+        body: const Center(child: Text('No vocabulary found for quiz')),
+      );
+    }
+
+    // Show results if quiz is complete
+    if (currentQuestionIndex >= vocabulary.length) {
+      return _buildResultsScreen(context, ref, quizResults, vocabulary.length);
+    }
+
+    final currentItem = vocabulary[currentQuestionIndex];
+    final allAnswers = ref.watch(shuffledAnswersProvider);
+    final correctAnswerIndex = ref.watch(correctAnswerIndexProvider);
+
+    // Handle empty answers (shouldn't happen, but defensive programming)
+    if (allAnswers.isEmpty) {
+      return Scaffold(
         appBar: AppBar(
           title: const Text('Quiz'),
           automaticallyImplyLeading: false,
-          actions: const [
-            LanguageSelectorAction(),
-            SizedBox(width: 8),
+          actions: [
+            _buildQuizLengthSelector(context, ref),
+            const SizedBox(width: 8),
+            const LanguageSelectorAction(),
+            const SizedBox(width: 8),
           ],
         ),
-        body: Center(child: Text('Failed to load quiz: $e')),
-      ),
-      data: (vocabulary) {
-        if (vocabulary.isEmpty) {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Quiz'),
-              automaticallyImplyLeading: false,
-              actions: const [
-                LanguageSelectorAction(),
-                SizedBox(width: 8),
-              ],
-            ),
-            body: const Center(child: Text('No vocabulary found for quiz')),
-          );
-        }
+        body: const Center(child: Text('Error loading quiz question')),
+      );
+    }
 
-        // Show results if quiz is complete
-        if (currentQuestionIndex >= vocabulary.length) {
-          return _buildResultsScreen(context, ref, quizResults, vocabulary.length);
-        }
-
-        final currentItem = vocabulary[currentQuestionIndex];
-        final allAnswers = ref.watch(shuffledAnswersProvider);
-        final correctAnswerIndex = ref.watch(correctAnswerIndexProvider);
-
-        // Handle empty answers (shouldn't happen, but defensive programming)
-        if (allAnswers.isEmpty) {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Quiz'),
-              automaticallyImplyLeading: false,
-              actions: const [
-                LanguageSelectorAction(),
-                SizedBox(width: 8),
-              ],
-            ),
-            body: const Center(child: Text('Error loading quiz question')),
-          );
-        }
-
-        return Scaffold(
-          appBar: AppBar(
-            title: Text('Quiz ${currentQuestionIndex + 1}/${vocabulary.length}'),
-            automaticallyImplyLeading: false,
-            actions: [
-              const LanguageSelectorAction(),
-              const SizedBox(width: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Center(
-                  child: Text(
-                    'Score: ${quizResults.where((r) => r).length}/${quizResults.length}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                  ),
-                ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Quiz ${currentQuestionIndex + 1}/${vocabulary.length}'),
+        automaticallyImplyLeading: false,
+        actions: [
+          _buildQuizLengthSelector(context, ref),
+          const SizedBox(width: 8),
+          const LanguageSelectorAction(),
+          const SizedBox(width: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Center(
+              child: Text(
+                'Score: ${quizResults.where((r) => r).length}/${quizResults.length}',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
               ),
-            ],
+            ),
           ),
+        ],
+      ),
           body: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -227,7 +280,10 @@ class QuizScreen extends ConsumerWidget {
                     final isAnswerSubmitted = ref.watch(isAnswerSubmittedProvider);
                     return ElevatedButton(
                       onPressed: isAnswerSubmitted
-                          ? () => _handleNextQuestion(context, ref, vocabulary.length)
+                          ? () {
+                              final quizVocab = ref.read(quizVocabularyProvider);
+                              _handleNextQuestion(context, ref, quizVocab.length);
+                            }
                           : null,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -246,8 +302,6 @@ class QuizScreen extends ConsumerWidget {
             ),
           ),
         );
-      },
-    );
   }
 
   Widget _buildResultsScreen(BuildContext context, WidgetRef ref, List<bool> results, int totalQuestions) {
@@ -258,9 +312,11 @@ class QuizScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Quiz Results'),
         automaticallyImplyLeading: false,
-        actions: const [
-          LanguageSelectorAction(),
-          SizedBox(width: 8),
+        actions: [
+          _buildQuizLengthSelector(context, ref),
+          const SizedBox(width: 8),
+          const LanguageSelectorAction(),
+          const SizedBox(width: 8),
         ],
       ),
       body: Padding(
@@ -354,8 +410,9 @@ class QuizScreen extends ConsumerWidget {
       ref.read(selectedAnswerProvider.notifier).state = null;
       ref.read(isAnswerSubmittedProvider.notifier).state = false;
     } else {
-      // Quiz complete - move to results
+      // Quiz complete - move to results and save final results
       ref.read(currentQuestionIndexProvider.notifier).state = totalQuestions;
+      _saveCompletedQuizResults(context, ref, totalQuestions);
     }
 
     HapticFeedback.lightImpact();
@@ -377,6 +434,82 @@ class QuizScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _saveCompletedQuizResults(BuildContext context, WidgetRef ref, int totalQuestions) async {
+    try {
+      final dataService = await ref.read(localDataServiceProvider.future);
+      final quizResults = ref.read(quizResultsProvider);
+      final quizLength = ref.read(quizLengthProvider);
+      final currentPlugin = ref.read(currentLanguagePluginProvider);
+      
+      final correctAnswers = quizResults.where((r) => r).length;
+      final percentage = (correctAnswers / totalQuestions * 100).round();
+      
+      // Create quiz result data
+      final quizResultData = {
+        'date': DateTime.now().toIso8601String(),
+        'language': currentPlugin?.language.code ?? 'unknown',
+        'quizLength': quizLength.displayName,
+        'totalQuestions': totalQuestions,
+        'correctAnswers': correctAnswers,
+        'incorrectAnswers': totalQuestions - correctAnswers,
+        'percentage': percentage,
+        'results': quizResults,
+      };
+      
+      // Save with unique ID
+      final quizId = 'quiz_${DateTime.now().millisecondsSinceEpoch}';
+      await dataService.saveQuizResult(quizId, quizResultData);
+      
+      debugPrint('✅ Quiz results saved: $correctAnswers/$totalQuestions ($percentage%)');
+    } catch (e) {
+      debugPrint('❌ Failed to save quiz results: $e');
+      // Silent fail - don't break the quiz experience
+    }
+  }
+
+
+  Widget _buildQuizLengthSelector(BuildContext context, WidgetRef ref) {
+    final currentLength = ref.watch(quizLengthProvider);
+    
+    return Semantics(
+      label: 'Quiz length selector',
+      hint: 'Tap to change quiz length. Currently set to ${currentLength.displayName}',
+      button: true,
+      child: PopupMenuButton<QuizLength>(
+        key: const Key('quiz_length_selector'),
+        icon: const Icon(Icons.quiz),
+        tooltip: 'Quiz Length: ${currentLength.displayName}',
+        onSelected: (QuizLength length) {
+          ref.read(quizLengthProvider.notifier).setQuizLength(length);
+          
+          // Reset quiz when length changes
+          _resetQuiz(ref);
+        },
+        itemBuilder: (BuildContext context) => QuizLength.values.map((QuizLength length) {
+          return PopupMenuItem<QuizLength>(
+            key: Key('quiz_length_option_${length.name}'),
+            value: length,
+            child: Semantics(
+              label: '${length.displayName} questions',
+              hint: length == currentLength ? 'Currently selected' : 'Tap to select',
+              selected: length == currentLength,
+              child: Row(
+                children: [
+                  Icon(
+                    length == currentLength ? Icons.check : Icons.radio_button_unchecked,
+                    size: 20,
+                    semanticLabel: length == currentLength ? 'Selected' : 'Not selected',
+                  ),
+                  const SizedBox(width: 8),
+                  Text(length.displayName),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
 
   String _getEncouragingMessage(int percentage) {
     if (percentage >= 90) return 'Outstanding! You\'re mastering this language! 🏆';

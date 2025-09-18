@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_saas_template/core/language/language_plugin.dart';
-import 'package:flutter_saas_template/core/language/language_registry.dart';
-import 'package:flutter_saas_template/core/language/models/language.dart';
-import 'package:flutter_saas_template/core/language/models/vocabulary_item.dart';
-import 'package:flutter_saas_template/core/models/vocabulary_level.dart';
+import 'package:octo_vocab/core/language/language_plugin.dart';
+import 'package:octo_vocab/core/language/language_registry.dart';
+import 'package:octo_vocab/core/language/models/language.dart';
+import 'package:octo_vocab/core/language/models/vocabulary_item.dart';
+import 'package:octo_vocab/core/models/vocabulary_level.dart';
 
 // Test plugin implementation
 class TestLanguagePlugin extends LanguagePlugin {

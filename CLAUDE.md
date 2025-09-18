@@ -17,16 +17,6 @@ flutter pub get
 claude mcp add dart -- dart mcp-server
 ```
 
-### Code Generation (Critical)
-This project relies heavily on code generation. Run after any changes to `@riverpod`, `@freezed`, or `@JsonSerializable` annotated code:
-
-```bash
-# Generate all code (Riverpod providers, Freezed classes, JSON serialization)
-dart run build_runner build --delete-conflicting-outputs
-
-# Watch mode for active development
-dart run build_runner watch --delete-conflicting-outputs
-```
 
 ### Testing
 The project includes comprehensive testing infrastructure with automated scripts:
@@ -115,16 +105,11 @@ Uses Riverpod for state management with providers for:
 - Language switching with persistent selection
 - Extensible for future languages
 
-### Code Generation Files
-- `lib/**/*.g.dart` - Riverpod providers and JSON serialization
-- `lib/**/*.freezed.dart` - Immutable data classes
-- These files are excluded from analysis and git
 
 ## Configuration Files
 
 - `pubspec.yaml` - Dependencies configured for Flutter 3.35.0+, Dart 3.9.0+
-- `analysis_options.yaml` - Strict linting with `very_good_analysis`, excludes generated files
-- `build.yaml` - Code generation configuration for Riverpod and JSON
+- `analysis_options.yaml` - Strict linting with `very_good_analysis`
 - `dart_test.yaml` - Test runner with organized test sets (unit/widget/integration) and coverage exclusions
 - `.github/copilot-instructions.md` - Comprehensive development patterns and architecture guidance
 
@@ -149,10 +134,8 @@ Uses Riverpod for state management with providers for:
 ## Important Notes
 
 - Privacy-first design - no network requests, user accounts, or data collection
-- Always run code generation after modifying annotated classes
 - Use ConsumerWidget for all widgets that read providers
 - Implement accessibility-first design with proper semantic labels and contrast
-- Generated files are excluded from version control and static analysis
 - Vocabulary data stored as JSON assets for offline access
 
 ## iOS Deployment & TestFlight Setup
