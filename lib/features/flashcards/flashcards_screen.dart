@@ -9,6 +9,8 @@ import 'package:octo_vocab/core/language/language_registry.dart';
 import 'package:octo_vocab/core/language/models/vocabulary_item.dart';
 import 'package:octo_vocab/core/language/widgets/language_selector.dart';
 import 'package:octo_vocab/core/services/local_data_service.dart';
+import 'package:octo_vocab/features/progress/progress_screen.dart';
+import 'package:octo_vocab/features/review/review_screen.dart';
 
 /// Card controller for programmatic control
 final cardControllerProvider = Provider.autoDispose<CardSwiperController>(
@@ -157,6 +159,11 @@ class FlashcardsScreen extends ConsumerWidget {
         // Known - mark as known
         wordProgressMap[progressKey] = 'known';
         await dataService.setWordProgress(wordProgressMap);
+
+        // Invalidate providers so review screen updates immediately
+        ref.invalidate(wordProgressProvider);
+        ref.invalidate(reviewQueueProvider);
+
         if (!context.mounted) return;
         _showFeedbackSnackBar(context, 'Known! ✅', Colors.green);
       } else if (direction == CardSwiperDirection.left) {
@@ -164,6 +171,13 @@ class FlashcardsScreen extends ConsumerWidget {
         debugPrint('📱 SIMULATOR: Swiped left on "${item.term}" - marking as difficult');
         wordProgressMap[progressKey] = 'difficult';
         await dataService.setWordProgress(wordProgressMap);
+
+        // CRITICAL: Invalidate providers so review screen shows new difficult words immediately
+        // This is the same fix we implemented for the reset functionality
+        debugPrint('🔄 FLASHCARD: Invalidating providers to refresh review queue');
+        ref.invalidate(wordProgressProvider);
+        ref.invalidate(reviewQueueProvider);
+
         if (!context.mounted) return;
         _showFeedbackSnackBar(context, 'Will review later! 📚', Colors.orange);
       }
