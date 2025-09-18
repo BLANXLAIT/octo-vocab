@@ -18,7 +18,8 @@ MULTI-LANGUAGE SUPPORT
 • Plans for additional languages in future updates
 
 LEARNING FEATURES
-• Flashcard study mode
+• Smart learning queue - words you know won't reappear
+• Flashcard study mode with progress memory
 • Interactive vocabulary quizzes
 • Progress tracking (stored locally)
 • Adaptive difficulty levels
