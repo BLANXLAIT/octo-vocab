@@ -186,6 +186,96 @@ cd ios && fastlane test_auth
 
 ### Key Learnings
 - ✅ **Local Fastlane works perfectly** with JSON API key files
-- ❌ **GitHub Actions automation is unreliable** - removed all deployment workflows  
+- ❌ **GitHub Actions automation is unreliable** - removed all deployment workflows
 - ✅ **Organization secrets are configured** but only useful for local development
 - 🏠 **Manual deployment process** - run Fastlane locally when ready to deploy
+
+## TestFlight Troubleshooting Guide
+
+### Common Issue: Builds Not Appearing in TestFlight
+
+**Root Cause**: When you distribute a build to the App Store (production), Apple prevents new TestFlight builds with the same version number.
+
+**Symptoms**:
+- Fastlane upload completes successfully (no errors)
+- Long upload times (7+ minutes for small apps)
+- `fastlane test_auth` works fine
+- Latest build number missing from TestFlight
+- No processing indication in App Store Connect
+
+**Solution**: Increment the version number in `pubspec.yaml`, not just the build number.
+
+```bash
+# Before (causes issues if 1.0.0 was distributed to App Store)
+version: 1.0.0+31
+
+# After (allows new TestFlight builds)
+version: 1.0.1+1  # Can restart build numbers with new versions
+```
+
+### Version vs Build Number Management
+
+**Key Insight**: Apple tracks build numbers per version. Each version can have its own sequence:
+- Version 1.0.0: builds 1-31
+- Version 1.0.1: builds 1-N (fresh start)
+- Version 1.0.2: builds 1-N (fresh start)
+
+**Fastlane Build Number Behavior**:
+- `increment_build_number` ignores `Info.plist` `CFBundleVersion`
+- Uses `CURRENT_PROJECT_VERSION` from `Runner.xcodeproj/project.pbxproj`
+- Auto-increments from existing project value, not pubspec.yaml
+
+**Files to Update for Version Changes**:
+1. `pubspec.yaml`: `version: X.Y.Z+N`
+2. `ios/Runner/Info.plist`: `CFBundleVersion` (optional - Fastlane overrides)
+3. `ios/Runner.xcodeproj/project.pbxproj`: `CURRENT_PROJECT_VERSION` (controls Fastlane)
+
+### Debugging TestFlight Issues
+
+**Quick Diagnostics**:
+```bash
+# Test authentication (should show latest successful build)
+cd ios && fastlane test_auth
+
+# Check recent build logs
+tail -50 /Users/ryan/Library/Logs/gym/Runner-Runner.log
+
+# Check upload timing (in ios/fastlane/report.xml)
+# Normal: <60 seconds, Problem: >300 seconds
+```
+
+**Version Conflict Indicators**:
+- Upload succeeds but takes 7+ minutes
+- No error messages from Fastlane
+- No "Processing" status in App Store Connect
+- Build numbers increment in `Info.plist` but builds don't appear
+
+### API Key Authentication Notes
+
+**Current Setup (Working)**:
+- API Key file: `~/.appstoreconnect/private/AuthKey_XGFA878VQB.p8`
+- Fastlane properly handles `.p8` files via `app_store_connect_api_key` action
+- Direct `pilot` commands fail (expect JSON format)
+- Use Fastlane lanes, not direct pilot commands
+
+**Environment Variables** (for reference, not currently needed):
+```bash
+# Fastlane's default environment variable names
+export APP_STORE_CONNECT_API_KEY_KEY_ID="XGFA878VQB"
+export APP_STORE_CONNECT_API_KEY_ISSUER_ID="69a6de83-1bd1-47e3-e053-5b8c7c11a4d1"
+export APP_STORE_CONNECT_API_KEY_KEY="$(cat ~/.appstoreconnect/private/AuthKey_XGFA878VQB.p8)"
+```
+
+### Apple's TestFlight Processing Delays (2024-2025)
+
+**Known Issues**:
+- Apple's servers experience regular delays
+- Builds can be stuck "Processing" for hours or days
+- First builds for an app take ~24 hours
+- Subsequent builds: minutes to hours (unpredictable)
+
+**Workarounds**:
+- Upload builds early to account for delays
+- Check email for rejection notifications (not always shown in web interface)
+- Use Transporter app for detailed build status
+- Wait 24-48 hours before assuming upload failed
