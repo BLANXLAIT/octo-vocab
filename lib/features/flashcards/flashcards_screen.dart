@@ -12,6 +12,54 @@ import 'package:octo_vocab/core/services/local_data_service.dart';
 import 'package:octo_vocab/features/progress/progress_screen.dart';
 import 'package:octo_vocab/features/review/review_screen.dart';
 
+/// Learning queue provider - filters out known/mastered words from flashcards
+final learningQueueProvider = FutureProvider.autoDispose<List<VocabularyItem>>((ref) async {
+  final vocabulary = await ref.read(vocabularyProvider.future);
+  final wordProgress = await ref.read(wordProgressProvider.future);
+  final currentPlugin = ref.read(currentLanguagePluginProvider);
+
+  debugPrint('📚 LEARNING DEBUG: Loading learning queue...');
+  debugPrint('📚 LEARNING DEBUG: Total vocabulary items: ${vocabulary.length}');
+  debugPrint('📚 LEARNING DEBUG: Word progress entries: ${wordProgress.length}');
+
+  if (currentPlugin == null) {
+    debugPrint('📚 LEARNING DEBUG: No current language plugin, returning empty queue');
+    return [];
+  }
+
+  final learningQueue = <VocabularyItem>[];
+
+  for (final item in vocabulary) {
+    final progressKey = currentPlugin.getProgressKey(item.id);
+    final status = wordProgress[progressKey];
+
+    debugPrint('📚 LEARNING DEBUG: Item "${item.term}" (${item.id}) -> key: "$progressKey" -> status: "$status"');
+
+    // Skip words that are already known or mastered
+    if (status == 'known' || status == 'mastered') {
+      debugPrint('📚 LEARNING DEBUG: Skipping "${item.term}" - already learned (status: $status)');
+      continue;
+    }
+
+    // Include words that are new (no status), difficult, or reviewing
+    // This gives users a chance to learn new words and re-practice difficult ones
+    learningQueue.add(item);
+  }
+
+  // Shuffle for varied learning order
+  learningQueue.shuffle();
+
+  debugPrint('📚 LEARNING DEBUG: Final learning queue contains ${learningQueue.length} words');
+  for (final item in learningQueue.take(5)) { // Show first 5 for brevity
+    debugPrint('📚 LEARNING DEBUG: -> "${item.term}" will appear in Learn tab');
+  }
+  if (learningQueue.length > 5) {
+    debugPrint('📚 LEARNING DEBUG: ... and ${learningQueue.length - 5} more words');
+  }
+
+  return learningQueue;
+});
+
 /// Card controller for programmatic control
 final cardControllerProvider = Provider.autoDispose<CardSwiperController>(
   (ref) => CardSwiperController(),
@@ -28,7 +76,7 @@ class FlashcardsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final vocabularyAsync = ref.watch(vocabularyProvider);
+    final vocabularyAsync = ref.watch(learningQueueProvider);
     final currentIndex = ref.watch(currentCardIndexProvider);
     final controller = ref.watch(cardControllerProvider);
 
@@ -66,7 +114,7 @@ class FlashcardsScreen extends ConsumerWidget {
                 SizedBox(width: 8),
               ],
             ),
-            body: const Center(child: Text('No vocabulary found')),
+            body: const Center(child: Text('Great! You have learned all available words.\nCheck the Review tab to practice them.')),
           );
         }
 
