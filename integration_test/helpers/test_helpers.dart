@@ -9,7 +9,7 @@ class TestHelpers {
   static Future<void> waitForAppLoad(WidgetTester tester) async {
     // Wait for any loading indicators to disappear
     await tester.pumpAndSettle(const Duration(seconds: 2));
-    
+
     // Ensure we're not in a loading state
     expect(find.byType(CircularProgressIndicator), findsNothing);
   }
@@ -35,7 +35,27 @@ class TestHelpers {
 
   /// Navigate to the Progress tab
   static Future<void> navigateToProgressTab(WidgetTester tester) async {
-    await tester.tap(find.text('Progress'));
+    // Find Progress text that's specifically in the bottom navigation
+    final progressTabs = find.text('Progress');
+    if (progressTabs.evaluate().length > 1) {
+      // If multiple Progress texts, try to find the one in navigation
+      final bottomNavBar = find.byType(BottomNavigationBar);
+      if (bottomNavBar.evaluate().isNotEmpty) {
+        final progressInNav = find.descendant(
+          of: bottomNavBar,
+          matching: find.text('Progress'),
+        );
+        if (progressInNav.evaluate().isNotEmpty) {
+          await tester.tap(progressInNav);
+          await tester.pumpAndSettle(const Duration(milliseconds: 500));
+          return;
+        }
+      }
+      // Fallback to first Progress text
+      await tester.tap(progressTabs.first);
+    } else {
+      await tester.tap(progressTabs);
+    }
     await tester.pumpAndSettle(const Duration(milliseconds: 500));
   }
 
@@ -49,7 +69,7 @@ class TestHelpers {
   static Future<void> swipeFlashcardLeft(WidgetTester tester) async {
     // Find the flashcard - look for CardSwiper or Card widget
     final cardFinder = _findFlashcard(tester);
-    
+
     // Swipe left with sufficient distance
     await tester.drag(cardFinder, const Offset(-300, 0));
     await tester.pumpAndSettle(const Duration(milliseconds: 300));
@@ -58,7 +78,7 @@ class TestHelpers {
   /// Swipe right on flashcard (mark as known)
   static Future<void> swipeFlashcardRight(WidgetTester tester) async {
     final cardFinder = _findFlashcard(tester);
-    
+
     // Swipe right with sufficient distance
     await tester.drag(cardFinder, const Offset(300, 0));
     await tester.pumpAndSettle(const Duration(milliseconds: 300));
@@ -89,43 +109,57 @@ class TestHelpers {
   /// Verify empty review state
   static void verifyEmptyReviewState() {
     // Look for the actual empty state text
-    final hasEmptyMessage = find.textContaining('No words need review').evaluate().isNotEmpty ||
-                           find.textContaining('No words to review').evaluate().isNotEmpty;
+    final hasEmptyMessage =
+        find.textContaining('No words need review').evaluate().isNotEmpty ||
+        find.textContaining('No words to review').evaluate().isNotEmpty;
     expect(hasEmptyMessage, isTrue, reason: 'Should show empty review message');
-    
-    final hasInstructions = find.textContaining('Go to Learn').evaluate().isNotEmpty ||
-                           find.textContaining('Learn mode').evaluate().isNotEmpty;
+
+    final hasInstructions =
+        find.textContaining('Go to Learn').evaluate().isNotEmpty ||
+        find.textContaining('Learn mode').evaluate().isNotEmpty;
     expect(hasInstructions, isTrue, reason: 'Should show helpful instructions');
   }
 
   /// Verify review queue has words
   static void verifyReviewQueueHasWords() {
     // Check that it's NOT showing empty state
-    final hasEmptyMessage = find.textContaining('No words need review').evaluate().isNotEmpty ||
-                           find.textContaining('No words to review').evaluate().isNotEmpty;
-    expect(hasEmptyMessage, isFalse, reason: 'Should not show empty state when words are available');
-    
+    final hasEmptyMessage =
+        find.textContaining('No words need review').evaluate().isNotEmpty ||
+        find.textContaining('No words to review').evaluate().isNotEmpty;
+    expect(
+      hasEmptyMessage,
+      isFalse,
+      reason: 'Should not show empty state when words are available',
+    );
+
     // Look for actual review interface elements
-    final hasReviewMode = find.textContaining('Review Mode').evaluate().isNotEmpty ||
-                         find.textContaining('Review ').evaluate().isNotEmpty;
+    final hasReviewMode =
+        find.textContaining('Review Mode').evaluate().isNotEmpty ||
+        find.textContaining('Review ').evaluate().isNotEmpty;
     expect(hasReviewMode, isTrue, reason: 'Should show review interface');
   }
 
   /// Verify progress indicators for multiple review items
   static void verifyMultipleReviewItems() {
     // Look for review counter in "Review X/Y" format
-    final hasReviewCounter = find.textContaining('Review ').evaluate().isNotEmpty;
+    final hasReviewCounter = find
+        .textContaining('Review ')
+        .evaluate()
+        .isNotEmpty;
     expect(hasReviewCounter, isTrue, reason: 'Should show review counter');
     expect(find.textContaining('No words to review'), findsNothing);
   }
 
   /// Change language selection
-  static Future<void> changeLanguage(WidgetTester tester, String languageName) async {
+  static Future<void> changeLanguage(
+    WidgetTester tester,
+    String languageName,
+  ) async {
     // Look for language selector button/dropdown
     final languageSelector = find.byType(DropdownButton<String>).first;
     await tester.tap(languageSelector);
     await tester.pumpAndSettle();
-    
+
     // Select the desired language
     await tester.tap(find.text(languageName));
     await tester.pumpAndSettle(const Duration(seconds: 1));
@@ -147,13 +181,13 @@ class TestHelpers {
     if (cardSwiperFinder.evaluate().isNotEmpty) {
       return cardSwiperFinder;
     }
-    
+
     // Fall back to Card widget
     final cardFinder = find.byType(Card);
     if (cardFinder.evaluate().isNotEmpty) {
       return cardFinder.first; // Take the first card if multiple exist
     }
-    
+
     // Last resort - look for any tappable widget in the center
     return find.byType(GestureDetector).first;
   }
@@ -162,7 +196,7 @@ class TestHelpers {
   static Future<void> verifyNavigationWorks(WidgetTester tester) async {
     // Test that we can navigate and app doesn't crash
     expect(find.byType(MaterialApp), findsOneWidget);
-    
+
     // Ensure no error dialogs or crash screens
     expect(find.textContaining('Error'), findsNothing);
     expect(find.textContaining('Exception'), findsNothing);
@@ -173,7 +207,7 @@ class TestHelpers {
     // Navigate to settings to potentially clear data
     await navigateToSettingsTab(tester);
     await tester.pumpAndSettle();
-    
+
     // Return to learn tab
     await navigateToLearnTab(tester);
   }
@@ -181,7 +215,9 @@ class TestHelpers {
   /// Debug helper: Print current widget tree
   static void debugPrintWidgetTree(WidgetTester tester) {
     debugPrint('=== Widget Tree ===');
-    debugPrint(tester.allWidgets.map((w) => w.runtimeType.toString()).join('\n'));
+    debugPrint(
+      tester.allWidgets.map((w) => w.runtimeType.toString()).join('\n'),
+    );
     debugPrint('==================');
   }
 

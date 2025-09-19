@@ -15,11 +15,15 @@ import 'package:octo_vocab/features/progress/progress_screen.dart';
 
 /// Spaced repetition algorithm configuration
 class SpacedRepetitionConfig {
-  static const keepPracticingInterval = Duration(days: 1);     // Swipe left - needs more practice
-  static const gotItInterval = Duration(days: 7);             // Swipe right - got it!
-  static const masteredThreshold = Duration(days: 30);        // After this, consider mastered
-  static const minimumInterval = Duration(hours: 4);          // Fallback minimum
-  static const maximumInterval = Duration(days: 180);         // Maximum interval
+  static const keepPracticingInterval = Duration(
+    days: 1,
+  ); // Swipe left - needs more practice
+  static const gotItInterval = Duration(days: 7); // Swipe right - got it!
+  static const masteredThreshold = Duration(
+    days: 30,
+  ); // After this, consider mastered
+  static const minimumInterval = Duration(hours: 4); // Fallback minimum
+  static const maximumInterval = Duration(days: 180); // Maximum interval
 }
 
 /// Review session tracking
@@ -54,10 +58,19 @@ class ReviewSession {
 enum ReviewDifficulty { keepPracticing, gotIt }
 
 /// Providers for review functionality
-final reviewSessionsProvider = FutureProvider<List<ReviewSession>>((ref) async {
-  final dataService = await ref.read(localDataServiceProvider.future);
-  final quizResults = dataService.getQuizResults();
-  
+final reviewSessionsProvider = FutureProvider.autoDispose<List<ReviewSession>>((ref) async {
+  final dataService = await ref.watch(localDataServiceProvider.future);
+  final selectedLanguage = ref.watch(selectedLanguageProvider);
+  final allQuizResults = dataService.getQuizResults();
+
+  // Filter quiz results to only include current language review sessions
+  final quizResults = <String, dynamic>{};
+  for (final entry in allQuizResults.entries) {
+    if (entry.key.startsWith('review_') && entry.key.contains('${selectedLanguage}_')) {
+      quizResults[entry.key] = entry.value;
+    }
+  }
+
   final reviewSessions = <ReviewSession>[];
   for (final entry in quizResults.entries) {
     if (entry.key.startsWith('review_')) {
@@ -69,78 +82,90 @@ final reviewSessionsProvider = FutureProvider<List<ReviewSession>>((ref) async {
       }
     }
   }
-  
+
   return reviewSessions;
 });
 
-final reviewQueueProvider = FutureProvider<List<VocabularyItem>>((ref) async {
-  final vocabulary = await ref.read(vocabularyProvider.future);
-  final wordProgress = await ref.read(wordProgressProvider.future);
-  final reviewSessions = await ref.read(reviewSessionsProvider.future);
-  final currentPlugin = ref.read(currentLanguagePluginProvider);
-  
-  debugPrint('🔍 REVIEW DEBUG: Loading review queue...');
-  debugPrint('🔍 REVIEW DEBUG: Total vocabulary items: ${vocabulary.length}');
-  debugPrint('🔍 REVIEW DEBUG: Word progress entries: ${wordProgress.length}');
-  debugPrint('🔍 REVIEW DEBUG: Word progress data: $wordProgress');
-  
+final reviewQueueProvider = FutureProvider.autoDispose<List<VocabularyItem>>((ref) async {
+  final vocabulary = await ref.watch(vocabularyProvider.future);
+  final wordProgress = await ref.watch(wordProgressProvider.future);
+  final reviewSessions = await ref.watch(reviewSessionsProvider.future);
+  final currentPlugin = ref.watch(currentLanguagePluginProvider);
+
+
   if (currentPlugin == null) {
-    debugPrint('🔍 REVIEW DEBUG: No current language plugin, returning empty queue');
+    debugPrint(
+      '🔍 REVIEW DEBUG: No current language plugin, returning empty queue',
+    );
     return [];
   }
-  
+
   final now = DateTime.now();
   final reviewQueue = <VocabularyItem>[];
-  
+
   for (final item in vocabulary) {
     final progressKey = currentPlugin.getProgressKey(item.id);
     final status = wordProgress[progressKey];
-    
-    debugPrint('🔍 REVIEW DEBUG: Item "${item.term}" (${item.id}) -> key: "$progressKey" -> status: "$status"');
-    
+
+    debugPrint(
+      '🔍 REVIEW DEBUG: Item "${item.term}" (${item.id}) -> key: "$progressKey" -> status: "$status"',
+    );
+
     // Skip mastered words - they've graduated from the review system
     if (status == 'mastered') continue;
-    
+
     // Include words marked as difficult (immediate review) or reviewing (scheduled review)
     if (status == 'difficult' || status == 'reviewing') {
       // Find the most recent review session for this word
       final lastReview = reviewSessions
           .where((session) => session.wordId == item.id)
           .fold<ReviewSession?>(null, (latest, session) {
-            if (latest == null || session.reviewDate.isAfter(latest.reviewDate)) {
+            if (latest == null ||
+                session.reviewDate.isAfter(latest.reviewDate)) {
               return session;
             }
             return latest;
           });
-      
+
       if (status == 'difficult') {
         // Difficult words are always added to review queue
-        // (Either first time or still struggling after reviews)
+        // This includes words marked difficult in flashcards (first time)
+        // and words still struggling after reviews
         reviewQueue.add(item);
+        debugPrint('🔍 REVIEW DEBUG: Adding difficult word "${item.term}" to review queue');
       } else if (status == 'reviewing' && lastReview != null) {
         // Reviewing words are only added if their interval has passed
-        final nextReviewTime = lastReview.reviewDate.add(lastReview.nextInterval);
+        final nextReviewTime = lastReview.reviewDate.add(
+          lastReview.nextInterval,
+        );
         if (now.isAfter(nextReviewTime)) {
           reviewQueue.add(item);
+          debugPrint('🔍 REVIEW DEBUG: Adding reviewing word "${item.term}" to review queue (interval passed)');
+        } else {
+          debugPrint('🔍 REVIEW DEBUG: Skipping reviewing word "${item.term}" (interval not yet passed)');
         }
       }
     }
   }
-  
+
   // Shuffle for varied review order
   reviewQueue.shuffle();
-  
-  debugPrint('🔍 REVIEW DEBUG: Final review queue contains ${reviewQueue.length} words');
+
+  debugPrint(
+    '🔍 REVIEW DEBUG: Final review queue contains ${reviewQueue.length} words',
+  );
   for (final item in reviewQueue) {
     debugPrint('🔍 REVIEW DEBUG: -> "${item.term}" will appear in Review tab');
   }
-  
+
   return reviewQueue;
 });
 
 /// Current review state providers
 final currentReviewIndexProvider = StateProvider.autoDispose<int>((ref) => 0);
-final isReviewCardFlippedProvider = StateProvider.autoDispose<bool>((ref) => false);
+final isReviewCardFlippedProvider = StateProvider.autoDispose<bool>(
+  (ref) => false,
+);
 final reviewCardControllerProvider = Provider.autoDispose<CardSwiperController>(
   (ref) => CardSwiperController(),
 );
@@ -159,10 +184,7 @@ class ReviewScreen extends ConsumerWidget {
         appBar: AppBar(
           title: const Text('Review'),
           automaticallyImplyLeading: false,
-          actions: const [
-            LanguageSelectorAction(),
-            SizedBox(width: 8),
-          ],
+          actions: const [LanguageSelectorAction(), SizedBox(width: 8)],
         ),
         body: const Center(child: CircularProgressIndicator()),
       ),
@@ -170,10 +192,7 @@ class ReviewScreen extends ConsumerWidget {
         appBar: AppBar(
           title: const Text('Review'),
           automaticallyImplyLeading: false,
-          actions: const [
-            LanguageSelectorAction(),
-            SizedBox(width: 8),
-          ],
+          actions: const [LanguageSelectorAction(), SizedBox(width: 8)],
         ),
         body: Center(child: Text('Failed to load review queue: $e')),
       ),
@@ -191,10 +210,7 @@ class ReviewScreen extends ConsumerWidget {
           appBar: AppBar(
             title: Text('Review ${currentIndex + 1}/${reviewQueue.length}'),
             automaticallyImplyLeading: false,
-            actions: const [
-              LanguageSelectorAction(),
-              SizedBox(width: 8),
-            ],
+            actions: const [LanguageSelectorAction(), SizedBox(width: 8)],
           ),
           body: Padding(
             padding: const EdgeInsets.all(16),
@@ -202,37 +218,48 @@ class ReviewScreen extends ConsumerWidget {
               controller: controller,
               cardsCount: reviewQueue.length,
               numberOfCardsDisplayed: 1,
-              allowedSwipeDirection: const AllowedSwipeDirection.only(left: true, right: true),
+              allowedSwipeDirection: const AllowedSwipeDirection.only(
+                left: true,
+                right: true,
+              ),
               onSwipe: (previousIndex, currentIndex, direction) {
                 // Handle swipe logic
                 HapticFeedback.lightImpact();
-                
+
                 final swipedItem = reviewQueue[previousIndex];
                 _handleReviewSwipe(context, ref, swipedItem, direction);
-                
+
                 // Reset flip state for next card
                 ref.read(isReviewCardFlippedProvider.notifier).state = false;
-                
+
                 // Update current index
                 if (currentIndex != null) {
-                  ref.read(currentReviewIndexProvider.notifier).state = currentIndex;
+                  ref.read(currentReviewIndexProvider.notifier).state =
+                      currentIndex;
                 } else {
                   // Review session complete
-                  ref.read(currentReviewIndexProvider.notifier).state = reviewQueue.length;
+                  ref.read(currentReviewIndexProvider.notifier).state =
+                      reviewQueue.length;
                 }
-                
+
                 return true;
               },
-              cardBuilder: (context, index, horizontalThresholdPercentage, verticalThresholdPercentage) {
-                final item = reviewQueue[index];
-                return ReviewCardWidget(
-                  vocabularyItem: item,
-                  onTap: () {
-                    ref.read(isReviewCardFlippedProvider.notifier).state = 
-                        !ref.read(isReviewCardFlippedProvider);
+              cardBuilder:
+                  (
+                    context,
+                    index,
+                    horizontalThresholdPercentage,
+                    verticalThresholdPercentage,
+                  ) {
+                    final item = reviewQueue[index];
+                    return ReviewCardWidget(
+                      vocabularyItem: item,
+                      onTap: () {
+                        ref.read(isReviewCardFlippedProvider.notifier).state =
+                            !ref.read(isReviewCardFlippedProvider);
+                      },
+                    );
                   },
-                );
-              },
             ),
           ),
         );
@@ -245,10 +272,7 @@ class ReviewScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Review'),
         automaticallyImplyLeading: false,
-        actions: const [
-          LanguageSelectorAction(),
-          SizedBox(width: 8),
-        ],
+        actions: const [LanguageSelectorAction(), SizedBox(width: 8)],
       ),
       body: Center(
         child: Padding(
@@ -311,15 +335,16 @@ class ReviewScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildReviewCompleteScreen(BuildContext context, WidgetRef ref, int reviewedCount) {
+  Widget _buildReviewCompleteScreen(
+    BuildContext context,
+    WidgetRef ref,
+    int reviewedCount,
+  ) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Review Complete'),
         automaticallyImplyLeading: false,
-        actions: const [
-          LanguageSelectorAction(),
-          SizedBox(width: 8),
-        ],
+        actions: const [LanguageSelectorAction(), SizedBox(width: 8)],
       ),
       body: Center(
         child: Padding(
@@ -327,11 +352,7 @@ class ReviewScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.emoji_events,
-                size: 80,
-                color: Colors.amber[600],
-              ),
+              Icon(Icons.emoji_events, size: 80, color: Colors.amber[600]),
               const SizedBox(height: 24),
               Text(
                 'Review Session Complete!',
@@ -354,7 +375,10 @@ class ReviewScreen extends ConsumerWidget {
               ElevatedButton(
                 onPressed: () async => _resetReview(ref),
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -368,8 +392,6 @@ class ReviewScreen extends ConsumerWidget {
     );
   }
 
-
-
   Future<void> _handleReviewSwipe(
     BuildContext context,
     WidgetRef ref,
@@ -377,26 +399,26 @@ class ReviewScreen extends ConsumerWidget {
     CardSwiperDirection direction,
   ) async {
     HapticFeedback.selectionClick();
-    
+
     try {
       // Determine difficulty based on swipe direction
-      final difficulty = direction == CardSwiperDirection.right 
-          ? ReviewDifficulty.gotIt 
+      final difficulty = direction == CardSwiperDirection.right
+          ? ReviewDifficulty.gotIt
           : ReviewDifficulty.keepPracticing;
-      
+
       // Calculate next review interval
       final nextInterval = _calculateNextInterval(difficulty);
-      
+
       // Update word status based on swipe
       await _updateWordStatus(ref, item, difficulty);
-      
+
       // Save review session
       await _saveReviewSession(ref, item, difficulty, nextInterval);
-      
+
       // Invalidate providers to refresh the review queue
       ref.invalidate(reviewQueueProvider);
       ref.invalidate(wordProgressProvider);
-      
+
       // Show feedback
       if (!context.mounted) return;
       if (direction == CardSwiperDirection.right) {
@@ -415,7 +437,11 @@ class ReviewScreen extends ConsumerWidget {
     }
   }
 
-  void _showFeedbackSnackBar(BuildContext context, String message, Color color) {
+  void _showFeedbackSnackBar(
+    BuildContext context,
+    String message,
+    Color color,
+  ) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -432,7 +458,7 @@ class ReviewScreen extends ConsumerWidget {
       case ReviewDifficulty.keepPracticing:
         return SpacedRepetitionConfig.keepPracticingInterval; // 1 day
       case ReviewDifficulty.gotIt:
-        return SpacedRepetitionConfig.gotItInterval;          // 7 days
+        return SpacedRepetitionConfig.gotItInterval; // 7 days
     }
   }
 
@@ -444,22 +470,25 @@ class ReviewScreen extends ConsumerWidget {
     try {
       final dataService = await ref.read(localDataServiceProvider.future);
       final currentPlugin = ref.read(currentLanguagePluginProvider);
-      
+
       if (currentPlugin == null) return;
-      
+
       final progressKey = currentPlugin.getProgressKey(item.id);
       final wordProgressMap = dataService.getWordProgress();
-      
+
       if (difficulty == ReviewDifficulty.gotIt) {
         // Check if this word has had multiple successful reviews
         final reviewSessions = await ref.read(reviewSessionsProvider.future);
         final successfulReviews = reviewSessions
-            .where((session) => 
-                session.wordId == item.id && 
-                session.difficulty == ReviewDifficulty.gotIt)
+            .where(
+              (session) =>
+                  session.wordId == item.id &&
+                  session.difficulty == ReviewDifficulty.gotIt,
+            )
             .length;
-        
-        if (successfulReviews >= 2) { // Including this one = 3 total successful reviews
+
+        if (successfulReviews >= 2) {
+          // Including this one = 3 total successful reviews
           // Mark as mastered after 3 successful reviews
           wordProgressMap[progressKey] = 'mastered';
         } else {
@@ -470,7 +499,7 @@ class ReviewScreen extends ConsumerWidget {
         // Keep practicing - remains difficult for immediate review
         wordProgressMap[progressKey] = 'difficult';
       }
-      
+
       await dataService.setWordProgress(wordProgressMap);
     } catch (e) {
       // Silent fail - don't break the review experience
@@ -485,18 +514,19 @@ class ReviewScreen extends ConsumerWidget {
   ) async {
     try {
       final dataService = await ref.read(localDataServiceProvider.future);
-      
+
       final session = ReviewSession(
         wordId: item.id,
         reviewDate: DateTime.now(),
         nextInterval: nextInterval,
         difficulty: difficulty,
       );
-      
+
       // Save to quiz results with a specific key pattern
-      final sessionKey = 'review_${item.id}_${DateTime.now().millisecondsSinceEpoch}';
+      final sessionKey =
+          'review_${item.id}_${DateTime.now().millisecondsSinceEpoch}';
       await dataService.saveQuizResult(sessionKey, session.toJson());
-      
+
       // Record study session
       await dataService.recordStudySession();
     } catch (e) {
@@ -537,7 +567,10 @@ class ReviewCardWidget extends ConsumerWidget {
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 600),
         transitionBuilder: (child, animation) {
-          final rotateAnimation = Tween<double>(begin: 0, end: 1).animate(animation);
+          final rotateAnimation = Tween<double>(
+            begin: 0,
+            end: 1,
+          ).animate(animation);
 
           return AnimatedBuilder(
             animation: rotateAnimation,
@@ -567,21 +600,26 @@ class ReviewCardWidget extends ConsumerWidget {
         child: Card(
           key: ValueKey(isFlipped ? 'back' : 'front'),
           elevation: 8,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: isFlipped 
-                  ? [colorScheme.secondaryContainer, colorScheme.secondaryContainer.withValues(alpha: 0.7)]
-                  : [colorScheme.surface, colorScheme.surfaceContainerLow],
+                colors: isFlipped
+                    ? [
+                        colorScheme.secondaryContainer,
+                        colorScheme.secondaryContainer.withValues(alpha: 0.7),
+                      ]
+                    : [colorScheme.surface, colorScheme.surfaceContainerLow],
               ),
               border: Border.all(
-                color: isFlipped 
-                  ? colorScheme.secondary.withValues(alpha: 0.3)
-                  : colorScheme.outline.withValues(alpha: 0.2),
+                color: isFlipped
+                    ? colorScheme.secondary.withValues(alpha: 0.3)
+                    : colorScheme.outline.withValues(alpha: 0.2),
                 width: 1,
               ),
             ),
@@ -655,7 +693,8 @@ class ReviewCardWidget extends ConsumerWidget {
         ),
         textAlign: TextAlign.center,
       ),
-      if (vocabularyItem.exampleTerm != null || vocabularyItem.exampleTranslation != null) ...[
+      if (vocabularyItem.exampleTerm != null ||
+          vocabularyItem.exampleTranslation != null) ...[
         const SizedBox(height: 24),
         Container(
           padding: const EdgeInsets.all(16),
@@ -664,10 +703,11 @@ class ReviewCardWidget extends ConsumerWidget {
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
-            plugin?.formatExample(vocabularyItem) ?? 
-              (vocabularyItem.exampleTerm != null && vocabularyItem.exampleTranslation != null
-                ? '${vocabularyItem.exampleTerm} — ${vocabularyItem.exampleTranslation}'
-                : ''),
+            plugin?.formatExample(vocabularyItem) ??
+                (vocabularyItem.exampleTerm != null &&
+                        vocabularyItem.exampleTranslation != null
+                    ? '${vocabularyItem.exampleTerm} — ${vocabularyItem.exampleTranslation}'
+                    : ''),
             style: theme.textTheme.bodyLarge?.copyWith(
               color: theme.colorScheme.onSecondaryContainer,
               fontStyle: FontStyle.italic,
@@ -721,4 +761,3 @@ class ReviewCardWidget extends ConsumerWidget {
     );
   }
 }
-

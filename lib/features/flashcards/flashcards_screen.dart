@@ -13,17 +13,23 @@ import 'package:octo_vocab/features/progress/progress_screen.dart';
 import 'package:octo_vocab/features/review/review_screen.dart';
 
 /// Learning queue provider - filters out known/mastered words from flashcards
-final learningQueueProvider = FutureProvider.autoDispose<List<VocabularyItem>>((ref) async {
-  final vocabulary = await ref.read(vocabularyProvider.future);
-  final wordProgress = await ref.read(wordProgressProvider.future);
-  final currentPlugin = ref.read(currentLanguagePluginProvider);
+final learningQueueProvider = FutureProvider.autoDispose<List<VocabularyItem>>((
+  ref,
+) async {
+  final vocabulary = await ref.watch(vocabularyProvider.future);
+  final wordProgress = await ref.watch(wordProgressProvider.future);
+  final currentPlugin = ref.watch(currentLanguagePluginProvider);
 
   debugPrint('📚 LEARNING DEBUG: Loading learning queue...');
   debugPrint('📚 LEARNING DEBUG: Total vocabulary items: ${vocabulary.length}');
-  debugPrint('📚 LEARNING DEBUG: Word progress entries: ${wordProgress.length}');
+  debugPrint(
+    '📚 LEARNING DEBUG: Word progress entries: ${wordProgress.length}',
+  );
 
   if (currentPlugin == null) {
-    debugPrint('📚 LEARNING DEBUG: No current language plugin, returning empty queue');
+    debugPrint(
+      '📚 LEARNING DEBUG: No current language plugin, returning empty queue',
+    );
     return [];
   }
 
@@ -33,11 +39,15 @@ final learningQueueProvider = FutureProvider.autoDispose<List<VocabularyItem>>((
     final progressKey = currentPlugin.getProgressKey(item.id);
     final status = wordProgress[progressKey];
 
-    debugPrint('📚 LEARNING DEBUG: Item "${item.term}" (${item.id}) -> key: "$progressKey" -> status: "$status"');
+    debugPrint(
+      '📚 LEARNING DEBUG: Item "${item.term}" (${item.id}) -> key: "$progressKey" -> status: "$status"',
+    );
 
     // Skip words that are already known or mastered
     if (status == 'known' || status == 'mastered') {
-      debugPrint('📚 LEARNING DEBUG: Skipping "${item.term}" - already learned (status: $status)');
+      debugPrint(
+        '📚 LEARNING DEBUG: Skipping "${item.term}" - already learned (status: $status)',
+      );
       continue;
     }
 
@@ -49,12 +59,17 @@ final learningQueueProvider = FutureProvider.autoDispose<List<VocabularyItem>>((
   // Shuffle for varied learning order
   learningQueue.shuffle();
 
-  debugPrint('📚 LEARNING DEBUG: Final learning queue contains ${learningQueue.length} words');
-  for (final item in learningQueue.take(5)) { // Show first 5 for brevity
+  debugPrint(
+    '📚 LEARNING DEBUG: Final learning queue contains ${learningQueue.length} words',
+  );
+  for (final item in learningQueue.take(5)) {
+    // Show first 5 for brevity
     debugPrint('📚 LEARNING DEBUG: -> "${item.term}" will appear in Learn tab');
   }
   if (learningQueue.length > 5) {
-    debugPrint('📚 LEARNING DEBUG: ... and ${learningQueue.length - 5} more words');
+    debugPrint(
+      '📚 LEARNING DEBUG: ... and ${learningQueue.length - 5} more words',
+    );
   }
 
   return learningQueue;
@@ -85,10 +100,7 @@ class FlashcardsScreen extends ConsumerWidget {
         appBar: AppBar(
           title: const Text('Learn'),
           automaticallyImplyLeading: false,
-          actions: const [
-            LanguageSelectorAction(),
-            SizedBox(width: 8),
-          ],
+          actions: const [LanguageSelectorAction(), SizedBox(width: 8)],
         ),
         body: const Center(child: CircularProgressIndicator()),
       ),
@@ -96,10 +108,7 @@ class FlashcardsScreen extends ConsumerWidget {
         appBar: AppBar(
           title: const Text('Learn'),
           automaticallyImplyLeading: false,
-          actions: const [
-            LanguageSelectorAction(),
-            SizedBox(width: 8),
-          ],
+          actions: const [LanguageSelectorAction(), SizedBox(width: 8)],
         ),
         body: Center(child: Text('Failed to load vocabulary: $e')),
       ),
@@ -109,12 +118,13 @@ class FlashcardsScreen extends ConsumerWidget {
             appBar: AppBar(
               title: const Text('Learn'),
               automaticallyImplyLeading: false,
-              actions: const [
-                LanguageSelectorAction(),
-                SizedBox(width: 8),
-              ],
+              actions: const [LanguageSelectorAction(), SizedBox(width: 8)],
             ),
-            body: const Center(child: Text('Great! You have learned all available words.\nCheck the Review tab to practice them.')),
+            body: const Center(
+              child: Text(
+                'Great! You have learned all available words.\nCheck the Review tab to practice them.',
+              ),
+            ),
           );
         }
 
@@ -154,21 +164,28 @@ class FlashcardsScreen extends ConsumerWidget {
 
                 // Update current index
                 if (currentIndex != null) {
-                  ref.read(currentCardIndexProvider.notifier).state = currentIndex;
+                  ref.read(currentCardIndexProvider.notifier).state =
+                      currentIndex;
                 }
 
                 return true;
               },
-              cardBuilder: (context, index, horizontalThresholdPercentage, verticalThresholdPercentage) {
-                final item = vocabulary[index];
-                return FlashcardWidget(
-                  vocabularyItem: item,
-                  onTap: () {
-                    ref.read(isCardFlippedProvider.notifier).state = 
-                        !ref.read(isCardFlippedProvider);
+              cardBuilder:
+                  (
+                    context,
+                    index,
+                    horizontalThresholdPercentage,
+                    verticalThresholdPercentage,
+                  ) {
+                    final item = vocabulary[index];
+                    return FlashcardWidget(
+                      vocabularyItem: item,
+                      onTap: () {
+                        ref.read(isCardFlippedProvider.notifier).state = !ref
+                            .read(isCardFlippedProvider);
+                      },
+                    );
                   },
-                );
-              },
             ),
           ),
         );
@@ -176,7 +193,11 @@ class FlashcardsScreen extends ConsumerWidget {
     );
   }
 
-  void _showFeedbackSnackBar(BuildContext context, String message, Color color) {
+  void _showFeedbackSnackBar(
+    BuildContext context,
+    String message,
+    Color color,
+  ) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -202,7 +223,7 @@ class FlashcardsScreen extends ConsumerWidget {
 
       final progressKey = currentPlugin.getProgressKey(item.id);
       final wordProgressMap = dataService.getWordProgress();
-      
+
       if (direction == CardSwiperDirection.right) {
         // Known - mark as known
         wordProgressMap[progressKey] = 'known';
@@ -216,13 +237,11 @@ class FlashcardsScreen extends ConsumerWidget {
         _showFeedbackSnackBar(context, 'Known! ✅', Colors.green);
       } else if (direction == CardSwiperDirection.left) {
         // Unknown - mark as difficult
-        debugPrint('📱 SIMULATOR: Swiped left on "${item.term}" - marking as difficult');
         wordProgressMap[progressKey] = 'difficult';
         await dataService.setWordProgress(wordProgressMap);
 
         // CRITICAL: Invalidate providers so review screen shows new difficult words immediately
         // This is the same fix we implemented for the reset functionality
-        debugPrint('🔄 FLASHCARD: Invalidating providers to refresh review queue');
         ref.invalidate(wordProgressProvider);
         ref.invalidate(reviewQueueProvider);
 
@@ -272,7 +291,10 @@ class FlashcardWidget extends ConsumerWidget {
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 600),
         transitionBuilder: (child, animation) {
-          final rotateAnimation = Tween<double>(begin: 0, end: 1).animate(animation);
+          final rotateAnimation = Tween<double>(
+            begin: 0,
+            end: 1,
+          ).animate(animation);
 
           return AnimatedBuilder(
             animation: rotateAnimation,
@@ -302,7 +324,9 @@ class FlashcardWidget extends ConsumerWidget {
         child: Card(
           key: ValueKey(isFlipped ? 'back' : 'front'),
           elevation: 8,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
@@ -353,7 +377,7 @@ class FlashcardWidget extends ConsumerWidget {
         ),
       ];
     }
-    
+
     return [
       Icon(
         plugin.language.icon,
@@ -405,7 +429,8 @@ class FlashcardWidget extends ConsumerWidget {
         ),
         textAlign: TextAlign.center,
       ),
-      if (vocabularyItem.exampleTerm != null || vocabularyItem.exampleTranslation != null) ...[
+      if (vocabularyItem.exampleTerm != null ||
+          vocabularyItem.exampleTranslation != null) ...[
         const SizedBox(height: 24),
         Container(
           padding: const EdgeInsets.all(16),
@@ -414,10 +439,11 @@ class FlashcardWidget extends ConsumerWidget {
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
-            plugin?.formatExample(vocabularyItem) ?? 
-              (vocabularyItem.exampleTerm != null && vocabularyItem.exampleTranslation != null
-                ? '${vocabularyItem.exampleTerm} — ${vocabularyItem.exampleTranslation}'
-                : ''),
+            plugin?.formatExample(vocabularyItem) ??
+                (vocabularyItem.exampleTerm != null &&
+                        vocabularyItem.exampleTranslation != null
+                    ? '${vocabularyItem.exampleTerm} — ${vocabularyItem.exampleTranslation}'
+                    : ''),
             style: theme.textTheme.bodyLarge?.copyWith(
               color: theme.colorScheme.onSecondaryContainer,
               fontStyle: FontStyle.italic,
