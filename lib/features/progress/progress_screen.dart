@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:octo_vocab/core/language/language_registry.dart';
 import 'package:octo_vocab/core/language/widgets/language_selector.dart';
+import 'package:octo_vocab/core/models/word_interaction.dart';
 import 'package:octo_vocab/core/services/local_data_service.dart';
 import 'package:octo_vocab/features/flashcards/flashcards_screen.dart';
 
@@ -50,6 +51,12 @@ final quizResultsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((re
   }
 
   return languageSpecificResults;
+});
+
+/// Word interactions provider for enhanced spaced repetition tracking
+final wordInteractionsProvider = FutureProvider.autoDispose<Map<String, WordInteraction>>((ref) async {
+  final dataService = await ref.watch(localDataServiceProvider.future);
+  return dataService.getWordInteractions();
 });
 
 class ProgressScreen extends ConsumerWidget {

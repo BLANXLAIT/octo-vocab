@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:octo_vocab/core/models/word_interaction.dart';
+
 /// Privacy-first local data storage service
 /// All user data stays on device - no network transmission
 class LocalDataService {
@@ -14,6 +16,7 @@ class LocalDataService {
   static const String _keyStudySessions = 'study_sessions';
   static const String _keyQuizResults = 'quiz_results';
   static const String _keyAppSettings = 'app_settings';
+  static const String _keyWordInteractions = 'word_interactions';
 
   final SharedPreferences _prefs;
 
@@ -108,6 +111,67 @@ class LocalDataService {
 
   Future<bool> saveAppSettings(Map<String, dynamic> settings) async {
     return _prefs.setString(_keyAppSettings, jsonEncode(settings));
+  }
+
+  /// Word Interactions for Enhanced Spaced Repetition
+  Map<String, WordInteraction> getWordInteractions() {
+    final json = _prefs.getString(_keyWordInteractions);
+    if (json == null) return {};
+    try {
+      final decoded = jsonDecode(json) as Map<String, dynamic>;
+      final interactions = <String, WordInteraction>{};
+      for (final entry in decoded.entries) {
+        try {
+          interactions[entry.key] = WordInteraction.fromJson(
+            entry.value as Map<String, dynamic>,
+          );
+        } catch (e) {
+          // Skip invalid entries
+        }
+      }
+      return interactions;
+    } catch (e) {
+      return {};
+    }
+  }
+
+  Future<bool> setWordInteractions(Map<String, WordInteraction> interactions) async {
+    final jsonMap = <String, dynamic>{};
+    for (final entry in interactions.entries) {
+      jsonMap[entry.key] = entry.value.toJson();
+    }
+    return _prefs.setString(_keyWordInteractions, jsonEncode(jsonMap));
+  }
+
+  /// Record a word interaction and update timing data
+  Future<bool> recordWordInteraction(
+    String wordId,
+    InteractionType type, [
+    DateTime? timestamp,
+  ]) async {
+    final interactions = getWordInteractions();
+    final existing = interactions[wordId];
+
+    if (existing != null) {
+      interactions[wordId] = existing.withNewInteraction(type, timestamp);
+    } else {
+      interactions[wordId] = WordInteraction.initial(wordId)
+          .withNewInteraction(type, timestamp);
+    }
+
+    return setWordInteractions(interactions);
+  }
+
+  /// Get words that are available for presentation based on timing constraints
+  List<String> getAvailableWords(List<String> allWordIds, [DateTime? now]) {
+    final interactions = getWordInteractions();
+    now ??= DateTime.now();
+
+    return allWordIds.where((wordId) {
+      final interaction = interactions[wordId];
+      if (interaction == null) return true; // New words are always available
+      return interaction.isAvailableForPresentation(now);
+    }).toList();
   }
 
   /// Privacy Compliance

@@ -10,6 +10,7 @@ import 'package:octo_vocab/core/language/language_plugin.dart';
 import 'package:octo_vocab/core/language/language_registry.dart';
 import 'package:octo_vocab/core/language/models/vocabulary_item.dart';
 import 'package:octo_vocab/core/language/widgets/language_selector.dart';
+import 'package:octo_vocab/core/models/word_interaction.dart';
 import 'package:octo_vocab/core/services/local_data_service.dart';
 import 'package:octo_vocab/features/progress/progress_screen.dart';
 
@@ -411,6 +412,13 @@ class ReviewScreen extends ConsumerWidget {
 
       // Update word status based on swipe
       await _updateWordStatus(ref, item, difficulty);
+
+      // Record word interaction for timing constraints
+      final dataService = await ref.read(localDataServiceProvider.future);
+      final interactionType = difficulty == ReviewDifficulty.gotIt
+          ? InteractionType.reviewGotIt
+          : InteractionType.reviewKeepPracticing;
+      await dataService.recordWordInteraction(item.id, interactionType);
 
       // Save review session
       await _saveReviewSession(ref, item, difficulty, nextInterval);

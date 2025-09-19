@@ -8,16 +8,18 @@ import 'package:octo_vocab/core/language/language_plugin.dart';
 import 'package:octo_vocab/core/language/language_registry.dart';
 import 'package:octo_vocab/core/language/models/vocabulary_item.dart';
 import 'package:octo_vocab/core/language/widgets/language_selector.dart';
+import 'package:octo_vocab/core/models/word_interaction.dart';
 import 'package:octo_vocab/core/services/local_data_service.dart';
 import 'package:octo_vocab/features/progress/progress_screen.dart';
 import 'package:octo_vocab/features/review/review_screen.dart';
 
-/// Learning queue provider - filters out known/mastered words from flashcards
+/// Learning queue provider - filters out known/mastered words and respects timing constraints
 final learningQueueProvider = FutureProvider.autoDispose<List<VocabularyItem>>((
   ref,
 ) async {
   final vocabulary = await ref.watch(vocabularyProvider.future);
   final wordProgress = await ref.watch(wordProgressProvider.future);
+  final dataService = await ref.watch(localDataServiceProvider.future);
   final currentPlugin = ref.watch(currentLanguagePluginProvider);
 
   debugPrint('📚 LEARNING DEBUG: Loading learning queue...');
@@ -33,6 +35,14 @@ final learningQueueProvider = FutureProvider.autoDispose<List<VocabularyItem>>((
     return [];
   }
 
+  // Get timing-available words based on interaction history
+  final allWordIds = vocabulary.map((item) => item.id).toList();
+  final availableWordIds = dataService.getAvailableWords(allWordIds);
+
+  debugPrint(
+    '📚 LEARNING DEBUG: ${availableWordIds.length}/${allWordIds.length} words available based on timing constraints',
+  );
+
   final learningQueue = <VocabularyItem>[];
 
   for (final item in vocabulary) {
@@ -47,6 +57,14 @@ final learningQueueProvider = FutureProvider.autoDispose<List<VocabularyItem>>((
     if (status == 'known' || status == 'mastered') {
       debugPrint(
         '📚 LEARNING DEBUG: Skipping "${item.term}" - already learned (status: $status)',
+      );
+      continue;
+    }
+
+    // Check timing constraints - skip if word was seen too recently
+    if (!availableWordIds.contains(item.id)) {
+      debugPrint(
+        '📚 LEARNING DEBUG: Skipping "${item.term}" - timing constraint not met',
       );
       continue;
     }
@@ -225,25 +243,33 @@ class FlashcardsScreen extends ConsumerWidget {
       final wordProgressMap = dataService.getWordProgress();
 
       if (direction == CardSwiperDirection.right) {
-        // Known - mark as known
+        // Known - mark as known and record interaction
         wordProgressMap[progressKey] = 'known';
         await dataService.setWordProgress(wordProgressMap);
+
+        // Record word interaction for timing constraints
+        await dataService.recordWordInteraction(item.id, InteractionType.flashcardKnown);
 
         // Invalidate providers so review screen updates immediately
         ref.invalidate(wordProgressProvider);
         ref.invalidate(reviewQueueProvider);
+        ref.invalidate(learningQueueProvider); // Also invalidate learning queue
 
         if (!context.mounted) return;
         _showFeedbackSnackBar(context, 'Known! ✅', Colors.green);
       } else if (direction == CardSwiperDirection.left) {
-        // Unknown - mark as difficult
+        // Unknown - mark as difficult and record interaction
         wordProgressMap[progressKey] = 'difficult';
         await dataService.setWordProgress(wordProgressMap);
+
+        // Record word interaction for timing constraints
+        await dataService.recordWordInteraction(item.id, InteractionType.flashcardUnknown);
 
         // CRITICAL: Invalidate providers so review screen shows new difficult words immediately
         // This is the same fix we implemented for the reset functionality
         ref.invalidate(wordProgressProvider);
         ref.invalidate(reviewQueueProvider);
+        ref.invalidate(learningQueueProvider); // Also invalidate learning queue
 
         if (!context.mounted) return;
         _showFeedbackSnackBar(context, 'Will review later! 📚', Colors.orange);
