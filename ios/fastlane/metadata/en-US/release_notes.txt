@@ -1,0 +1,10 @@
+Enhanced Learning Experience
+
+* Smart spaced repetition with intelligent timing-based word presentation
+* Multi-language architecture supporting seamless language switching
+* Learning queue automatically filters known words for efficient study
+* Improved swipe-to-review flow with instant progress updates
+* Enhanced flashcard system with better state management
+* Performance optimizations and bug fixes
+
+Perfect for students learning Latin and Spanish vocabulary!
