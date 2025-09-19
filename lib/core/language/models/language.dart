@@ -15,19 +15,19 @@ class Language {
 
   /// Language code (e.g., "la" for Latin, "es" for Spanish)
   final String code;
-  
+
   /// English name of the language
   final String name;
-  
+
   /// Native name of the language (e.g., "Lingua Latina", "Español")
   final String nativeName;
-  
+
   /// Icon to represent this language in the UI
   final IconData icon;
-  
+
   /// Primary color for this language's theme
   final Color color;
-  
+
   /// Optional description
   final String? description;
 

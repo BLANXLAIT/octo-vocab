@@ -20,7 +20,7 @@ void main() {
 
     testWidgets('✅ Complete quiz and check progress', (tester) async {
       debugPrint('🚀 Simple quiz completion test');
-      
+
       app.main();
       await TestHelpers.waitForAppLoad(tester);
 
@@ -45,25 +45,30 @@ void main() {
       while (find.text('Next Question').evaluate().isNotEmpty) {
         questionsAnswered++;
         debugPrint('📝 Answering question $questionsAnswered');
-        
+
         await tester.pumpAndSettle();
-        
+
         // Answer the question
         final answerButtons = find.byType(ElevatedButton);
-        final nonNextButtons = answerButtons.evaluate()
-            .where((e) => (e.widget as ElevatedButton).child is! Text ||
-                         ((e.widget as ElevatedButton).child as Text).data != 'Next Question')
+        final nonNextButtons = answerButtons
+            .evaluate()
+            .where(
+              (e) =>
+                  (e.widget as ElevatedButton).child is! Text ||
+                  ((e.widget as ElevatedButton).child as Text).data !=
+                      'Next Question',
+            )
             .toList();
-        
+
         if (nonNextButtons.isNotEmpty) {
           await tester.tap(find.byWidget(nonNextButtons.first.widget));
           await tester.pumpAndSettle();
         }
-        
+
         // Click Next Question
         await tester.tap(find.text('Next Question'));
         await tester.pumpAndSettle();
-        
+
         // Safety check to avoid infinite loop
         if (questionsAnswered >= 10) {
           debugPrint('⚠️ Safety break: answered too many questions');
@@ -79,7 +84,7 @@ void main() {
       // Check progress screen
       await TestHelpers.navigateToProgressTab(tester);
       await tester.pumpAndSettle();
-      
+
       // Should no longer show "no quiz results"
       if (find.textContaining('No quiz results yet').evaluate().isEmpty) {
         debugPrint('✅ SUCCESS: Quiz results are now showing in progress!');

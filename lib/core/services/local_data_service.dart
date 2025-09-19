@@ -59,14 +59,18 @@ class LocalDataService {
     final sessions = getStudySessions();
     final now = sessionTime ?? DateTime.now();
     final todayOnly = DateTime(now.year, now.month, now.day);
-    
-    if (!sessions.any((s) => 
-        s.year == todayOnly.year && 
-        s.month == todayOnly.month && 
-        s.day == todayOnly.day)) {
+
+    if (!sessions.any(
+      (s) =>
+          s.year == todayOnly.year &&
+          s.month == todayOnly.month &&
+          s.day == todayOnly.day,
+    )) {
       sessions.add(todayOnly);
-      return _prefs.setString(_keyStudySessions, 
-          jsonEncode(sessions.map((s) => s.toIso8601String()).toList()));
+      return _prefs.setString(
+        _keyStudySessions,
+        jsonEncode(sessions.map((s) => s.toIso8601String()).toList()),
+      );
     }
     return true;
   }
@@ -82,7 +86,10 @@ class LocalDataService {
     }
   }
 
-  Future<bool> saveQuizResult(String quizId, Map<String, dynamic> result) async {
+  Future<bool> saveQuizResult(
+    String quizId,
+    Map<String, dynamic> result,
+  ) async {
     final results = getQuizResults();
     results[quizId] = result;
     return _prefs.setString(_keyQuizResults, jsonEncode(results));
@@ -107,7 +114,9 @@ class LocalDataService {
   Future<bool> clearAllData() async {
     debugPrint('🗑️ CLEAR DATA: Starting to clear all SharedPreferences data');
     final success = await _prefs.clear();
-    debugPrint('🗑️ CLEAR DATA: Clear operation ${success ? "successful" : "failed"}');
+    debugPrint(
+      '🗑️ CLEAR DATA: Clear operation ${success ? "successful" : "failed"}',
+    );
     return success;
   }
 }

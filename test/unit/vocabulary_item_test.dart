@@ -89,10 +89,7 @@ void main() {
     });
 
     test('creates from JSON with missing fields', () {
-      final json = {
-        'latin': 'sol',
-        'english': 'sun',
-      };
+      final json = {'latin': 'sol', 'english': 'sun'};
 
       final item = VocabularyItem.fromJson(json);
 
@@ -156,14 +153,57 @@ void main() {
     });
 
     test('equality works correctly', () {
-      const item1 = VocabularyItem(id: 'test', term: 'test', translation: 'test');
-      const item2 = VocabularyItem(id: 'test', term: 'test', translation: 'test');
-      const item3 = VocabularyItem(id: 'other', term: 'other', translation: 'other');
+      const item1 = VocabularyItem(
+        id: 'test',
+        term: 'test',
+        translation: 'test',
+      );
+      const item2 = VocabularyItem(
+        id: 'test',
+        term: 'test',
+        translation: 'test',
+      );
+      const item3 = VocabularyItem(
+        id: 'other',
+        term: 'other',
+        translation: 'other',
+      );
 
       expect(item1, equals(item2));
       expect(item1, isNot(equals(item3)));
       expect(item1.hashCode, equals(item2.hashCode));
       expect(item1.hashCode, isNot(equals(item3.hashCode)));
+    });
+
+    test('creates from JSON with Spanish field names', () {
+      final json = {
+        'id': 'ser',
+        'spanish': 'ser',
+        'english': 'to be (permanent)',
+        'pos': 'verb',
+        'exampleSpanish': 'Soy estudiante.',
+        'exampleEnglish': 'I am a student.',
+        'tags': ['beginner', 'verbs', 'identity', 'high-frequency'],
+      };
+
+      final item = VocabularyItem.fromJson(json);
+
+      expect(item.id, equals('ser'));
+      expect(item.term, equals('ser')); // Should use 'spanish' field
+      expect(
+        item.translation,
+        equals('to be (permanent)'),
+      ); // Should use 'english' field
+      expect(item.partOfSpeech, equals('verb')); // Should use 'pos' field
+      expect(
+        item.exampleTerm,
+        equals('Soy estudiante.'),
+      ); // Should use 'exampleSpanish' field
+      expect(item.exampleTranslation, equals('I am a student.'));
+      expect(
+        item.tags,
+        equals(['beginner', 'verbs', 'identity', 'high-frequency']),
+      );
     });
 
     test('toString works correctly', () {
@@ -173,7 +213,10 @@ void main() {
         translation: 'love',
       );
 
-      expect(item.toString(), equals('VocabularyItem(id: amor, term: amor, translation: love)'));
+      expect(
+        item.toString(),
+        equals('VocabularyItem(id: amor, term: amor, translation: love)'),
+      );
     });
   });
 }

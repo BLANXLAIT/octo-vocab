@@ -8,21 +8,32 @@ import 'package:octo_vocab/core/language/widgets/language_selector.dart';
 void main() {
   group('LanguageSelector Widget Tests', () {
     const mockLanguages = [
-      Language(code: 'la', name: 'Latin', nativeName: 'Lingua Latina', icon: Icons.account_balance, color: Colors.brown),
-      Language(code: 'es', name: 'Spanish', nativeName: 'Español', icon: Icons.language, color: Colors.orange),
+      Language(
+        code: 'la',
+        name: 'Latin',
+        nativeName: 'Lingua Latina',
+        icon: Icons.account_balance,
+        color: Colors.brown,
+      ),
+      Language(
+        code: 'es',
+        name: 'Spanish',
+        nativeName: 'Español',
+        icon: Icons.language,
+        color: Colors.orange,
+      ),
     ];
 
-    Widget createTestWidget(List<Language> languages, [String selectedLanguage = 'la']) {
+    Widget createTestWidget(
+      List<Language> languages, [
+      String selectedLanguage = 'la',
+    ]) {
       return ProviderScope(
         overrides: [
           availableLanguagesProvider.overrideWith((ref) => languages),
           selectedLanguageProvider.overrideWith((ref) => selectedLanguage),
         ],
-        child: const MaterialApp(
-          home: Scaffold(
-            body: LanguageSelector(),
-          ),
-        ),
+        child: const MaterialApp(home: Scaffold(body: LanguageSelector())),
       );
     }
 
@@ -36,7 +47,13 @@ void main() {
 
     testWidgets('shows chip when only one language available', (tester) async {
       const singleLanguage = [
-        Language(code: 'la', name: 'Latin', nativeName: 'Lingua Latina', icon: Icons.account_balance, color: Colors.brown),
+        Language(
+          code: 'la',
+          name: 'Latin',
+          nativeName: 'Lingua Latina',
+          icon: Icons.account_balance,
+          color: Colors.brown,
+        ),
       ];
 
       await tester.pumpWidget(createTestWidget(singleLanguage));
@@ -46,7 +63,9 @@ void main() {
       expect(find.byIcon(Icons.account_balance), findsOneWidget);
     });
 
-    testWidgets('shows dropdown when multiple languages available', (tester) async {
+    testWidgets('shows dropdown when multiple languages available', (
+      tester,
+    ) async {
       await tester.pumpWidget(createTestWidget(mockLanguages));
 
       expect(find.byType(DropdownButton<String>), findsOneWidget);
@@ -69,7 +88,7 @@ void main() {
 
     testWidgets('can select different language from dropdown', (tester) async {
       String? selectedLanguage;
-      
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -105,11 +124,26 @@ void main() {
 
   group('LanguageSelectorAction Widget Tests', () {
     const mockLanguages = [
-      Language(code: 'la', name: 'Latin', nativeName: 'Lingua Latina', icon: Icons.account_balance, color: Colors.brown),
-      Language(code: 'es', name: 'Spanish', nativeName: 'Español', icon: Icons.language, color: Colors.orange),
+      Language(
+        code: 'la',
+        name: 'Latin',
+        nativeName: 'Lingua Latina',
+        icon: Icons.account_balance,
+        color: Colors.brown,
+      ),
+      Language(
+        code: 'es',
+        name: 'Spanish',
+        nativeName: 'Español',
+        icon: Icons.language,
+        color: Colors.orange,
+      ),
     ];
 
-    Widget createTestWidget(List<Language> languages, [String selectedLanguage = 'la']) {
+    Widget createTestWidget(
+      List<Language> languages, [
+      String selectedLanguage = 'la',
+    ]) {
       return ProviderScope(
         overrides: [
           availableLanguagesProvider.overrideWith((ref) => languages),
@@ -117,9 +151,7 @@ void main() {
         ],
         child: MaterialApp(
           home: Scaffold(
-            appBar: AppBar(
-              actions: const [LanguageSelectorAction()],
-            ),
+            appBar: AppBar(actions: const [LanguageSelectorAction()]),
           ),
         ),
       );
@@ -133,28 +165,40 @@ void main() {
       expect(find.byType(PopupMenuButton<String>), findsNothing);
     });
 
-    testWidgets('shows disabled icon button when only one language', (tester) async {
+    testWidgets('shows disabled icon button when only one language', (
+      tester,
+    ) async {
       const singleLanguage = [
-        Language(code: 'la', name: 'Latin', nativeName: 'Lingua Latina', icon: Icons.account_balance, color: Colors.brown),
+        Language(
+          code: 'la',
+          name: 'Latin',
+          nativeName: 'Lingua Latina',
+          icon: Icons.account_balance,
+          color: Colors.brown,
+        ),
       ];
 
       await tester.pumpWidget(createTestWidget(singleLanguage));
 
       expect(find.byType(IconButton), findsOneWidget);
       expect(find.byIcon(Icons.account_balance), findsOneWidget);
-      
+
       final iconButton = tester.widget<IconButton>(find.byType(IconButton));
       expect(iconButton.onPressed, isNull); // Should be disabled
     });
 
-    testWidgets('shows popup menu when multiple languages available', (tester) async {
+    testWidgets('shows popup menu when multiple languages available', (
+      tester,
+    ) async {
       await tester.pumpWidget(createTestWidget(mockLanguages));
 
       expect(find.byType(PopupMenuButton<String>), findsOneWidget);
       expect(find.text('LA'), findsOneWidget); // Language code in uppercase
     });
 
-    testWidgets('popup menu contains all languages with current selected', (tester) async {
+    testWidgets('popup menu contains all languages with current selected', (
+      tester,
+    ) async {
       await tester.pumpWidget(createTestWidget(mockLanguages, 'es'));
 
       // Tap the popup menu button
@@ -163,12 +207,17 @@ void main() {
 
       expect(find.text('Latin'), findsOneWidget);
       expect(find.text('Spanish'), findsOneWidget);
-      expect(find.byIcon(Icons.check), findsOneWidget); // Check mark for selected language
+      expect(
+        find.byIcon(Icons.check),
+        findsOneWidget,
+      ); // Check mark for selected language
     });
 
-    testWidgets('can select different language from popup menu', (tester) async {
+    testWidgets('can select different language from popup menu', (
+      tester,
+    ) async {
       String? selectedLanguage;
-      
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -209,14 +258,14 @@ void main() {
       await tester.pumpWidget(createTestWidget(mockLanguages, 'es'));
 
       expect(find.text('ES'), findsOneWidget);
-      
+
       final container = tester.widget<Container>(
         find.descendant(
           of: find.byType(PopupMenuButton<String>),
           matching: find.byType(Container),
         ),
       );
-      
+
       final decoration = container.decoration as BoxDecoration?;
       expect(decoration?.color, equals(Colors.orange.withValues(alpha: 0.1)));
     });

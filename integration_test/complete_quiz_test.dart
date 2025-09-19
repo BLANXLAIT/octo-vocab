@@ -20,7 +20,7 @@ void main() {
 
     testWidgets('Complete 5-question quiz and check progress', (tester) async {
       debugPrint('🚀 Testing complete quiz flow');
-      
+
       app.main();
       await TestHelpers.waitForAppLoad(tester);
 
@@ -37,41 +37,41 @@ void main() {
       // Complete all 5 questions
       for (int i = 1; i <= 5; i++) {
         debugPrint('📝 Answering question $i');
-        
+
         // Answer the question
         final answerButtons = find.byType(InkWell);
         await tester.tap(answerButtons.first);
         await tester.pump();
-        
+
         // Click Next Question (or Finish Quiz on last question)
         final nextButton = find.text(i == 5 ? 'Finish Quiz' : 'Next Question');
         await tester.tap(nextButton);
         await tester.pump();
-        
+
         if (i < 5) {
           await tester.pumpAndSettle();
         }
       }
-      
+
       debugPrint('🏁 Quiz should be complete - checking results screen');
       await tester.pumpAndSettle();
-      
+
       // Should now be on quiz results screen
       expect(find.text('Quiz Complete!'), findsOneWidget);
-      
+
       debugPrint('✅ Quiz completed - now checking Progress tab');
-      
+
       // Navigate to Progress tab
       await TestHelpers.navigateToProgressTab(tester);
       await tester.pumpAndSettle();
-      
+
       // Check if quiz results are saved
       debugPrint('📊 Checking progress screen for quiz results');
       TestHelpers.debugPrintAllText(tester);
-      
+
       // Should not see "no quiz results yet"
       expect(find.text('No quiz results yet'), findsNothing);
-      
+
       debugPrint('✅ Test complete');
     });
   });

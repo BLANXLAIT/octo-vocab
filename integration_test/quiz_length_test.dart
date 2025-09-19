@@ -20,7 +20,7 @@ void main() {
 
     testWidgets('✅ Default quiz length should be Short (10)', (tester) async {
       debugPrint('🚀 Testing default quiz length');
-      
+
       app.main();
       await TestHelpers.waitForAppLoad(tester);
 
@@ -30,7 +30,7 @@ void main() {
 
       // Check that we're starting a quiz (not empty state)
       expect(find.textContaining('Quiz 1/'), findsOneWidget);
-      
+
       // Debug: Print all text to see the actual quiz title
       TestHelpers.debugPrintAllText(tester);
 
@@ -39,7 +39,7 @@ void main() {
 
     testWidgets('✅ Can change quiz length through dropdown', (tester) async {
       debugPrint('🚀 Testing quiz length selector');
-      
+
       app.main();
       await TestHelpers.waitForAppLoad(tester);
 
@@ -50,7 +50,7 @@ void main() {
       // Look for the quiz length selector (quiz icon button)
       final quizSelector = find.byIcon(Icons.quiz);
       expect(quizSelector, findsOneWidget);
-      
+
       // Tap on quiz length selector
       await tester.tap(quizSelector);
       await tester.pumpAndSettle();
@@ -67,13 +67,15 @@ void main() {
 
       // Quiz should restart and show 1/5 or similar limited count
       expect(find.textContaining('Quiz 1/'), findsOneWidget);
-      
+
       debugPrint('✅ Quiz length selector test passed');
     });
 
-    testWidgets('✅ Quiz length setting persists across sessions', (tester) async {
+    testWidgets('✅ Quiz length setting persists across sessions', (
+      tester,
+    ) async {
       debugPrint('🚀 Testing quiz length persistence');
-      
+
       app.main();
       await TestHelpers.waitForAppLoad(tester);
 
@@ -97,13 +99,15 @@ void main() {
 
       // Should still show limited quiz length
       expect(find.textContaining('Quiz 1/'), findsOneWidget);
-      
+
       debugPrint('✅ Quiz length persistence test passed');
     });
 
-    testWidgets('✅ Full quiz includes all available vocabulary', (tester) async {
+    testWidgets('✅ Full quiz includes all available vocabulary', (
+      tester,
+    ) async {
       debugPrint('🚀 Testing full quiz mode');
-      
+
       app.main();
       await TestHelpers.waitForAppLoad(tester);
 
@@ -119,11 +123,11 @@ void main() {
 
       // Should show quiz started
       expect(find.textContaining('Quiz 1/'), findsOneWidget);
-      
+
       // Debug: Print all text to see the quiz info
       debugPrint('📱 Full quiz screen:');
       TestHelpers.debugPrintAllText(tester);
-      
+
       debugPrint('✅ Full quiz test passed');
     });
   });

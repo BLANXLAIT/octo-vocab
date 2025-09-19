@@ -10,16 +10,19 @@ import 'package:octo_vocab/core/models/vocabulary_level.dart';
 class SpanishPlugin extends LanguagePlugin {
   @override
   Language get language => const Language(
-        code: 'es',
-        name: 'Spanish',
-        nativeName: 'Español',
-        icon: Icons.language,
-        color: Color(0xFFFF6B35), // Spanish Orange
-        description: 'Modern Spanish for communication',
-      );
+    code: 'es',
+    name: 'Spanish',
+    nativeName: 'Español',
+    icon: Icons.language,
+    color: Color(0xFFFF6B35), // Spanish Orange
+    description: 'Modern Spanish for communication',
+  );
 
   @override
-  Future<List<VocabularyItem>> loadVocabulary(VocabularyLevel level, VocabularySet vocabSet) async {
+  Future<List<VocabularyItem>> loadVocabulary(
+    VocabularyLevel level,
+    VocabularySet vocabSet,
+  ) async {
     return loadVocabularyFromAsset(level, vocabSet);
   }
 

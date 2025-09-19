@@ -47,7 +47,7 @@ void main() {
         icon: Icons.language,
         color: Colors.blue,
       );
-      
+
       const language2 = Language(
         code: 'fr',
         name: 'French (Different Name)',
@@ -55,7 +55,7 @@ void main() {
         icon: Icons.flag,
         color: Colors.red,
       );
-      
+
       const language3 = Language(
         code: 'de',
         name: 'German',
@@ -84,16 +84,58 @@ void main() {
 
     test('handles common language codes', () {
       const languages = [
-        Language(code: 'en', name: 'English', nativeName: 'English', icon: Icons.language, color: Colors.blue),
-        Language(code: 'es', name: 'Spanish', nativeName: 'Español', icon: Icons.language, color: Colors.orange),
-        Language(code: 'fr', name: 'French', nativeName: 'Français', icon: Icons.language, color: Colors.blue),
-        Language(code: 'de', name: 'German', nativeName: 'Deutsch', icon: Icons.language, color: Colors.red),
-        Language(code: 'it', name: 'Italian', nativeName: 'Italiano', icon: Icons.language, color: Colors.green),
-        Language(code: 'la', name: 'Latin', nativeName: 'Lingua Latina', icon: Icons.account_balance, color: Colors.brown),
+        Language(
+          code: 'en',
+          name: 'English',
+          nativeName: 'English',
+          icon: Icons.language,
+          color: Colors.blue,
+        ),
+        Language(
+          code: 'es',
+          name: 'Spanish',
+          nativeName: 'Español',
+          icon: Icons.language,
+          color: Colors.orange,
+        ),
+        Language(
+          code: 'fr',
+          name: 'French',
+          nativeName: 'Français',
+          icon: Icons.language,
+          color: Colors.blue,
+        ),
+        Language(
+          code: 'de',
+          name: 'German',
+          nativeName: 'Deutsch',
+          icon: Icons.language,
+          color: Colors.red,
+        ),
+        Language(
+          code: 'it',
+          name: 'Italian',
+          nativeName: 'Italiano',
+          icon: Icons.language,
+          color: Colors.green,
+        ),
+        Language(
+          code: 'la',
+          name: 'Latin',
+          nativeName: 'Lingua Latina',
+          icon: Icons.account_balance,
+          color: Colors.brown,
+        ),
       ];
 
-      expect(languages.map((l) => l.code), equals(['en', 'es', 'fr', 'de', 'it', 'la']));
-      expect(languages.map((l) => l.name), equals(['English', 'Spanish', 'French', 'German', 'Italian', 'Latin']));
+      expect(
+        languages.map((l) => l.code),
+        equals(['en', 'es', 'fr', 'de', 'it', 'la']),
+      );
+      expect(
+        languages.map((l) => l.name),
+        equals(['English', 'Spanish', 'French', 'German', 'Italian', 'Latin']),
+      );
     });
   });
 }

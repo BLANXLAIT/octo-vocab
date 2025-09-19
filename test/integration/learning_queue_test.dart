@@ -52,7 +52,10 @@ void main() {
 
       // Assert: All vocabulary words should appear
       expect(learningQueue.length, equals(mockVocabulary.length));
-      expect(learningQueue.map((w) => w.id), containsAll(['amor', 'vita', 'terra', 'aqua', 'ignis']));
+      expect(
+        learningQueue.map((w) => w.id),
+        containsAll(['amor', 'vita', 'terra', 'aqua', 'ignis']),
+      );
     });
 
     test('known words are filtered from learning queue', () async {
@@ -71,11 +74,16 @@ void main() {
 
       try {
         // Act: Get the learning queue
-        final learningQueue = await testContainer.read(learningQueueProvider.future);
+        final learningQueue = await testContainer.read(
+          learningQueueProvider.future,
+        );
 
         // Assert: Known words should be filtered out
         expect(learningQueue.length, equals(3)); // 5 total - 2 known = 3
-        expect(learningQueue.map((w) => w.id), containsAll(['terra', 'aqua', 'ignis']));
+        expect(
+          learningQueue.map((w) => w.id),
+          containsAll(['terra', 'aqua', 'ignis']),
+        );
         expect(learningQueue.map((w) => w.id), isNot(contains('amor')));
         expect(learningQueue.map((w) => w.id), isNot(contains('vita')));
       } finally {
@@ -99,11 +107,16 @@ void main() {
 
       try {
         // Act: Get the learning queue
-        final learningQueue = await testContainer.read(learningQueueProvider.future);
+        final learningQueue = await testContainer.read(
+          learningQueueProvider.future,
+        );
 
         // Assert: Mastered words should be filtered out
         expect(learningQueue.length, equals(3)); // 5 total - 2 mastered = 3
-        expect(learningQueue.map((w) => w.id), containsAll(['amor', 'vita', 'ignis']));
+        expect(
+          learningQueue.map((w) => w.id),
+          containsAll(['amor', 'vita', 'ignis']),
+        );
         expect(learningQueue.map((w) => w.id), isNot(contains('terra')));
         expect(learningQueue.map((w) => w.id), isNot(contains('aqua')));
       } finally {
@@ -127,11 +140,16 @@ void main() {
 
       try {
         // Act: Get the learning queue
-        final learningQueue = await testContainer.read(learningQueueProvider.future);
+        final learningQueue = await testContainer.read(
+          learningQueueProvider.future,
+        );
 
         // Assert: All words should still appear (difficult words need more practice)
         expect(learningQueue.length, equals(5));
-        expect(learningQueue.map((w) => w.id), containsAll(['amor', 'vita', 'terra', 'aqua', 'ignis']));
+        expect(
+          learningQueue.map((w) => w.id),
+          containsAll(['amor', 'vita', 'terra', 'aqua', 'ignis']),
+        );
       } finally {
         testContainer.dispose();
       }
@@ -139,10 +157,10 @@ void main() {
 
     test('mixed progress statuses work correctly', () async {
       // Arrange: Mix of different statuses
-      mockWordProgress['la_amor'] = 'known';      // Should be filtered
-      mockWordProgress['la_vita'] = 'mastered';   // Should be filtered
+      mockWordProgress['la_amor'] = 'known'; // Should be filtered
+      mockWordProgress['la_vita'] = 'mastered'; // Should be filtered
       mockWordProgress['la_terra'] = 'difficult'; // Should appear
-      mockWordProgress['la_aqua'] = 'reviewing';  // Should appear
+      mockWordProgress['la_aqua'] = 'reviewing'; // Should appear
       // ignis has no status (new word) - should appear
 
       // Create a new container with updated mock data
@@ -156,11 +174,16 @@ void main() {
 
       try {
         // Act: Get the learning queue
-        final learningQueue = await testContainer.read(learningQueueProvider.future);
+        final learningQueue = await testContainer.read(
+          learningQueueProvider.future,
+        );
 
         // Assert: Only terra, aqua, and ignis should appear
         expect(learningQueue.length, equals(3));
-        expect(learningQueue.map((w) => w.id), containsAll(['terra', 'aqua', 'ignis']));
+        expect(
+          learningQueue.map((w) => w.id),
+          containsAll(['terra', 'aqua', 'ignis']),
+        );
         expect(learningQueue.map((w) => w.id), isNot(contains('amor')));
         expect(learningQueue.map((w) => w.id), isNot(contains('vita')));
       } finally {
@@ -185,7 +208,9 @@ void main() {
 
       try {
         // Act: Get the learning queue
-        final learningQueue = await testContainer.read(learningQueueProvider.future);
+        final learningQueue = await testContainer.read(
+          learningQueueProvider.future,
+        );
 
         // Assert: Learning queue should be empty
         expect(learningQueue, isEmpty);
@@ -193,6 +218,5 @@ void main() {
         testContainer.dispose();
       }
     });
-
   });
 }

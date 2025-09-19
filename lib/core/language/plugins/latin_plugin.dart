@@ -10,16 +10,19 @@ import 'package:octo_vocab/core/models/vocabulary_level.dart';
 class LatinPlugin extends LanguagePlugin {
   @override
   Language get language => const Language(
-        code: 'la',
-        name: 'Latin',
-        nativeName: 'Lingua Latina',
-        icon: Icons.account_balance,
-        color: Color(0xFF8B4513), // Saddle Brown - classical/ancient feel
-        description: 'Classical Latin for academic study',
-      );
+    code: 'la',
+    name: 'Latin',
+    nativeName: 'Lingua Latina',
+    icon: Icons.account_balance,
+    color: Color(0xFF8B4513), // Saddle Brown - classical/ancient feel
+    description: 'Classical Latin for academic study',
+  );
 
   @override
-  Future<List<VocabularyItem>> loadVocabulary(VocabularyLevel level, VocabularySet vocabSet) async {
+  Future<List<VocabularyItem>> loadVocabulary(
+    VocabularyLevel level,
+    VocabularySet vocabSet,
+  ) async {
     return loadVocabularyFromAsset(level, vocabSet);
   }
 

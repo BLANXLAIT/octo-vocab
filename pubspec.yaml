@@ -18,11 +18,7 @@ dependencies:
   # Core utilities
   meta: ^1.15.0
   
-  # Firebase (deferred to later phases; removed for web run compatibility)
-  # firebase_core: ^2.24.2
-  # firebase_auth: ^4.15.3
-  # cloud_firestore: ^4.13.6
-  # firebase_crashlytics: ^3.4.9
+  # This app is designed to be 100% offline - no Firebase integration needed
   
   # Navigation
   go_router: ^12.1.3

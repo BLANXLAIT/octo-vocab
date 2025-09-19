@@ -19,7 +19,6 @@ enum ThemeVariant {
 
 /// Dynamic color schemes that adapt to different contexts
 class DynamicColorSchemes {
-
   /// Generate a vibrant color scheme with high fidelity to seed color
   static ColorScheme createVibrantScheme({
     required Color seedColor,

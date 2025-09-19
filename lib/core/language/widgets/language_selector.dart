@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:octo_vocab/core/language/language_registry.dart';
+import 'package:octo_vocab/core/language/language_state_notifier.dart';
 import 'package:octo_vocab/core/language/models/language.dart';
 
 // ignore_for_file: public_member_api_docs
@@ -13,7 +14,7 @@ class LanguageSelector extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final availableLanguages = ref.watch(availableLanguagesProvider);
     final selectedLanguageCode = ref.watch(selectedLanguageProvider);
-    
+
     if (availableLanguages.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -38,10 +39,13 @@ class LanguageSelector extends ConsumerWidget {
       value: selectedLanguageCode,
       onChanged: (String? newLanguageCode) {
         if (newLanguageCode != null) {
-          ref.read(selectedLanguageProvider.notifier).state = newLanguageCode;
+          // Use the language state notifier to handle language changes
+          ref.read(languageStateNotifierProvider.notifier).setLanguage(newLanguageCode);
         }
       },
-      items: availableLanguages.map<DropdownMenuItem<String>>((Language language) {
+      items: availableLanguages.map<DropdownMenuItem<String>>((
+        Language language,
+      ) {
         return DropdownMenuItem<String>(
           value: language.code,
           child: Row(
@@ -69,7 +73,7 @@ class LanguageSelectorAction extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final availableLanguages = ref.watch(availableLanguagesProvider);
     final selectedLanguageCode = ref.watch(selectedLanguageProvider);
-    
+
     if (availableLanguages.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -92,7 +96,8 @@ class LanguageSelectorAction extends ConsumerWidget {
 
     return PopupMenuButton<String>(
       onSelected: (String languageCode) {
-        ref.read(selectedLanguageProvider.notifier).state = languageCode;
+        // Use the language state notifier to handle language changes
+        ref.read(languageStateNotifierProvider.notifier).setLanguage(languageCode);
       },
       itemBuilder: (BuildContext context) {
         return availableLanguages.map((Language language) {
@@ -102,15 +107,17 @@ class LanguageSelectorAction extends ConsumerWidget {
             child: Row(
               children: [
                 Icon(
-                  language.icon, 
-                  size: 18, 
+                  language.icon,
+                  size: 18,
                   color: isSelected ? language.color : null,
                 ),
                 const SizedBox(width: 12),
                 Text(
                   language.name,
                   style: TextStyle(
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                     color: isSelected ? language.color : null,
                   ),
                 ),
@@ -132,7 +139,11 @@ class LanguageSelectorAction extends ConsumerWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(selectedLanguage.icon, size: 16, color: selectedLanguage.color),
+            Icon(
+              selectedLanguage.icon,
+              size: 16,
+              color: selectedLanguage.color,
+            ),
             const SizedBox(width: 4),
             Text(
               selectedLanguage.code.toUpperCase(),

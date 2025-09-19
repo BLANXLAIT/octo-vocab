@@ -7,10 +7,10 @@ import 'package:octo_vocab/core/language/plugins/spanish_plugin.dart';
 /// Initialize all language plugins
 void initializeLanguagePlugins() {
   final registry = LanguageRegistry.instance;
-  
+
   // Register language plugins
   registry.register(LatinPlugin());
   registry.register(SpanishPlugin());
-  
+
   print('DEBUG: Language plugins initialized successfully');
 }

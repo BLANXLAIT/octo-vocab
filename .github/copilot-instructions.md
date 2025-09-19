@@ -1,250 +1,193 @@
-# GitHub Copilot Instructions for Flutter/Firebase SaaS Template
+# GitHub Copilot Instructions for Octo Vocab
 
 ## Project Overview
-This is a **template repository** for Flutter/Firebase SaaS applications using streaming authentication and real-time data patterns with Riverpod state management. The codebase emphasizes code generation, strict typing, and AI-assisted development.
+Octo Vocab is a privacy-first offline vocabulary learning app for students in grades 7-12 learning foreign languages. Built with Flutter and Riverpod, it emphasizes educational excellence and user privacy by being completely offline with no user login or data collection.
 
-## Template Usage
-This is NOT a regular Flutter project - it's a GitHub template:
-```bash
-# Don't create a new Flutter project - use the GitHub template instead
-# 1. Click "Use this template" on GitHub
-# 2. Clone your new repository
-git clone https://github.com/yourusername/your-saas-app.git
-cd your-saas-app
+## Architecture Principles
 
-# 3. Install dependencies (already configured in pubspec.yaml)
-flutter pub get
-
-# 4. Configure Firebase for your project
-dart pub global activate flutterfire_cli
-flutterfire configure
-```
-
-## Core Architecture
+### Privacy-First Offline Design
+- **100% Offline** - No internet connection required after installation
+- **No User Accounts** - No login or registration needed
+- **Zero Data Collection** - No analytics, tracking, or data harvesting
+- **COPPA/FERPA Compliant** - Safe for educational use
 
 ### State Management with Riverpod
-Always use Riverpod with code generation:
+Use Riverpod with proper reactive patterns:
 
 ```dart
+// ✅ Good: Reactive provider that watches dependencies
 @riverpod
-class AuthNotifier extends _$AuthNotifier {
-  @override
-  Stream<User?> build() {
-    return FirebaseAuth.instance.authStateChanges();
+class LanguageStateNotifier extends StateNotifier<String> {
+  LanguageStateNotifier(this.dataService) : super('la');
+
+  Future<void> setLanguage(String code) async {
+    state = code;
+    await dataService.saveAppSettings({'selectedLanguage': code});
   }
+}
+
+// ✅ Good: Provider that watches other providers reactively
+final vocabularyProvider = FutureProvider.autoDispose<List<VocabularyItem>>((ref) async {
+  final selectedLanguage = ref.watch(selectedLanguageProvider);
+  final level = ref.watch(vocabularyLevelProvider);
+  return registry.loadVocabulary(selectedLanguage, level);
+});
+```
+
+### Educational Patterns
+
+#### Multi-Language Support
+Support multiple languages with plugin architecture:
+
+```dart
+// Language-specific plugins for formatting and behavior
+abstract class LanguagePlugin {
+  Language get language;
+  String formatTerm(VocabularyItem item);
+  String formatExample(VocabularyItem item);
+  String getProgressKey(String itemId);
+}
+
+// Registry manages available languages
+class LanguageRegistry {
+  void register(LanguagePlugin plugin);
+  List<Language> getAvailableLanguages();
 }
 ```
 
-### Streaming Authentication Pattern
-Use Firebase auth streams for real-time authentication state:
+#### Learning Progress Tracking
+Track student progress locally without data collection:
 
 ```dart
-@riverpod
-Stream<User?> authState(AuthStateRef ref) {
-  return FirebaseAuth.instance.authStateChanges();
-}
+// Store progress in SharedPreferences
+final wordProgressProvider = FutureProvider<Map<String, String>>((ref) async {
+  final dataService = await ref.watch(localDataServiceProvider.future);
+  return dataService.getWordProgress();
+});
 
-// UI automatically updates with auth changes
-class AuthGate extends ConsumerWidget {
-  @override
+// Filter vocabulary based on learning progress
+final learningQueueProvider = FutureProvider.autoDispose<List<VocabularyItem>>((ref) async {
+  final vocabulary = await ref.watch(vocabularyProvider.future);
+  final progress = await ref.watch(wordProgressProvider.future);
+
+  return vocabulary.where((item) {
+    final status = progress[item.id];
+    return status != 'known' && status != 'mastered';
+  }).toList();
+});
+```
+
+### Data Persistence Patterns
+
+#### SharedPreferences for Local Storage
+All data is stored locally using SharedPreferences:
+
+```dart
+class LocalDataService {
+  final SharedPreferences _prefs;
+
+  // App settings (language, quiz length, etc.)
+  Map<String, dynamic> getAppSettings() =>
+    json.decode(_prefs.getString('appSettings') ?? '{}');
+
+  // Word progress tracking
+  Map<String, String> getWordProgress() =>
+    json.decode(_prefs.getString('wordProgress') ?? '{}');
+}
+```
+
+#### Asset-Based Vocabulary Loading
+Vocabulary data is stored as JSON assets:
+
+```dart
+// Load vocabulary from assets based on language and level
+Future<List<VocabularyItem>> loadVocabulary(String language, VocabularyLevel level) {
+  final assetPath = 'assets/vocab/$language/${level.name}/set1.json';
+  return rootBundle.loadString(assetPath)
+    .then((json) => VocabularyItem.listFromJsonString(json));
+}
+```
+
+### UI/UX Patterns
+
+#### Learning Modes
+Implement different study modes with consistent state management:
+
+```dart
+// Flashcards with swipe gestures
+class FlashcardsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authStateProvider);
-    
-    return authState.when(
-      data: (user) => user != null ? DashboardPage() : LoginPage(),
-      loading: () => LoadingScreen(),
-      error: (error, _) => ErrorScreen(error: error),
-    );
+    final vocabulary = ref.watch(learningQueueProvider);
+    // CardSwiper with proper state management
+  }
+}
+
+// Quiz with multiple choice
+class QuizScreen extends ConsumerWidget {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final vocabulary = ref.watch(quizVocabularyProvider);
+    // Quiz logic with proper answer tracking
   }
 }
 ```
 
-### Firestore Streaming Pattern
-Default to streams for all Firestore operations:
+#### Accessibility
+Always implement proper accessibility for educational apps:
 
 ```dart
-@riverpod
-Stream<List<Document>> documents(DocumentsRef ref) {
-  final user = ref.watch(authStateProvider).value;
-  if (user == null) return Stream.value([]);
-  
-  return FirebaseFirestore.instance
-      .collection('documents')
-      .where('userId', isEqualTo: user.uid)
-      .snapshots()
-      .map((snapshot) => snapshot.docs
-          .map((doc) => Document.fromJson(doc.data()))
-          .toList());
-}
+Semantics(
+  label: 'Quiz length selector',
+  hint: 'Tap to change quiz length. Currently set to ${currentLength.displayName}',
+  button: true,
+  child: PopupMenuButton<QuizLength>(...),
+)
 ```
-
-## SaaS-Specific Patterns
-
-### Multi-Tenant Organization Access
-Stream organization membership and permissions for team-based SaaS:
-
-```dart
-@riverpod
-Stream<List<Organization>> userOrganizations(UserOrganizationsRef ref) {
-  // Stream organizations user belongs to
-}
-
-@riverpod  
-Stream<UserPermissions> userPermissions(UserPermissionsRef ref) {
-  // Stream real-time permissions for current org context
-}
-```
-
-### Subscription & Billing Streams
-Always stream subscription status and usage for SaaS apps:
-
-```dart
-@riverpod
-Stream<SubscriptionStatus> subscriptionStatus(SubscriptionStatusRef ref) {
-  // Stream Stripe subscription status from Firestore
-}
-
-@riverpod
-Stream<UsageMetrics> usageMetrics(UsageMetricsRef ref) {
-  // Stream real-time usage data for billing/limits
-}
-```
-
-### Firebase Functions Integration (TypeScript)
-**Always use TypeScript for Firebase Functions** to ensure type safety and better developer experience.
-
-Standard Firebase Functions setup:
-```bash
-# Initialize with TypeScript
-firebase init functions
-# Select TypeScript when prompted
-
-# Project structure:
-functions/
-├── src/
-│   ├── index.ts           # Function exports
-│   ├── auth/              # Authentication functions
-│   ├── webhooks/          # Stripe/external webhooks
-│   ├── notifications/     # Email/push notifications
-│   └── utils/             # Shared utilities
-├── package.json
-├── tsconfig.json
-└── .eslintrc.js
-```
-
-Core SaaS Functions in TypeScript:
-```typescript
-// src/auth/onUserCreate.ts
-import { auth } from 'firebase-functions/v1';
-import { getFirestore } from 'firebase-admin/firestore';
-
-export const onUserCreate = auth.user().onCreate(async (user) => {
-  const db = getFirestore();
-  
-  // Create user profile with default organization
-  await db.collection('users').doc(user.uid).set({
-    email: user.email,
-    createdAt: new Date(),
-    organizationId: null,
-    role: 'member',
-  });
-});
-
-// src/webhooks/stripeWebhook.ts
-import { https } from 'firebase-functions/v1';
-import { StripeWebhookEvent } from '../types/stripe';
-
-export const stripeWebhook = https.onRequest(async (req, res) => {
-  const event: StripeWebhookEvent = req.body;
-  
-  switch (event.type) {
-    case 'customer.subscription.created':
-      await handleSubscriptionCreated(event.data.object);
-      break;
-    case 'customer.subscription.updated':
-      await handleSubscriptionUpdated(event.data.object);
-      break;
-  }
-  
-  res.status(200).send('Webhook processed');
-});
-```
-
-Key patterns:
-- User provisioning on signup with typed data models
-- Stripe webhook handling with proper TypeScript interfaces
-- Email notifications using SendGrid/Firebase Extensions
-- Usage tracking and aggregation with Cloud Firestore
-- Organization management with role-based access
-- Background job processing for billing and analytics
-
-### Security & Access Control
-Implement proper Firestore security rules for multi-tenant access:
-- Users can only access their own data
-- Organization-based access control
-- Role-based permissions within organizations
 
 ## Development Guidelines
 
-### Key Patterns
-1. **Always use streams** for Firebase data (auth, Firestore)
-2. **Use Riverpod code generation** with `@riverpod` annotation
-3. **ConsumerWidget** for all widgets that read providers
-4. **AsyncValue.guard()** for error handling in async operations
-5. **Accessibility-first design** - Include semantic labels, proper contrast, keyboard navigation
+### Testing Strategy
+- Unit tests for core models and business logic
+- Widget tests for UI components
+- Integration tests for complete user journeys
+- NO network-dependent tests (offline app)
 
-### Accessibility Guidelines
-Always implement proper accessibility in UI components:
-- Use `Semantics` widgets for screen reader support
-- Provide meaningful labels with `semanticsLabel`
-- Ensure sufficient color contrast (4.5:1 minimum)
-- Support keyboard navigation and focus management
-- Test with TalkBack/VoiceOver enabled
-- Use `MaterialApp.builder` for consistent accessibility theming
-
-### Project Setup
-Use the Dart MCP server to initialize project structure and create files:
-- Ask the AI to "create a new Flutter project with Riverpod providers"
-- The Dart MCP server will use the `create_project` tool to set up appropriate folder structure
-- Follow streaming patterns for all data providers
-
-### Development Workflow
-**Always use Context7 MCP** to look up recent documentation before beginning development:
-- Use Context7 to get latest Flutter, Firebase, and Riverpod documentation
-- Check for updated patterns and best practices before implementing features
-
-**Use Dart MCP server** for all development tasks it supports:
-- `run_tests` for running unit, widget, and integration tests
-- `hot_reload` for applying code changes to running Flutter apps
-- `create_project` for setting up new Flutter/Dart projects
-- Use Dart MCP server instead of terminal commands when available
-
-**Use Maestro MCP server** for UX testing and app automation:
-- Create Maestro flows for testing user journeys and UI interactions
-- Test authentication flows, navigation, and key SaaS features
-- Automate regression testing of critical user paths
-- Validate accessibility and user experience across devices
-
-## Code Generation Workflow
-**Critical**: This project relies heavily on code generation. After any changes to `@riverpod`, `@freezed`, or `@JsonSerializable` annotated code:
-
-```bash
-# Generate all code (Riverpod providers, Freezed classes, JSON serialization)
-dart run build_runner build --delete-conflicting-outputs
-
-# For development with file watching
-dart run build_runner watch --delete-conflicting-outputs
+### File Organization
+```
+lib/
+├── core/
+│   ├── language/          # Language plugins and registry
+│   ├── models/           # Data models
+│   ├── services/         # Local data services
+│   └── providers/        # Shared providers
+├── features/
+│   ├── flashcards/       # Flashcard study mode
+│   ├── quiz/            # Quiz mode
+│   ├── review/          # Review system
+│   └── progress/        # Progress tracking
+└── main.dart
 ```
 
-**Generated files pattern**:
-- `lib/**/*.g.dart` - Riverpod providers and JSON serialization
-- `lib/**/*.freezed.dart` - Immutable data classes
-- These files are excluded from analysis (`analysis_options.yaml`) and git (`.gitignore`)
+### Code Quality
+- Use `very_good_analysis` for strict linting
+- Maintain ~80%+ test coverage
+- Follow material design principles
+- Prioritize accessibility and educational best practices
 
-## Configuration Files Overview
-- `pubspec.yaml` - Stable versions for Flutter 3.35.0+, Dart 3.9.0+
-- `analysis_options.yaml` - Strict linting with `very_good_analysis`
-- `build.yaml` - Code generation configuration for Riverpod and JSON
-- `dart_test.yaml` - Test runner configuration with coverage exclusions
+## Educational Considerations
 
-This template prioritizes real-time streaming data, clean state management with Riverpod, and AI-assisted development through the Dart MCP server.
+### Target Audience
+- **Students**: Grades 7-12 (ages 12-18)
+- **Educators**: Teachers looking for classroom-ready tools
+- **Parents**: Supporting student learning at home
+
+### Learning Science Integration
+- Implement spaced repetition algorithms
+- Track learning metrics locally
+- Provide immediate feedback
+- Support different learning styles (visual, auditory, kinesthetic)
+
+### Privacy Compliance
+- COPPA compliant (no data collection from minors)
+- FERPA compliant (educational privacy)
+- GDPR compliant (privacy by design)
+- Transparent about offline-first approach

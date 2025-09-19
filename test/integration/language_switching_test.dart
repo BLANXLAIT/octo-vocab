@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:octo_vocab/core/language/language_registry.dart';
+import 'package:octo_vocab/core/language/language_state_notifier.dart';
 import 'package:octo_vocab/core/language/models/language.dart';
 import 'package:octo_vocab/core/language/models/vocabulary_item.dart';
 import 'package:octo_vocab/core/language/plugins/latin_plugin.dart';
@@ -21,7 +22,7 @@ void main() {
 
     testWidgets('language registry initializes with plugins', (tester) async {
       final languages = registry.getAvailableLanguages();
-      
+
       expect(languages, hasLength(2));
       expect(languages.map((l) => l.code), containsAll(['la', 'es']));
       expect(languages.map((l) => l.name), containsAll(['Latin', 'Spanish']));
@@ -80,35 +81,68 @@ void main() {
       final latinPlugin = registry.getPlugin('la')!;
       final spanishPlugin = registry.getPlugin('es')!;
 
-      final latinPath = latinPlugin.getVocabularyAssetPath(VocabularyLevel.beginner, vocabSet);
-      final spanishPath = spanishPlugin.getVocabularyAssetPath(VocabularyLevel.beginner, vocabSet);
+      final latinPath = latinPlugin.getVocabularyAssetPath(
+        VocabularyLevel.beginner,
+        vocabSet,
+      );
+      final spanishPath = spanishPlugin.getVocabularyAssetPath(
+        VocabularyLevel.beginner,
+        vocabSet,
+      );
 
-      expect(latinPath, equals('assets/vocab/latin/beginner/${vocabSet.filename}'));
-      expect(spanishPath, equals('assets/vocab/spanish/beginner/${vocabSet.filename}'));
+      expect(
+        latinPath,
+        equals('assets/vocab/latin/beginner/${vocabSet.filename}'),
+      );
+      expect(
+        spanishPath,
+        equals('assets/vocab/spanish/beginner/${vocabSet.filename}'),
+      );
       expect(latinPath, isNot(equals(spanishPath)));
     });
 
-    testWidgets('language registry provides correct vocabulary loading interface', (tester) async {
-      // Test that the registry can handle vocabulary loading requests
-      // (This would normally load from actual asset files, but in test we just verify the interface)
-      
-      expect(() async => registry.loadVocabulary('la', VocabularyLevel.beginner), returnsNormally);
-      expect(() async => registry.loadVocabulary('es', VocabularyLevel.beginner), returnsNormally);
-      
-      expect(
-        () => registry.loadVocabulary('nonexistent', VocabularyLevel.beginner),
-        throwsA(isA<Exception>()),
-      );
-    });
+    testWidgets(
+      'language registry provides correct vocabulary loading interface',
+      (tester) async {
+        // Test that the registry can handle vocabulary loading requests
+        // (This would normally load from actual asset files, but in test we just verify the interface)
 
-    testWidgets('language switching preserves plugin independence', (tester) async {
+        expect(
+          () async => registry.loadVocabulary('la', VocabularyLevel.beginner),
+          returnsNormally,
+        );
+        expect(
+          () async => registry.loadVocabulary('es', VocabularyLevel.beginner),
+          returnsNormally,
+        );
+
+        expect(
+          () =>
+              registry.loadVocabulary('nonexistent', VocabularyLevel.beginner),
+          throwsA(isA<Exception>()),
+        );
+      },
+    );
+
+    testWidgets('language switching preserves plugin independence', (
+      tester,
+    ) async {
       final latinPlugin = registry.getPlugin('la')!;
       final spanishPlugin = registry.getPlugin('es')!;
 
       // Each plugin should maintain its own identity
-      expect(latinPlugin.language.color, isNot(equals(spanishPlugin.language.color)));
-      expect(latinPlugin.language.icon, isNot(equals(spanishPlugin.language.icon)));
-      expect(latinPlugin.getLearningTips(), isNot(equals(spanishPlugin.getLearningTips())));
+      expect(
+        latinPlugin.language.color,
+        isNot(equals(spanishPlugin.language.color)),
+      );
+      expect(
+        latinPlugin.language.icon,
+        isNot(equals(spanishPlugin.language.icon)),
+      );
+      expect(
+        latinPlugin.getLearningTips(),
+        isNot(equals(spanishPlugin.getLearningTips())),
+      );
     });
   });
 
@@ -116,8 +150,20 @@ void main() {
     testWidgets('providers work with language registry', (tester) async {
       // This tests that our providers can work with the registry system
       const mockLanguages = [
-        Language(code: 'la', name: 'Latin', nativeName: 'Latina', icon: Icons.abc, color: Colors.brown),
-        Language(code: 'es', name: 'Spanish', nativeName: 'Español', icon: Icons.abc, color: Colors.orange),
+        Language(
+          code: 'la',
+          name: 'Latin',
+          nativeName: 'Latina',
+          icon: Icons.abc,
+          color: Colors.brown,
+        ),
+        Language(
+          code: 'es',
+          name: 'Spanish',
+          nativeName: 'Español',
+          icon: Icons.abc,
+          color: Colors.orange,
+        ),
       ];
 
       await tester.pumpWidget(
@@ -131,7 +177,7 @@ void main() {
               builder: (context, ref, child) {
                 final languages = ref.watch(availableLanguagesProvider);
                 final selected = ref.watch(selectedLanguageProvider);
-                
+
                 return Scaffold(
                   body: Column(
                     children: [
@@ -152,8 +198,20 @@ void main() {
 
     testWidgets('language selection updates correctly', (tester) async {
       const mockLanguages = [
-        Language(code: 'la', name: 'Latin', nativeName: 'Latina', icon: Icons.abc, color: Colors.brown),
-        Language(code: 'es', name: 'Spanish', nativeName: 'Español', icon: Icons.abc, color: Colors.orange),
+        Language(
+          code: 'la',
+          name: 'Latin',
+          nativeName: 'Latina',
+          icon: Icons.abc,
+          color: Colors.brown,
+        ),
+        Language(
+          code: 'es',
+          name: 'Spanish',
+          nativeName: 'Español',
+          icon: Icons.abc,
+          color: Colors.orange,
+        ),
       ];
 
       late String selectedLanguage;
@@ -167,14 +225,14 @@ void main() {
             home: Consumer(
               builder: (context, ref, child) {
                 selectedLanguage = ref.watch(selectedLanguageProvider);
-                
+
                 return Scaffold(
                   body: Column(
                     children: [
                       Text('Selected: $selectedLanguage'),
                       ElevatedButton(
                         onPressed: () {
-                          ref.read(selectedLanguageProvider.notifier).state = 'es';
+                          ref.read(languageStateNotifierProvider.notifier).setLanguage('es');
                         },
                         child: const Text('Switch to Spanish'),
                       ),
@@ -187,7 +245,10 @@ void main() {
         ),
       );
 
-      expect(find.text('Selected: la'), findsOneWidget); // Default to first language
+      expect(
+        find.text('Selected: la'),
+        findsOneWidget,
+      ); // Default to first language
 
       await tester.tap(find.text('Switch to Spanish'));
       await tester.pump();

@@ -170,7 +170,6 @@ class AdaptiveScaffold extends ConsumerWidget {
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
-
   Future<void> _showResetDataDialog(BuildContext context, WidgetRef ref) async {
     debugPrint('🗑️ USER ACTION: Showing reset data dialog');
     final confirmed = await showDialog<bool>(
@@ -195,7 +194,9 @@ class SettingsScreen extends ConsumerWidget {
             child: FilledButton(
               key: const Key('confirm_delete_button'),
               onPressed: () {
-                debugPrint('🗑️ USER ACTION: Delete All Data confirmation button pressed');
+                debugPrint(
+                  '🗑️ USER ACTION: Delete All Data confirmation button pressed',
+                );
                 Navigator.of(context).pop(true);
               },
               style: FilledButton.styleFrom(backgroundColor: Colors.red),
@@ -209,10 +210,14 @@ class SettingsScreen extends ConsumerWidget {
     debugPrint('🗑️ USER ACTION: Dialog result: $confirmed');
 
     if (confirmed ?? false) {
-      debugPrint('🗑️ USER ACTION: Clear All Data button pressed - proceeding with deletion');
+      debugPrint(
+        '🗑️ USER ACTION: Clear All Data button pressed - proceeding with deletion',
+      );
       final dataService = await LocalDataService.create();
       final success = await dataService.clearAllData();
-      debugPrint('🗑️ USER ACTION: Clear All Data result: ${success ? "SUCCESS" : "FAILED"}');
+      debugPrint(
+        '🗑️ USER ACTION: Clear All Data result: ${success ? "SUCCESS" : "FAILED"}',
+      );
 
       if (success) {
         // CRITICAL: Invalidate providers so they reload fresh data after reset
@@ -227,10 +232,12 @@ class SettingsScreen extends ConsumerWidget {
         // The fix: After SharedPreferences clearing, invalidate all data providers
         // so they re-read from the now-empty storage and update the UI correctly.
         debugPrint('🔄 Invalidating providers to refresh app state');
-        ref.invalidate(wordProgressProvider);     // Core word progress data
-        ref.invalidate(reviewQueueProvider);      // Review words queue
-        ref.invalidate(reviewSessionsProvider);   // Review session data
-        ref.invalidate(localDataServiceProvider); // Force LocalDataService reload
+        ref.invalidate(wordProgressProvider); // Core word progress data
+        ref.invalidate(reviewQueueProvider); // Review words queue
+        ref.invalidate(reviewSessionsProvider); // Review session data
+        ref.invalidate(
+          localDataServiceProvider,
+        ); // Force LocalDataService reload
       }
 
       if (context.mounted) {
@@ -261,7 +268,6 @@ class SettingsScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // Theme Section
             const Text(
               'Appearance',
@@ -369,7 +375,6 @@ class SettingsScreen extends ConsumerWidget {
 
             const SizedBox(height: 8),
 
-
             Card(
               key: const Key('reset_data_card'),
               child: Semantics(
@@ -380,7 +385,9 @@ class SettingsScreen extends ConsumerWidget {
                   title: const Text('Reset My Data'),
                   subtitle: const Text('Delete all progress and preferences'),
                   onTap: () {
-                    debugPrint('🗑️ USER ACTION: Reset My Data ListTile tapped');
+                    debugPrint(
+                      '🗑️ USER ACTION: Reset My Data ListTile tapped',
+                    );
                     _showResetDataDialog(context, ref);
                   },
                 ),

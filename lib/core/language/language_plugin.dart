@@ -12,24 +12,31 @@ abstract class LanguagePlugin {
   Language get language;
 
   /// Load vocabulary items for a specific level and set
-  Future<List<VocabularyItem>> loadVocabulary(VocabularyLevel level, VocabularySet vocabSet);
+  Future<List<VocabularyItem>> loadVocabulary(
+    VocabularyLevel level,
+    VocabularySet vocabSet,
+  );
 
   /// Load all vocabulary for a specific level
-  Future<List<VocabularyItem>> loadLevelVocabulary(VocabularyLevel level) async {
+  Future<List<VocabularyItem>> loadLevelVocabulary(
+    VocabularyLevel level,
+  ) async {
     final allVocabulary = <VocabularyItem>[];
     final sets = VocabularySets.getSetsForLevel(level);
-    
+
     for (final vocabSet in sets) {
       try {
         final vocabulary = await loadVocabulary(level, vocabSet);
         allVocabulary.addAll(vocabulary);
       } catch (e) {
         // Skip sets that don't exist for this language
-        print('DEBUG: Failed to load ${vocabSet.name} for ${language.name}: $e');
+        print(
+          'DEBUG: Failed to load ${vocabSet.name} for ${language.name}: $e',
+        );
         continue;
       }
     }
-    
+
     return allVocabulary;
   }
 
@@ -39,7 +46,10 @@ abstract class LanguagePlugin {
   }
 
   /// Load vocabulary from asset bundle (default implementation)
-  Future<List<VocabularyItem>> loadVocabularyFromAsset(VocabularyLevel level, VocabularySet vocabSet) async {
+  Future<List<VocabularyItem>> loadVocabularyFromAsset(
+    VocabularyLevel level,
+    VocabularySet vocabSet,
+  ) async {
     final path = getVocabularyAssetPath(level, vocabSet);
     final jsonStr = await rootBundle.loadString(path);
     return VocabularyItem.listFromJsonString(jsonStr);
@@ -51,7 +61,7 @@ abstract class LanguagePlugin {
   /// Optional: Custom term display formatting
   String formatTerm(VocabularyItem item) => item.term;
 
-  /// Optional: Custom translation display formatting  
+  /// Optional: Custom translation display formatting
   String formatTranslation(VocabularyItem item) => item.translation;
 
   /// Optional: Custom example formatting

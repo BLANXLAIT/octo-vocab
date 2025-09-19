@@ -18,16 +18,18 @@ void main() {
       await prefs.clear();
     });
 
-    testWidgets('✅ INTEGRATION: Completed quiz appears in progress screen', (tester) async {
+    testWidgets('✅ INTEGRATION: Completed quiz appears in progress screen', (
+      tester,
+    ) async {
       debugPrint('🚀 Testing quiz → progress integration');
-      
+
       app.main();
       await TestHelpers.waitForAppLoad(tester);
 
       // Step 1: Check initial progress state (should be empty)
       await TestHelpers.navigateToProgressTab(tester);
       await tester.pumpAndSettle();
-      
+
       // Should show "no quiz results yet"
       expect(find.textContaining('No quiz results yet'), findsOneWidget);
       debugPrint('✅ Initial state: No quiz results found');
@@ -45,18 +47,18 @@ void main() {
       // Complete all 5 questions
       for (int i = 0; i < 5; i++) {
         debugPrint('📝 Answering question ${i + 1}/5');
-        
+
         // Wait for question to load
         await tester.pumpAndSettle();
-        
+
         // Should see a question
         expect(find.text('What does this mean?'), findsOneWidget);
-        
+
         // Tap the first answer (doesn't matter if it's right or wrong for this test)
         final answerButtons = find.byType(ElevatedButton);
         await tester.tap(answerButtons.first);
         await tester.pumpAndSettle();
-        
+
         // Tap Next Question (or Finish Quiz on last question)
         if (i < 4) {
           await tester.tap(find.text('Next Question'));
@@ -73,28 +75,35 @@ void main() {
       // Step 3: Check that results appear in progress screen
       await TestHelpers.navigateToProgressTab(tester);
       await tester.pumpAndSettle();
-      
+
       // Should NO LONGER show "no quiz results yet"
       expect(find.textContaining('No quiz results yet'), findsNothing);
-      
+
       // Should show quiz performance section with data
       expect(find.textContaining('Quiz Performance'), findsOneWidget);
       expect(find.textContaining('Quizzes Taken'), findsOneWidget);
-      expect(find.textContaining('1'), findsWidgets); // Should show 1 quiz taken
-      
-      debugPrint('✅ Quiz results successfully integrated with progress screen!');
+      expect(
+        find.textContaining('1'),
+        findsWidgets,
+      ); // Should show 1 quiz taken
+
+      debugPrint(
+        '✅ Quiz results successfully integrated with progress screen!',
+      );
     });
 
-    testWidgets('✅ MULTIPLE QUIZZES: Multiple quizzes accumulate in progress', (tester) async {
+    testWidgets('✅ MULTIPLE QUIZZES: Multiple quizzes accumulate in progress', (
+      tester,
+    ) async {
       debugPrint('🚀 Testing multiple quiz accumulation');
-      
+
       app.main();
       await TestHelpers.waitForAppLoad(tester);
 
       // Take two short quizzes
       for (int quiz = 1; quiz <= 2; quiz++) {
         debugPrint('📚 Taking quiz $quiz');
-        
+
         await TestHelpers.navigateToQuizTab(tester);
         await tester.pumpAndSettle();
 
@@ -110,7 +119,7 @@ void main() {
           final answerButtons = find.byType(ElevatedButton);
           await tester.tap(answerButtons.first);
           await tester.pumpAndSettle();
-          
+
           if (q < 4) {
             await tester.tap(find.text('Next Question'));
           } else {
@@ -125,10 +134,13 @@ void main() {
       // Check progress shows 2 quizzes
       await TestHelpers.navigateToProgressTab(tester);
       await tester.pumpAndSettle();
-      
+
       expect(find.textContaining('Quiz Performance'), findsOneWidget);
-      expect(find.textContaining('2'), findsWidgets); // Should show 2 quizzes taken
-      
+      expect(
+        find.textContaining('2'),
+        findsWidgets,
+      ); // Should show 2 quizzes taken
+
       debugPrint('✅ Multiple quiz accumulation verified!');
     });
   });

@@ -30,10 +30,10 @@ void main() {
       // Test basic navigation
       await TestHelpers.navigateToReviewTab(tester);
       expect(find.text('Review'), findsOneWidget);
-      
+
       await TestHelpers.navigateToProgressTab(tester);
       expect(find.text('Progress'), findsOneWidget);
-      
+
       await TestHelpers.navigateToLearnTab(tester);
       expect(find.text('Learn'), findsOneWidget);
 
@@ -46,16 +46,20 @@ void main() {
 
       // Try to interact with flashcard
       await TestHelpers.swipeFlashcardLeft(tester);
-      
+
       // Look for any feedback - be flexible about exact text
-      final hasFeedback = 
-        find.textContaining('review').evaluate().isNotEmpty ||
-        find.textContaining('Review').evaluate().isNotEmpty ||
-        find.textContaining('later').evaluate().isNotEmpty ||
-        find.textContaining('difficult').evaluate().isNotEmpty;
-      
-      expect(hasFeedback, isTrue, reason: 'Should show some feedback after swipe');
-      
+      final hasFeedback =
+          find.textContaining('review').evaluate().isNotEmpty ||
+          find.textContaining('Review').evaluate().isNotEmpty ||
+          find.textContaining('later').evaluate().isNotEmpty ||
+          find.textContaining('difficult').evaluate().isNotEmpty;
+
+      expect(
+        hasFeedback,
+        isTrue,
+        reason: 'Should show some feedback after swipe',
+      );
+
       await TestHelpers.waitForSnackbar(tester);
     });
 
@@ -65,15 +69,23 @@ void main() {
 
       // Check initial review state (should be empty)
       await TestHelpers.navigateToReviewTab(tester);
-      
+
       // Look for empty state OR review content - just verify it loads
-      final hasEmptyState = find.textContaining('No words to review').evaluate().isNotEmpty;
-      final hasReviewContent = find.textContaining('Again').evaluate().isNotEmpty ||
-                               find.textContaining('Easy').evaluate().isNotEmpty;
-      
+      final hasEmptyState = find
+          .textContaining('No words to review')
+          .evaluate()
+          .isNotEmpty;
+      final hasReviewContent =
+          find.textContaining('Again').evaluate().isNotEmpty ||
+          find.textContaining('Easy').evaluate().isNotEmpty;
+
       // Either empty state or review content is acceptable
-      expect(hasEmptyState || hasReviewContent, isTrue, 
-        reason: 'Review screen should show either empty state or review content');
+      expect(
+        hasEmptyState || hasReviewContent,
+        isTrue,
+        reason:
+            'Review screen should show either empty state or review content',
+      );
     });
 
     testWidgets('app state persists across navigation', (tester) async {
@@ -82,17 +94,17 @@ void main() {
 
       // Navigate through all tabs to test persistence
       final destinations = [
-        Icons.quiz_outlined,        // Quiz  
+        Icons.quiz_outlined, // Quiz
         Icons.trending_up_outlined, // Progress
-        Icons.refresh_outlined,     // Review
-        Icons.settings_outlined,    // Settings
-        Icons.style,               // Learn
+        Icons.refresh_outlined, // Review
+        Icons.settings_outlined, // Settings
+        Icons.style, // Learn
       ];
 
       for (final icon in destinations) {
         await tester.tap(find.byIcon(icon));
         await tester.pumpAndSettle(const Duration(milliseconds: 500));
-        
+
         // Verify app doesn't crash
         expect(find.byType(MaterialApp), findsOneWidget);
       }
@@ -106,10 +118,10 @@ void main() {
       await TestHelpers.swipeFlashcardLeft(tester);
       await TestHelpers.swipeFlashcardRight(tester);
       await TestHelpers.tapToFlipFlashcard(tester);
-      
+
       // Verify app is still responsive
       await TestHelpers.verifyNavigationWorks(tester);
-      
+
       // Should be able to navigate
       await TestHelpers.navigateToReviewTab(tester);
       await TestHelpers.navigateToLearnTab(tester);
@@ -121,11 +133,11 @@ void main() {
 
       // Debug helper to see what's actually on screen
       TestHelpers.debugPrintAllText(tester);
-      
+
       await TestHelpers.navigateToReviewTab(tester);
       debugPrint('=== Review Screen Content ===');
       TestHelpers.debugPrintAllText(tester);
-      
+
       // This test always passes - it's just for debugging
       expect(true, isTrue);
     });

@@ -22,9 +22,10 @@ enum QuizLength {
 }
 
 /// Quiz length setting provider
-final quizLengthProvider = StateNotifierProvider<QuizLengthNotifier, QuizLength>((ref) {
-  return QuizLengthNotifier(ref);
-});
+final quizLengthProvider =
+    StateNotifierProvider<QuizLengthNotifier, QuizLength>((ref) {
+      return QuizLengthNotifier(ref);
+    });
 
 class QuizLengthNotifier extends StateNotifier<QuizLength> {
   QuizLengthNotifier(this._ref) : super(QuizLength.short10) {
@@ -39,7 +40,7 @@ class QuizLengthNotifier extends StateNotifier<QuizLength> {
       final dataService = await _ref.read(localDataServiceProvider.future);
       final settings = dataService.getAppSettings();
       final savedLength = settings[_settingKey] as String?;
-      
+
       if (savedLength != null) {
         final quizLength = QuizLength.values.firstWhere(
           (e) => e.name == savedLength,
@@ -68,21 +69,25 @@ class QuizLengthNotifier extends StateNotifier<QuizLength> {
 /// Quiz state management
 final currentQuestionIndexProvider = StateProvider.autoDispose<int>((ref) => 0);
 final selectedAnswerProvider = StateProvider.autoDispose<int?>((ref) => null);
-final isAnswerSubmittedProvider = StateProvider.autoDispose<bool>((ref) => false);
+final isAnswerSubmittedProvider = StateProvider.autoDispose<bool>(
+  (ref) => false,
+);
 final quizResultsProvider = StateProvider.autoDispose<List<bool>>((ref) => []);
 
 /// Provider that returns quiz vocabulary based on length setting
-final quizVocabularyProvider = Provider.autoDispose<List<VocabularyItem>>((ref) {
+final quizVocabularyProvider = Provider.autoDispose<List<VocabularyItem>>((
+  ref,
+) {
   final vocabulary = ref.watch(vocabularyProvider);
   final quizLength = ref.watch(quizLengthProvider);
-  
+
   return vocabulary.when(
     data: (vocab) {
       if (vocab.isEmpty) return [];
-      
+
       // Shuffle the vocabulary for randomness
       final shuffledVocab = [...vocab]..shuffle();
-      
+
       // Return limited list based on quiz length setting
       if (quizLength.count == 0) {
         // Full quiz - return all
@@ -99,36 +104,43 @@ final quizVocabularyProvider = Provider.autoDispose<List<VocabularyItem>>((ref) 
 
 /// Provider that generates shuffled answers once per question
 final shuffledAnswersProvider = Provider.autoDispose<List<String>>((ref) {
-  final vocabulary = ref.watch(quizVocabularyProvider); // Use limited quiz vocabulary
+  final vocabulary = ref.watch(
+    quizVocabularyProvider,
+  ); // Use limited quiz vocabulary
   final currentQuestionIndex = ref.watch(currentQuestionIndexProvider);
-  
+
   if (vocabulary.isEmpty || currentQuestionIndex >= vocabulary.length) {
     return <String>[];
   }
-  
+
   final currentItem = vocabulary[currentQuestionIndex];
-  final wrongAnswers = vocabulary
-      .where((item) => item.id != currentItem.id)
-      .map((item) => item.translation)
-      .toList()
-    ..shuffle();
-  
+  final wrongAnswers =
+      vocabulary
+          .where((item) => item.id != currentItem.id)
+          .map((item) => item.translation)
+          .toList()
+        ..shuffle();
+
   final allAnswers = [currentItem.translation, ...wrongAnswers.take(3)]
     ..shuffle();
-  
+
   return allAnswers;
 });
 
 /// Provider that gets the correct answer index for the current question
 final correctAnswerIndexProvider = Provider.autoDispose<int>((ref) {
-  final vocabulary = ref.watch(quizVocabularyProvider); // Use limited quiz vocabulary
+  final vocabulary = ref.watch(
+    quizVocabularyProvider,
+  ); // Use limited quiz vocabulary
   final currentQuestionIndex = ref.watch(currentQuestionIndexProvider);
   final shuffledAnswers = ref.watch(shuffledAnswersProvider);
-  
-  if (vocabulary.isEmpty || currentQuestionIndex >= vocabulary.length || shuffledAnswers.isEmpty) {
+
+  if (vocabulary.isEmpty ||
+      currentQuestionIndex >= vocabulary.length ||
+      shuffledAnswers.isEmpty) {
     return -1;
   }
-  
+
   final currentItem = vocabulary[currentQuestionIndex];
   return shuffledAnswers.indexOf(currentItem.translation);
 });
@@ -138,7 +150,9 @@ class QuizScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final vocabulary = ref.watch(quizVocabularyProvider); // Use limited quiz vocabulary
+    final vocabulary = ref.watch(
+      quizVocabularyProvider,
+    ); // Use limited quiz vocabulary
     final currentQuestionIndex = ref.watch(currentQuestionIndexProvider);
     final quizResults = ref.watch(quizResultsProvider);
 
@@ -198,113 +212,137 @@ class QuizScreen extends ConsumerWidget {
             child: Center(
               child: Text(
                 'Score: ${quizResults.where((r) => r).length}/${quizResults.length}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
               ),
             ),
           ),
         ],
       ),
-          body: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Question Card
-                Card(
-                  elevation: 4,
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      children: [
-                        Consumer(
-                          builder: (context, ref, _) {
-                            final currentPlugin = ref.watch(currentLanguagePluginProvider);
-                            return Icon(
-                              currentPlugin?.language.icon ?? Icons.quiz,
-                              size: 48,
-                              color: currentPlugin?.language.color ?? Theme.of(context).colorScheme.primary,
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'What does this mean?',
-                          style: Theme.of(context).textTheme.titleMedium,
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Question Card
+            Card(
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final currentPlugin = ref.watch(
+                          currentLanguagePluginProvider,
+                        );
+                        return Icon(
+                          currentPlugin?.language.icon ?? Icons.quiz,
+                          size: 48,
+                          color:
+                              currentPlugin?.language.color ??
+                              Theme.of(context).colorScheme.primary,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'What does this mean?',
+                      style: Theme.of(context).textTheme.titleMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final currentPlugin = ref.watch(
+                          currentLanguagePluginProvider,
+                        );
+                        return Text(
+                          currentPlugin?.formatTerm(currentItem) ??
+                              currentItem.term,
+                          style: Theme.of(context).textTheme.displayMedium
+                              ?.copyWith(
+                                color:
+                                    currentPlugin?.language.color ??
+                                    Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
                           textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        Consumer(
-                          builder: (context, ref, _) {
-                            final currentPlugin = ref.watch(currentLanguagePluginProvider);
-                            return Text(
-                              currentPlugin?.formatTerm(currentItem) ?? currentItem.term,
-                              style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                                    color: currentPlugin?.language.color ?? Theme.of(context).colorScheme.primary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                              textAlign: TextAlign.center,
-                            );
-                          },
-                        ),
-                      ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Answer Options
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: allAnswers.length,
+                itemBuilder: (context, index) {
+                  final selectedAnswer = ref.watch(selectedAnswerProvider);
+                  final isAnswerSubmitted = ref.watch(
+                    isAnswerSubmittedProvider,
+                  );
+
+                  return AnimatedQuizOption(
+                    option: allAnswers[index],
+                    isSelected: selectedAnswer == index,
+                    isCorrect: index == correctAnswerIndex,
+                    showResult: isAnswerSubmitted,
+                    onTap: () => _handleAnswerSelection(
+                      context,
+                      ref,
+                      index,
+                      correctAnswerIndex,
+                    ),
+                    index: index,
+                  );
+                },
+              ),
+            ),
+            // Next Button
+            const SizedBox(height: 24),
+            Consumer(
+              builder: (context, ref, _) {
+                final isAnswerSubmitted = ref.watch(isAnswerSubmittedProvider);
+                return ElevatedButton(
+                  onPressed: isAnswerSubmitted
+                      ? () {
+                          final quizVocab = ref.read(quizVocabularyProvider);
+                          _handleNextQuestion(context, ref, quizVocab.length);
+                        }
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                // Answer Options
-                Flexible(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: allAnswers.length,
-                    itemBuilder: (context, index) {
-                      final selectedAnswer = ref.watch(selectedAnswerProvider);
-                      final isAnswerSubmitted = ref.watch(isAnswerSubmittedProvider);
-                      
-                      return AnimatedQuizOption(
-                        option: allAnswers[index],
-                        isSelected: selectedAnswer == index,
-                        isCorrect: index == correctAnswerIndex,
-                        showResult: isAnswerSubmitted,
-                        onTap: () => _handleAnswerSelection(context, ref, index, correctAnswerIndex),
-                        index: index,
-                      );
-                    },
+                  child: Text(
+                    currentQuestionIndex == vocabulary.length - 1
+                        ? 'Finish Quiz'
+                        : 'Next Question',
+                    style: const TextStyle(fontSize: 16),
                   ),
-                ),
-                // Next Button
-                const SizedBox(height: 24),
-                Consumer(
-                  builder: (context, ref, _) {
-                    final isAnswerSubmitted = ref.watch(isAnswerSubmittedProvider);
-                    return ElevatedButton(
-                      onPressed: isAnswerSubmitted
-                          ? () {
-                              final quizVocab = ref.read(quizVocabularyProvider);
-                              _handleNextQuestion(context, ref, quizVocab.length);
-                            }
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        currentQuestionIndex == vocabulary.length - 1 ? 'Finish Quiz' : 'Next Question',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    );
-                  },
-                ),
-              ],
+                );
+              },
             ),
-          ),
-        );
+          ],
+        ),
+      ),
+    );
   }
 
-  Widget _buildResultsScreen(BuildContext context, WidgetRef ref, List<bool> results, int totalQuestions) {
+  Widget _buildResultsScreen(
+    BuildContext context,
+    WidgetRef ref,
+    List<bool> results,
+    int totalQuestions,
+  ) {
     final correctAnswers = results.where((r) => r).length;
     final percentage = (correctAnswers / totalQuestions * 100).round();
 
@@ -338,17 +376,16 @@ class QuizScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
                     Text(
                       'Quiz Complete!',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
                     Text(
                       '$correctAnswers / $totalQuestions',
                       style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Text(
                       '$percentage% Correct',
@@ -368,7 +405,10 @@ class QuizScreen extends ConsumerWidget {
             ElevatedButton(
               onPressed: () => _resetQuiz(ref),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -381,7 +421,12 @@ class QuizScreen extends ConsumerWidget {
     );
   }
 
-  void _handleAnswerSelection(BuildContext context, WidgetRef ref, int selectedIndex, int correctIndex) {
+  void _handleAnswerSelection(
+    BuildContext context,
+    WidgetRef ref,
+    int selectedIndex,
+    int correctIndex,
+  ) {
     final isAnswerSubmitted = ref.read(isAnswerSubmittedProvider);
     if (isAnswerSubmitted) return;
 
@@ -392,7 +437,10 @@ class QuizScreen extends ConsumerWidget {
     // Update results
     final isCorrect = selectedIndex == correctIndex;
     final currentResults = ref.read(quizResultsProvider);
-    ref.read(quizResultsProvider.notifier).state = [...currentResults, isCorrect];
+    ref.read(quizResultsProvider.notifier).state = [
+      ...currentResults,
+      isCorrect,
+    ];
 
     // Haptic feedback
     HapticFeedback.selectionClick();
@@ -401,9 +449,13 @@ class QuizScreen extends ConsumerWidget {
     _saveQuizProgress(context, ref, isCorrect);
   }
 
-  void _handleNextQuestion(BuildContext context, WidgetRef ref, int totalQuestions) {
+  void _handleNextQuestion(
+    BuildContext context,
+    WidgetRef ref,
+    int totalQuestions,
+  ) {
     final currentIndex = ref.read(currentQuestionIndexProvider);
-    
+
     if (currentIndex < totalQuestions - 1) {
       // Move to next question
       ref.read(currentQuestionIndexProvider.notifier).state = currentIndex + 1;
@@ -425,7 +477,11 @@ class QuizScreen extends ConsumerWidget {
     ref.read(quizResultsProvider.notifier).state = [];
   }
 
-  Future<void> _saveQuizProgress(BuildContext context, WidgetRef ref, bool isCorrect) async {
+  Future<void> _saveQuizProgress(
+    BuildContext context,
+    WidgetRef ref,
+    bool isCorrect,
+  ) async {
     try {
       final dataService = await ref.read(localDataServiceProvider.future);
       await dataService.recordStudySession();
@@ -434,16 +490,20 @@ class QuizScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _saveCompletedQuizResults(BuildContext context, WidgetRef ref, int totalQuestions) async {
+  Future<void> _saveCompletedQuizResults(
+    BuildContext context,
+    WidgetRef ref,
+    int totalQuestions,
+  ) async {
     try {
       final dataService = await ref.read(localDataServiceProvider.future);
       final quizResults = ref.read(quizResultsProvider);
       final quizLength = ref.read(quizLengthProvider);
       final currentPlugin = ref.read(currentLanguagePluginProvider);
-      
+
       final correctAnswers = quizResults.where((r) => r).length;
       final percentage = (correctAnswers / totalQuestions * 100).round();
-      
+
       // Create quiz result data
       final quizResultData = {
         'date': DateTime.now().toIso8601String(),
@@ -455,25 +515,28 @@ class QuizScreen extends ConsumerWidget {
         'percentage': percentage,
         'results': quizResults,
       };
-      
-      // Save with unique ID
-      final quizId = 'quiz_${DateTime.now().millisecondsSinceEpoch}';
+
+      // Save with unique ID that includes language code for filtering
+      final languageCode = currentPlugin?.language.code ?? 'unknown';
+      final quizId = 'quiz_${languageCode}_${DateTime.now().millisecondsSinceEpoch}';
       await dataService.saveQuizResult(quizId, quizResultData);
-      
-      debugPrint('✅ Quiz results saved: $correctAnswers/$totalQuestions ($percentage%)');
+
+      debugPrint(
+        '✅ Quiz results saved: $correctAnswers/$totalQuestions ($percentage%)',
+      );
     } catch (e) {
       debugPrint('❌ Failed to save quiz results: $e');
       // Silent fail - don't break the quiz experience
     }
   }
 
-
   Widget _buildQuizLengthSelector(BuildContext context, WidgetRef ref) {
     final currentLength = ref.watch(quizLengthProvider);
-    
+
     return Semantics(
       label: 'Quiz length selector',
-      hint: 'Tap to change quiz length. Currently set to ${currentLength.displayName}',
+      hint:
+          'Tap to change quiz length. Currently set to ${currentLength.displayName}',
       button: true,
       child: PopupMenuButton<QuizLength>(
         key: const Key('quiz_length_selector'),
@@ -481,41 +544,50 @@ class QuizScreen extends ConsumerWidget {
         tooltip: 'Quiz Length: ${currentLength.displayName}',
         onSelected: (QuizLength length) {
           ref.read(quizLengthProvider.notifier).setQuizLength(length);
-          
+
           // Reset quiz when length changes
           _resetQuiz(ref);
         },
-        itemBuilder: (BuildContext context) => QuizLength.values.map((QuizLength length) {
-          return PopupMenuItem<QuizLength>(
-            key: Key('quiz_length_option_${length.name}'),
-            value: length,
-            child: Semantics(
-              label: '${length.displayName} questions',
-              hint: length == currentLength ? 'Currently selected' : 'Tap to select',
-              selected: length == currentLength,
-              child: Row(
-                children: [
-                  Icon(
-                    length == currentLength ? Icons.check : Icons.radio_button_unchecked,
-                    size: 20,
-                    semanticLabel: length == currentLength ? 'Selected' : 'Not selected',
+        itemBuilder: (BuildContext context) =>
+            QuizLength.values.map((QuizLength length) {
+              return PopupMenuItem<QuizLength>(
+                key: Key('quiz_length_option_${length.name}'),
+                value: length,
+                child: Semantics(
+                  label: '${length.displayName} questions',
+                  hint: length == currentLength
+                      ? 'Currently selected'
+                      : 'Tap to select',
+                  selected: length == currentLength,
+                  child: Row(
+                    children: [
+                      Icon(
+                        length == currentLength
+                            ? Icons.check
+                            : Icons.radio_button_unchecked,
+                        size: 20,
+                        semanticLabel: length == currentLength
+                            ? 'Selected'
+                            : 'Not selected',
+                      ),
+                      const SizedBox(width: 8),
+                      Text(length.displayName),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  Text(length.displayName),
-                ],
-              ),
-            ),
-          );
-        }).toList(),
+                ),
+              );
+            }).toList(),
       ),
     );
   }
 
   String _getEncouragingMessage(int percentage) {
-    if (percentage >= 90) return 'Outstanding! You\'re mastering this language! 🏆';
+    if (percentage >= 90)
+      return 'Outstanding! You\'re mastering this language! 🏆';
     if (percentage >= 80) return 'Excellent work! Keep it up! 🌟';
     if (percentage >= 70) return 'Good job! You\'re making great progress! 👍';
-    if (percentage >= 60) return 'Nice effort! Keep studying and you\'ll improve! 📚';
+    if (percentage >= 60)
+      return 'Nice effort! Keep studying and you\'ll improve! 📚';
     return 'Don\'t give up! Practice makes perfect! 💪';
   }
 }
