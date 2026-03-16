@@ -5,106 +5,18 @@ import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:octo_vocab/core/language/language_plugin.dart';
-import 'package:octo_vocab/core/language/language_registry.dart';
 import 'package:octo_vocab/core/language/models/vocabulary_item.dart';
 import 'package:octo_vocab/core/language/widgets/language_selector.dart';
 import 'package:octo_vocab/core/models/word_interaction.dart';
-import 'package:octo_vocab/core/services/local_data_service.dart';
-import 'package:octo_vocab/features/progress/progress_screen.dart';
-import 'package:octo_vocab/features/review/review_screen.dart';
+import 'package:octo_vocab/core/providers/flashcard_providers.dart';
+import 'package:octo_vocab/core/providers/language_providers.dart';
+import 'package:octo_vocab/core/providers/progress_providers.dart';
+import 'package:octo_vocab/core/providers/review_providers.dart';
+import 'package:octo_vocab/core/providers/storage_providers.dart';
+import 'package:octo_vocab/core/services/error_handler.dart';
+import 'package:octo_vocab/core/widgets/error_view.dart';
 
-/// Learning queue provider - filters out known/mastered words and respects timing constraints
-final learningQueueProvider = FutureProvider.autoDispose<List<VocabularyItem>>((
-  ref,
-) async {
-  final vocabulary = await ref.watch(vocabularyProvider.future);
-  final wordProgress = await ref.watch(wordProgressProvider.future);
-  final dataService = await ref.watch(localDataServiceProvider.future);
-  final currentPlugin = ref.watch(currentLanguagePluginProvider);
-
-  debugPrint('📚 LEARNING DEBUG: Loading learning queue...');
-  debugPrint('📚 LEARNING DEBUG: Total vocabulary items: ${vocabulary.length}');
-  debugPrint(
-    '📚 LEARNING DEBUG: Word progress entries: ${wordProgress.length}',
-  );
-
-  if (currentPlugin == null) {
-    debugPrint(
-      '📚 LEARNING DEBUG: No current language plugin, returning empty queue',
-    );
-    return [];
-  }
-
-  // Get timing-available words based on interaction history
-  final allWordIds = vocabulary.map((item) => item.id).toList();
-  final availableWordIds = dataService.getAvailableWords(allWordIds);
-
-  debugPrint(
-    '📚 LEARNING DEBUG: ${availableWordIds.length}/${allWordIds.length} words available based on timing constraints',
-  );
-
-  final learningQueue = <VocabularyItem>[];
-
-  for (final item in vocabulary) {
-    final progressKey = currentPlugin.getProgressKey(item.id);
-    final status = wordProgress[progressKey];
-
-    debugPrint(
-      '📚 LEARNING DEBUG: Item "${item.term}" (${item.id}) -> key: "$progressKey" -> status: "$status"',
-    );
-
-    // Skip words that are already known or mastered
-    if (status == 'known' || status == 'mastered') {
-      debugPrint(
-        '📚 LEARNING DEBUG: Skipping "${item.term}" - already learned (status: $status)',
-      );
-      continue;
-    }
-
-    // Check timing constraints - skip if word was seen too recently
-    if (!availableWordIds.contains(item.id)) {
-      debugPrint(
-        '📚 LEARNING DEBUG: Skipping "${item.term}" - timing constraint not met',
-      );
-      continue;
-    }
-
-    // Include words that are new (no status), difficult, or reviewing
-    // This gives users a chance to learn new words and re-practice difficult ones
-    learningQueue.add(item);
-  }
-
-  // Shuffle for varied learning order
-  learningQueue.shuffle();
-
-  debugPrint(
-    '📚 LEARNING DEBUG: Final learning queue contains ${learningQueue.length} words',
-  );
-  for (final item in learningQueue.take(5)) {
-    // Show first 5 for brevity
-    debugPrint('📚 LEARNING DEBUG: -> "${item.term}" will appear in Learn tab');
-  }
-  if (learningQueue.length > 5) {
-    debugPrint(
-      '📚 LEARNING DEBUG: ... and ${learningQueue.length - 5} more words',
-    );
-  }
-
-  return learningQueue;
-});
-
-/// Card controller for programmatic control
-final cardControllerProvider = Provider.autoDispose<CardSwiperController>(
-  (ref) => CardSwiperController(),
-);
-
-/// Current flashcard index
-final currentCardIndexProvider = StateProvider.autoDispose<int>((ref) => 0);
-
-/// Whether the current card is flipped to show back
-final isCardFlippedProvider = StateProvider.autoDispose<bool>((ref) => false);
-
-class FlashcardsScreen extends ConsumerWidget {
+class FlashcardsScreen extends ConsumerWidget{
   const FlashcardsScreen({super.key});
 
   @override
@@ -122,14 +34,20 @@ class FlashcardsScreen extends ConsumerWidget {
         ),
         body: const Center(child: CircularProgressIndicator()),
       ),
-      error: (e, st) => Scaffold(
-        appBar: AppBar(
-          title: const Text('Learn'),
-          automaticallyImplyLeading: false,
-          actions: const [LanguageSelectorAction(), SizedBox(width: 8)],
-        ),
-        body: Center(child: Text('Failed to load vocabulary: $e')),
-      ),
+      error: (e, st) {
+        ErrorHandler.logError('Learning Queue', e, st);
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Learn'),
+            automaticallyImplyLeading: false,
+            actions: const [LanguageSelectorAction(), SizedBox(width: 8)],
+          ),
+          body: ErrorView(
+            message: ErrorHandler.getUserMessage(e),
+            onRetry: () => ref.invalidate(learningQueueProvider),
+          ),
+        );
+      },
       data: (vocabulary) {
         if (vocabulary.isEmpty) {
           return Scaffold(
@@ -234,7 +152,7 @@ class FlashcardsScreen extends ConsumerWidget {
     CardSwiperDirection direction,
   ) async {
     try {
-      final dataService = await ref.read(localDataServiceProvider.future);
+      final dataService = ref.read(localDataServiceProvider);
       final currentPlugin = ref.read(currentLanguagePluginProvider);
 
       if (!context.mounted || currentPlugin == null) return;

@@ -1,6 +1,6 @@
 // ignore_for_file: public_member_api_docs
 import 'package:flutter_test/flutter_test.dart';
-import 'package:octo_vocab/features/review/review_screen.dart';
+import 'package:octo_vocab/core/providers/review_providers.dart';
 
 void main() {
   group('Spaced Repetition Business Logic Tests', () {

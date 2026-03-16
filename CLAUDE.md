@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Octo Vocab** is a privacy-first offline vocabulary learning app for students in grades 7-12 learning foreign languages. The app emphasizes privacy by being completely offline with no user login or data collection. Currently supports Latin and Spanish with plans for future language expansion.
+**QuizCraft** is a privacy-first offline vocabulary learning app for students in grades 7-12 learning foreign languages. The app emphasizes privacy by being completely offline with no user login or data collection. Currently supports Latin and Spanish with plans for future language expansion.
 
 ## Essential Commands
 

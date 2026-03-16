@@ -90,7 +90,7 @@ platform :ios do
       else
         bundle_id = Spaceship::Portal::BundleId.create(
           bundle_id: ENV["APP_IDENTIFIER"] || "com.blanxlait.octo-vocab",
-          name: ENV["APP_NAME"] || "Octo Vocab"
+          name: ENV["APP_NAME"] || "QuizCraft"
         )
         UI.success "✅ Bundle ID created successfully!"
       end
@@ -102,7 +102,7 @@ platform :ios do
       # Create using environment variables instead
       produce(
         app_identifier: ENV["APP_IDENTIFIER"] || "com.blanxlait.octo-vocab",
-        app_name: ENV["APP_NAME"] || "Octo Vocab",
+        app_name: ENV["APP_NAME"] || "QuizCraft",
         team_id: ENV["FASTLANE_TEAM_ID"],
         skip_itc: true,
         skip_devcenter: false
@@ -118,7 +118,7 @@ platform :ios do
     
     produce(
       app_identifier: ENV["APP_IDENTIFIER"] || "com.blanxlait.octo-vocab",
-      app_name: ENV["APP_NAME"] || "Octo Vocab",
+      app_name: ENV["APP_NAME"] || "QuizCraft",
       language: "English",
       app_version: "1.0",
       sku: "OCTOVOCAB2024",
@@ -466,7 +466,7 @@ platform :ios do
 
   desc "Setup: Create app and sync certificates (run once)"
   lane :setup do
-    UI.message "⚙️ Setting up Octo Vocab for deployment..."
+    UI.message "⚙️ Setting up QuizCraft for deployment..."
     
     create_app
     sync_certificates

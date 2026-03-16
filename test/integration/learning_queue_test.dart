@@ -1,12 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:octo_vocab/core/language/language_plugin.dart';
 import 'package:octo_vocab/core/language/language_registry.dart';
 import 'package:octo_vocab/core/language/models/vocabulary_item.dart';
 import 'package:octo_vocab/core/language/plugins/latin_plugin.dart';
 import 'package:octo_vocab/core/language/plugins/spanish_plugin.dart';
-import 'package:octo_vocab/features/flashcards/flashcards_screen.dart';
-import 'package:octo_vocab/features/progress/progress_screen.dart';
+import 'package:octo_vocab/core/providers/flashcard_providers.dart';
+import 'package:octo_vocab/core/providers/language_providers.dart';
+import 'package:octo_vocab/core/providers/progress_providers.dart';
 
 void main() {
   group('Learning Queue Logic Tests', () {

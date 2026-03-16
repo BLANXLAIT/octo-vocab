@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:octo_vocab/core/language/language_registry.dart';
 import 'package:octo_vocab/core/language/language_state_notifier.dart';
 import 'package:octo_vocab/core/language/models/language.dart';
+import 'package:octo_vocab/core/providers/language_providers.dart';
 
 // ignore_for_file: public_member_api_docs
 
@@ -30,11 +30,6 @@ class LanguageSelector extends ConsumerWidget {
     }
 
     // Multiple languages available, show as dropdown
-    final selectedLanguage = availableLanguages.firstWhere(
-      (lang) => lang.code == selectedLanguageCode,
-      orElse: () => availableLanguages.first,
-    );
-
     return DropdownButton<String>(
       value: selectedLanguageCode,
       onChanged: (String? newLanguageCode) {

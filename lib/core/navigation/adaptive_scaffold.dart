@@ -1,6 +1,11 @@
 // ignore_for_file: public_member_api_docs
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:octo_vocab/core/providers/navigation_providers.dart';
+import 'package:octo_vocab/core/providers/progress_providers.dart';
+import 'package:octo_vocab/core/providers/review_providers.dart';
+import 'package:octo_vocab/core/providers/storage_providers.dart';
+import 'package:octo_vocab/core/providers/theme_providers.dart';
 import 'package:octo_vocab/core/services/local_data_service.dart';
 import 'package:octo_vocab/core/theme/dynamic_theme.dart';
 import 'package:octo_vocab/features/flashcards/flashcards_screen.dart';
@@ -60,9 +65,6 @@ enum AppDestination {
   final String semanticLabel;
   final String accessibilityKey;
 }
-
-/// Current navigation index provider
-final navigationIndexProvider = StateProvider<int>((ref) => 0);
 
 /// Breakpoint for switching between phone and tablet layout
 const double kTabletBreakpoint = 600;
@@ -301,7 +303,7 @@ class SettingsScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Octo Vocab is designed with privacy as the foundation, ensuring complete compliance with educational privacy standards.',
+                          'QuizCraft is designed with privacy as the foundation, ensuring complete compliance with educational privacy standards.',
                           style: TextStyle(fontSize: 14),
                         ),
                         const SizedBox(height: 16),
@@ -400,7 +402,7 @@ class SettingsScreen extends ConsumerWidget {
             Card(
               child: ExpansionTile(
                 leading: const Icon(Icons.info_outline),
-                title: const Text('About Octo Vocab'),
+                title: const Text('About QuizCraft'),
                 subtitle: const Text('Privacy-first vocabulary learning'),
                 children: [
                   Padding(
@@ -409,7 +411,7 @@ class SettingsScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Octo Vocab is a privacy-first offline vocabulary learning app designed for students in grades 7-12 learning foreign languages.',
+                          'QuizCraft is a privacy-first offline vocabulary learning app designed for students in grades 7-12 learning foreign languages.',
                           style: TextStyle(fontSize: 14),
                         ),
                         const SizedBox(height: 16),

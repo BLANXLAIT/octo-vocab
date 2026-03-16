@@ -1,4 +1,4 @@
-Octo Vocab is a privacy-first vocabulary learning app designed specifically for students in grades 7-12 studying Latin and Spanish. Built with education and privacy as core principles.
+QuizCraft is a privacy-first vocabulary learning app designed specifically for students in grades 7-12 studying Latin and Spanish. Built with education and privacy as core principles.
 
 COMPLETELY PRIVATE
 • Zero data collection - no accounts, analytics, or tracking

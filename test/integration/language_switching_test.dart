@@ -8,6 +8,7 @@ import 'package:octo_vocab/core/language/models/vocabulary_item.dart';
 import 'package:octo_vocab/core/language/plugins/latin_plugin.dart';
 import 'package:octo_vocab/core/language/plugins/spanish_plugin.dart';
 import 'package:octo_vocab/core/models/vocabulary_level.dart';
+import 'package:octo_vocab/core/providers/language_providers.dart';
 
 void main() {
   group('Language Switching Integration Tests', () {

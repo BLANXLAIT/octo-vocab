@@ -7,169 +7,15 @@ import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:octo_vocab/core/language/language_plugin.dart';
-import 'package:octo_vocab/core/language/language_registry.dart';
 import 'package:octo_vocab/core/language/models/vocabulary_item.dart';
 import 'package:octo_vocab/core/language/widgets/language_selector.dart';
 import 'package:octo_vocab/core/models/word_interaction.dart';
-import 'package:octo_vocab/core/services/local_data_service.dart';
-import 'package:octo_vocab/features/progress/progress_screen.dart';
-
-/// Spaced repetition algorithm configuration
-class SpacedRepetitionConfig {
-  static const keepPracticingInterval = Duration(
-    days: 1,
-  ); // Swipe left - needs more practice
-  static const gotItInterval = Duration(days: 7); // Swipe right - got it!
-  static const masteredThreshold = Duration(
-    days: 30,
-  ); // After this, consider mastered
-  static const minimumInterval = Duration(hours: 4); // Fallback minimum
-  static const maximumInterval = Duration(days: 180); // Maximum interval
-}
-
-/// Review session tracking
-class ReviewSession {
-  final String wordId;
-  final DateTime reviewDate;
-  final Duration nextInterval;
-  final ReviewDifficulty difficulty;
-
-  const ReviewSession({
-    required this.wordId,
-    required this.reviewDate,
-    required this.nextInterval,
-    required this.difficulty,
-  });
-
-  Map<String, dynamic> toJson() => {
-    'wordId': wordId,
-    'reviewDate': reviewDate.toIso8601String(),
-    'nextInterval': nextInterval.inMilliseconds,
-    'difficulty': difficulty.name,
-  };
-
-  factory ReviewSession.fromJson(Map<String, dynamic> json) => ReviewSession(
-    wordId: json['wordId'] as String,
-    reviewDate: DateTime.parse(json['reviewDate'] as String),
-    nextInterval: Duration(milliseconds: json['nextInterval'] as int),
-    difficulty: ReviewDifficulty.values.byName(json['difficulty'] as String),
-  );
-}
-
-enum ReviewDifficulty { keepPracticing, gotIt }
-
-/// Providers for review functionality
-final reviewSessionsProvider = FutureProvider.autoDispose<List<ReviewSession>>((ref) async {
-  final dataService = await ref.watch(localDataServiceProvider.future);
-  final selectedLanguage = ref.watch(selectedLanguageProvider);
-  final allQuizResults = dataService.getQuizResults();
-
-  // Filter quiz results to only include current language review sessions
-  final quizResults = <String, dynamic>{};
-  for (final entry in allQuizResults.entries) {
-    if (entry.key.startsWith('review_') && entry.key.contains('${selectedLanguage}_')) {
-      quizResults[entry.key] = entry.value;
-    }
-  }
-
-  final reviewSessions = <ReviewSession>[];
-  for (final entry in quizResults.entries) {
-    if (entry.key.startsWith('review_')) {
-      try {
-        final sessionData = entry.value as Map<String, dynamic>;
-        reviewSessions.add(ReviewSession.fromJson(sessionData));
-      } catch (e) {
-        // Skip invalid entries
-      }
-    }
-  }
-
-  return reviewSessions;
-});
-
-final reviewQueueProvider = FutureProvider.autoDispose<List<VocabularyItem>>((ref) async {
-  final vocabulary = await ref.watch(vocabularyProvider.future);
-  final wordProgress = await ref.watch(wordProgressProvider.future);
-  final reviewSessions = await ref.watch(reviewSessionsProvider.future);
-  final currentPlugin = ref.watch(currentLanguagePluginProvider);
-
-
-  if (currentPlugin == null) {
-    debugPrint(
-      '🔍 REVIEW DEBUG: No current language plugin, returning empty queue',
-    );
-    return [];
-  }
-
-  final now = DateTime.now();
-  final reviewQueue = <VocabularyItem>[];
-
-  for (final item in vocabulary) {
-    final progressKey = currentPlugin.getProgressKey(item.id);
-    final status = wordProgress[progressKey];
-
-    debugPrint(
-      '🔍 REVIEW DEBUG: Item "${item.term}" (${item.id}) -> key: "$progressKey" -> status: "$status"',
-    );
-
-    // Skip mastered words - they've graduated from the review system
-    if (status == 'mastered') continue;
-
-    // Include words marked as difficult (immediate review) or reviewing (scheduled review)
-    if (status == 'difficult' || status == 'reviewing') {
-      // Find the most recent review session for this word
-      final lastReview = reviewSessions
-          .where((session) => session.wordId == item.id)
-          .fold<ReviewSession?>(null, (latest, session) {
-            if (latest == null ||
-                session.reviewDate.isAfter(latest.reviewDate)) {
-              return session;
-            }
-            return latest;
-          });
-
-      if (status == 'difficult') {
-        // Difficult words are always added to review queue
-        // This includes words marked difficult in flashcards (first time)
-        // and words still struggling after reviews
-        reviewQueue.add(item);
-        debugPrint('🔍 REVIEW DEBUG: Adding difficult word "${item.term}" to review queue');
-      } else if (status == 'reviewing' && lastReview != null) {
-        // Reviewing words are only added if their interval has passed
-        final nextReviewTime = lastReview.reviewDate.add(
-          lastReview.nextInterval,
-        );
-        if (now.isAfter(nextReviewTime)) {
-          reviewQueue.add(item);
-          debugPrint('🔍 REVIEW DEBUG: Adding reviewing word "${item.term}" to review queue (interval passed)');
-        } else {
-          debugPrint('🔍 REVIEW DEBUG: Skipping reviewing word "${item.term}" (interval not yet passed)');
-        }
-      }
-    }
-  }
-
-  // Shuffle for varied review order
-  reviewQueue.shuffle();
-
-  debugPrint(
-    '🔍 REVIEW DEBUG: Final review queue contains ${reviewQueue.length} words',
-  );
-  for (final item in reviewQueue) {
-    debugPrint('🔍 REVIEW DEBUG: -> "${item.term}" will appear in Review tab');
-  }
-
-  return reviewQueue;
-});
-
-/// Current review state providers
-final currentReviewIndexProvider = StateProvider.autoDispose<int>((ref) => 0);
-final isReviewCardFlippedProvider = StateProvider.autoDispose<bool>(
-  (ref) => false,
-);
-final reviewCardControllerProvider = Provider.autoDispose<CardSwiperController>(
-  (ref) => CardSwiperController(),
-);
+import 'package:octo_vocab/core/providers/language_providers.dart';
+import 'package:octo_vocab/core/providers/progress_providers.dart';
+import 'package:octo_vocab/core/providers/review_providers.dart';
+import 'package:octo_vocab/core/providers/storage_providers.dart';
+import 'package:octo_vocab/core/services/error_handler.dart';
+import 'package:octo_vocab/core/widgets/error_view.dart';
 
 class ReviewScreen extends ConsumerWidget {
   const ReviewScreen({super.key});
@@ -189,14 +35,20 @@ class ReviewScreen extends ConsumerWidget {
         ),
         body: const Center(child: CircularProgressIndicator()),
       ),
-      error: (e, st) => Scaffold(
-        appBar: AppBar(
-          title: const Text('Review'),
-          automaticallyImplyLeading: false,
-          actions: const [LanguageSelectorAction(), SizedBox(width: 8)],
-        ),
-        body: Center(child: Text('Failed to load review queue: $e')),
-      ),
+      error: (e, st) {
+        ErrorHandler.logError('Review Queue', e, st);
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Review'),
+            automaticallyImplyLeading: false,
+            actions: const [LanguageSelectorAction(), SizedBox(width: 8)],
+          ),
+          body: ErrorView(
+            message: ErrorHandler.getUserMessage(e),
+            onRetry: () => ref.invalidate(reviewQueueProvider),
+          ),
+        );
+      },
       data: (reviewQueue) {
         if (reviewQueue.isEmpty) {
           return _buildNoReviewScreen(context);
@@ -414,7 +266,7 @@ class ReviewScreen extends ConsumerWidget {
       await _updateWordStatus(ref, item, difficulty);
 
       // Record word interaction for timing constraints
-      final dataService = await ref.read(localDataServiceProvider.future);
+      final dataService = ref.read(localDataServiceProvider);
       final interactionType = difficulty == ReviewDifficulty.gotIt
           ? InteractionType.reviewGotIt
           : InteractionType.reviewKeepPracticing;
@@ -476,7 +328,7 @@ class ReviewScreen extends ConsumerWidget {
     ReviewDifficulty difficulty,
   ) async {
     try {
-      final dataService = await ref.read(localDataServiceProvider.future);
+      final dataService = ref.read(localDataServiceProvider);
       final currentPlugin = ref.read(currentLanguagePluginProvider);
 
       if (currentPlugin == null) return;
@@ -521,7 +373,7 @@ class ReviewScreen extends ConsumerWidget {
     Duration nextInterval,
   ) async {
     try {
-      final dataService = await ref.read(localDataServiceProvider.future);
+      final dataService = ref.read(localDataServiceProvider);
 
       final session = ReviewSession(
         wordId: item.id,

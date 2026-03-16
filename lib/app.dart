@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:octo_vocab/core/theme/dynamic_theme.dart';
+import 'package:octo_vocab/core/providers/theme_providers.dart';
 import 'package:octo_vocab/routing/router.dart';
 
 class OctoVocabApp extends ConsumerWidget {
@@ -13,7 +13,7 @@ class OctoVocabApp extends ConsumerWidget {
     final theme = ref.watch(dynamicThemeProvider);
 
     return MaterialApp.router(
-      title: 'Octo Vocab',
+      title: 'QuizCraft',
       theme: theme,
       routerConfig: appRouter,
       debugShowCheckedModeBanner: false,

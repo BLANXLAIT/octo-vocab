@@ -2,101 +2,59 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:octo_vocab/core/repositories/quiz_results_repository.dart';
+import 'package:octo_vocab/core/repositories/study_session_repository.dart';
+import 'package:octo_vocab/core/repositories/word_progress_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:octo_vocab/core/models/word_interaction.dart';
 
 /// Privacy-first local data storage service
 /// All user data stays on device - no network transmission
+///
+/// This class now delegates to repository classes for better separation of concerns
 class LocalDataService {
-  const LocalDataService._(this._prefs);
+  LocalDataService(this._prefs)
+      : _wordProgressRepo = WordProgressRepository(_prefs),
+        _quizResultsRepo = QuizResultsRepository(_prefs),
+        _studySessionRepo = StudySessionRepository(_prefs);
 
-  static const String _keyWordProgress = 'word_progress';
-  static const String _keyStudySessions = 'study_sessions';
-  static const String _keyQuizResults = 'quiz_results';
   static const String _keyAppSettings = 'app_settings';
   static const String _keyWordInteractions = 'word_interactions';
 
   final SharedPreferences _prefs;
+  final WordProgressRepository _wordProgressRepo;
+  final QuizResultsRepository _quizResultsRepo;
+  final StudySessionRepository _studySessionRepo;
 
+  @Deprecated('Use providers instead of create()')
   static Future<LocalDataService> create() async {
     final prefs = await SharedPreferences.getInstance();
-    return LocalDataService._(prefs);
+    return LocalDataService(prefs);
   }
 
   /// Word Progress Tracking (Privacy-First)
   /// Tracks mastery levels: new, learning, mastered
-  Map<String, String> getWordProgress() {
-    final json = _prefs.getString(_keyWordProgress);
-    if (json == null) return {};
-    try {
-      final decoded = jsonDecode(json) as Map<String, dynamic>;
-      return decoded.cast<String, String>();
-    } catch (e) {
-      return {};
-    }
-  }
+  Map<String, String> getWordProgress() => _wordProgressRepo.getWordProgress();
 
-  Future<bool> setWordProgress(Map<String, String> progress) async {
-    return _prefs.setString(_keyWordProgress, jsonEncode(progress));
-  }
+  Future<bool> setWordProgress(Map<String, String> progress) async =>
+      _wordProgressRepo.setWordProgress(progress);
 
   /// Study Sessions (Local Analytics Only)
   /// Tracks daily study for streaks - never leaves device
-  List<DateTime> getStudySessions() {
-    final json = _prefs.getString(_keyStudySessions);
-    if (json == null) return [];
-    try {
-      final decoded = jsonDecode(json) as List<dynamic>;
-      return decoded
-          .map((e) => DateTime.tryParse(e.toString()))
-          .whereType<DateTime>()
-          .toList();
-    } catch (e) {
-      return [];
-    }
-  }
+  List<DateTime> getStudySessions() => _studySessionRepo.getStudySessions();
 
-  Future<bool> recordStudySession([DateTime? sessionTime]) async {
-    final sessions = getStudySessions();
-    final now = sessionTime ?? DateTime.now();
-    final todayOnly = DateTime(now.year, now.month, now.day);
-
-    if (!sessions.any(
-      (s) =>
-          s.year == todayOnly.year &&
-          s.month == todayOnly.month &&
-          s.day == todayOnly.day,
-    )) {
-      sessions.add(todayOnly);
-      return _prefs.setString(
-        _keyStudySessions,
-        jsonEncode(sessions.map((s) => s.toIso8601String()).toList()),
-      );
-    }
-    return true;
-  }
+  Future<bool> recordStudySession([DateTime? sessionTime]) async =>
+      _studySessionRepo.recordStudySession(sessionTime);
 
   /// Quiz Results Storage
-  Map<String, dynamic> getQuizResults() {
-    final json = _prefs.getString(_keyQuizResults);
-    if (json == null) return {};
-    try {
-      return jsonDecode(json) as Map<String, dynamic>;
-    } catch (e) {
-      return {};
-    }
-  }
+  Map<String, dynamic> getQuizResults() => _quizResultsRepo.getAllResults();
 
   Future<bool> saveQuizResult(
     String quizId,
     Map<String, dynamic> result,
-  ) async {
-    final results = getQuizResults();
-    results[quizId] = result;
-    return _prefs.setString(_keyQuizResults, jsonEncode(results));
-  }
+  ) async =>
+      _quizResultsRepo.saveQuizResult(quizId, result);
 
   /// App Settings
   Map<String, dynamic> getAppSettings() {
@@ -184,8 +142,3 @@ class LocalDataService {
     return success;
   }
 }
-
-/// Provider for local data service
-final localDataServiceProvider = FutureProvider<LocalDataService>((ref) {
-  return LocalDataService.create();
-});

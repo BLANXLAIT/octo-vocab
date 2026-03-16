@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:octo_vocab/core/language/language_registry.dart';
+import 'package:octo_vocab/core/providers/language_providers.dart';
+import 'package:octo_vocab/core/providers/storage_providers.dart';
 import 'package:octo_vocab/core/services/local_data_service.dart';
 
 // ignore_for_file: public_member_api_docs
@@ -74,29 +76,5 @@ final languageStateNotifierProvider = StateNotifierProvider<LanguageStateNotifie
   final dataService = ref.watch(localDataServiceProvider);
   final registry = ref.watch(languageRegistryProvider);
 
-  return dataService.when(
-    data: (service) => LanguageStateNotifier(service, registry),
-    loading: () => LanguageStateNotifier(
-      // Create a mock service for loading state
-      _MockLocalDataService(),
-      registry,
-    ),
-    error: (_, __) => LanguageStateNotifier(
-      _MockLocalDataService(),
-      registry,
-    ),
-  );
+  return LanguageStateNotifier(dataService, registry);
 });
-
-/// Mock service for loading/error states
-class _MockLocalDataService implements LocalDataService {
-  @override
-  Map<String, dynamic> getAppSettings() => {};
-
-  @override
-  Future<bool> saveAppSettings(Map<String, dynamic> settings) async => true;
-
-  // These methods won't be called by LanguageStateNotifier
-  @override
-  dynamic noSuchMethod(Invocation invocation) => null;
-}

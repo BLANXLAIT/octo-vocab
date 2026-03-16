@@ -2,62 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:octo_vocab/core/language/language_registry.dart';
 import 'package:octo_vocab/core/language/widgets/language_selector.dart';
-import 'package:octo_vocab/core/models/word_interaction.dart';
-import 'package:octo_vocab/core/services/local_data_service.dart';
-import 'package:octo_vocab/features/flashcards/flashcards_screen.dart';
+import 'package:octo_vocab/core/providers/flashcard_providers.dart';
+import 'package:octo_vocab/core/providers/language_providers.dart';
+import 'package:octo_vocab/core/providers/progress_providers.dart';
+import 'package:octo_vocab/core/services/error_handler.dart';
+import 'package:octo_vocab/core/widgets/error_view.dart';
 
-/// Progress tracking providers
-final studySessionsProvider = FutureProvider<List<DateTime>>((ref) async {
-  final dataService = await ref.watch(localDataServiceProvider.future);
-  return dataService.getStudySessions();
-});
-
-final wordProgressProvider = FutureProvider.autoDispose<Map<String, String>>((ref) async {
-  final dataService = await ref.watch(localDataServiceProvider.future);
-  final selectedLanguage = ref.watch(selectedLanguageProvider);
-  final currentPlugin = ref.watch(currentLanguagePluginProvider);
-
-  final allProgress = dataService.getWordProgress();
-
-  // Filter progress to only include items for the current language
-  if (currentPlugin == null) return {};
-
-  final languageSpecificProgress = <String, String>{};
-  for (final entry in allProgress.entries) {
-    // Progress keys are stored as "languageCode_wordId"
-    if (entry.key.startsWith('${selectedLanguage}_')) {
-      // KEEP the full key (including language prefix) - other providers expect this format
-      languageSpecificProgress[entry.key] = entry.value;
-    }
-  }
-
-  return languageSpecificProgress;
-});
-
-final quizResultsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
-  final dataService = await ref.watch(localDataServiceProvider.future);
-  final selectedLanguage = ref.watch(selectedLanguageProvider);
-
-  final allResults = dataService.getQuizResults();
-
-  // Filter quiz results to only include current language
-  final languageSpecificResults = <String, dynamic>{};
-  for (final entry in allResults.entries) {
-    if (entry.key.startsWith('quiz_${selectedLanguage}_')) {
-      languageSpecificResults[entry.key] = entry.value;
-    }
-  }
-
-  return languageSpecificResults;
-});
-
-/// Word interactions provider for enhanced spaced repetition tracking
-final wordInteractionsProvider = FutureProvider.autoDispose<Map<String, WordInteraction>>((ref) async {
-  final dataService = await ref.watch(localDataServiceProvider.future);
-  return dataService.getWordInteractions();
-});
 
 class ProgressScreen extends ConsumerWidget {
   const ProgressScreen({super.key});
@@ -124,7 +75,12 @@ class ProgressScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             studySessionsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stack) => Text('Error loading streak: $error'),
+              error: (error, stack) {
+                ErrorHandler.logError('Study Sessions', error, stack);
+                return InlineErrorView(
+                  message: ErrorHandler.getUserMessage(error),
+                );
+              },
               data: (sessions) {
                 final streak = _calculateStreak(sessions);
                 final totalDays = sessions.length;
@@ -191,14 +147,22 @@ class ProgressScreen extends ConsumerWidget {
                 return wordProgressAsync.when(
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
-                  error: (error, stack) =>
-                      Text('Error loading progress: $error'),
+                  error: (error, stack) {
+                    ErrorHandler.logError('Word Progress', error, stack);
+                    return InlineErrorView(
+                      message: ErrorHandler.getUserMessage(error),
+                    );
+                  },
                   data: (wordProgress) {
                     return vocabularyAsync.when(
                       loading: () =>
                           const Center(child: CircularProgressIndicator()),
-                      error: (error, stack) =>
-                          Text('Error loading vocabulary: $error'),
+                      error: (error, stack) {
+                        ErrorHandler.logError('Vocabulary', error, stack);
+                        return InlineErrorView(
+                          message: ErrorHandler.getUserMessage(error),
+                        );
+                      },
                       data: (vocabulary) {
                         final knownWords = wordProgress.values
                             .where((status) => status == 'known')
@@ -311,8 +275,12 @@ class ProgressScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             quizResultsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stack) =>
-                  Text('Error loading quiz results: $error'),
+              error: (error, stack) {
+                ErrorHandler.logError('Quiz Results', error, stack);
+                return InlineErrorView(
+                  message: ErrorHandler.getUserMessage(error),
+                );
+              },
               data: (quizResults) {
                 if (quizResults.isEmpty) {
                   return const Column(
@@ -401,7 +369,12 @@ class ProgressScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             studySessionsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stack) => Text('Error loading activity: $error'),
+              error: (error, stack) {
+                ErrorHandler.logError('Recent Activity', error, stack);
+                return InlineErrorView(
+                  message: ErrorHandler.getUserMessage(error),
+                );
+              },
               data: (sessions) {
                 if (sessions.isEmpty) {
                   return const Column(

@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:octo_vocab/core/language/language_registry.dart';
 import 'package:octo_vocab/core/language/models/vocabulary_item.dart';
 import 'package:octo_vocab/core/language/plugins/latin_plugin.dart';
+import 'package:octo_vocab/core/providers/quiz_providers.dart';
 import 'package:octo_vocab/features/quiz/quiz_screen.dart';
 
 void main() {

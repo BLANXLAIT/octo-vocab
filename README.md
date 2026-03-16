@@ -1,4 +1,4 @@
-# Octo Vocab
+# QuizCraft
 
 [![CI](https://github.com/BLANXLAIT/octo-vocab/actions/workflows/ci.yml/badge.svg)](https://github.com/BLANXLAIT/octo-vocab/actions/workflows/ci.yml)
 [![Test Status](https://github.com/BLANXLAIT/octo-vocab/actions/workflows/test-status.yml/badge.svg)](https://github.com/BLANXLAIT/octo-vocab/actions/workflows/test-status.yml)
@@ -13,11 +13,11 @@
 [![Offline](https://img.shields.io/badge/100%25-Offline-green?logo=airplane&logoColor=white)](README.md#privacy-first-design)
 [![Education](https://img.shields.io/badge/Education-Grades%207--12-orange?logo=graduation-cap&logoColor=white)](README.md#target-audience)
 
-A privacy-first offline vocabulary learning app designed for students in grades 7-12 learning foreign languages. Built with Flutter, Octo Vocab emphasizes educational excellence and user privacy by being completely offline with no user login or data collection.
+A privacy-first offline vocabulary learning app designed for students in grades 7-12 learning foreign languages. Built with Flutter, QuizCraft emphasizes educational excellence and user privacy by being completely offline with no user login or data collection.
 
 ## 📚 Language Learning Made Simple
 
-Octo Vocab currently supports **Latin** and **Spanish** with comprehensive vocabulary sets aligned to ACTFL standards and K-12 educational progression. More languages are planned for future releases.
+QuizCraft currently supports **Latin** and **Spanish** with comprehensive vocabulary sets aligned to ACTFL standards and K-12 educational progression. More languages are planned for future releases.
 
 ### 🎯 Target Audience
 - **Students**: Grades 7-12 (ages 12-18)

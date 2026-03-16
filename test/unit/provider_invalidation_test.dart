@@ -3,11 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:octo_vocab/core/services/local_data_service.dart';
 import 'package:octo_vocab/core/language/language_registry.dart';
 import 'package:octo_vocab/core/language/plugins/latin_plugin.dart';
-import 'package:octo_vocab/features/progress/progress_screen.dart';
-import 'package:octo_vocab/features/review/review_screen.dart';
+import 'package:octo_vocab/core/providers/progress_providers.dart';
+import 'package:octo_vocab/core/services/local_data_service.dart';
 
 void main() {
   group('Provider Invalidation Tests', () {
